@@ -1,0 +1,2 @@
+# minwe
+ Minimum Windowing Environment
