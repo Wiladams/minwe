@@ -5,9 +5,13 @@
 #include <functional>
 
 /*
-	Topic facilitates the publisher/subscriber pattern.
-	When you want to know when something happens, you
-	subscribe() to a topic.
+	Publish/Subscribe is that typical pattern where a 
+	publisher generates interesting data, and a subscriber
+	consumes that data.
+
+	The Topic class contains both the publish and subscribe
+	interfaces.
+
 
 	Whatever is responsible for indicating the thing happened
 	will call the notify() function of the topic, and the

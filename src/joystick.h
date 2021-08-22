@@ -1,5 +1,15 @@
 #pragma once
 
+/*
+Representation of a Joystick object.  The API used here
+is the classic Windows Joystick found in winmm.  In this
+API, there are a limited number of joysticks in the system
+and they have a limited fixed set of functionality.
+
+Later APIs such as DirectX are more complete and flexible
+but, far more involved to deal with.  
+*/
+
 #pragma comment(lib, "winmm.lib")
 
 #include <joystickapi.h>

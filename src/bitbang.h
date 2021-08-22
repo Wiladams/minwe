@@ -1,5 +1,11 @@
 #pragma once
 
+/*
+    Convenient routines for fiddling with bits in integers.
+    Primarily setting and getting bits
+    or swapping bytes in an integer.
+*/
+
 #include "definitions.h"
 
 #include <math.h>
@@ -16,11 +22,7 @@ static inline bool isLE () {
 static inline bool isBE() {return !isLE();}
 
 
-// swap 2 bytes (16-bit) around
-static inline uint16_t swapUInt16(const uint16_t num)
-{
-    return (((num & 0x00ff) << 8) | ((num & 0xff00) >> 8));
-}
+
 
 // Return various forms of pow(2,bitnum)
 // There are different ones, which allow the user to specify how
@@ -124,6 +126,11 @@ static inline uint64_t bitsValueFromBytes(const uint8_t *bytes, const size_t sta
 
 
 
+// swap 2 bytes (16-bit) around
+static inline uint16_t swapUInt16(const uint16_t num)
+{
+    return (((num & 0x00ff) << 8) | ((num & 0xff00) >> 8));
+}
 
 // swap 4 bytes (32-bit) around
 static inline uint32_t swapUInt32(const uint32_t num)

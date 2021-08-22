@@ -2,6 +2,21 @@
 
 /*
     Data types for ui events
+    These are core data structures for reprsenting mouse,
+    keyboard, joystick, file drop, pointer, and touch events.
+    This covers the vast majority of event types that will be
+    typical in any application.  
+
+    These event types exist so the application doesn't have
+    to know the intimate details of how the original Win32
+    events were encoded coming out of the Windows API.
+
+    In Windows,
+    events are typically represented with some form of Bitfield
+    which must be decoded before useful.  tedious and error prone,
+    the data structures here are used at the source, where decoding 
+    can be done once and for all.  The data structures take up more 
+    memory space, but it is 2021, not 1981, so we have some memory to spare.
 */
 
 #include <vector>
