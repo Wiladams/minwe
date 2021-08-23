@@ -6,8 +6,6 @@
     or swapping bytes in an integer.
 */
 
-#include "definitions.h"
-
 #include <math.h>
 #include <cstdio>
 

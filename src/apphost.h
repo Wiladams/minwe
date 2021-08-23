@@ -57,7 +57,7 @@
 
 #include "pubsub.h"
 #include "NativeWindow.hpp"
-#include "Surface.h"
+#include "User32PixelMap.h"
 #include "joystick.h"
 #include "uievent.h"
 
@@ -89,7 +89,7 @@ APP_EXPORT extern char **gargv;
 
 
 APP_EXPORT extern User32Window * gAppWindow;
-APP_EXPORT extern std::shared_ptr<Surface> gAppSurface;
+APP_EXPORT extern std::shared_ptr<User32PixelMap> gAppSurface;
 
 
 //EXPORT extern bool gRunning;

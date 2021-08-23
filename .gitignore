@@ -1,0 +1,10 @@
+Debug/*
+*.exe
+*.tlog
+*.pdb
+*.lib
+*.ilk
+*.obj
+*.exp
+*.ipch
+*.log

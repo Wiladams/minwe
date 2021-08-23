@@ -63,15 +63,15 @@ public:
     {
         fInfo.hdcSrc = source;
         RECT wRect;
-        BOOL bResult = GetWindowRect(win, &wRect);
+        BOOL bResult = ::GetWindowRect(win, &wRect);
         
         fWindowPosition.x = wRect.left;
         fWindowPosition.y = wRect.top;
         
-        bResult = UpdateLayeredWindowIndirect(win, &fInfo);
+        bResult = ::UpdateLayeredWindowIndirect(win, &fInfo);
 
         if (!bResult) {
-            fLastError = GetLastError();
+            fLastError = ::GetLastError();
             return false;
         }
 

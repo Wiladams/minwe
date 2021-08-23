@@ -53,7 +53,7 @@ char **gargv;
 
 
 User32Window * gAppWindow = nullptr;
-std::shared_ptr<Surface>  gAppSurface = nullptr;
+std::shared_ptr<User32PixelMap>  gAppSurface = nullptr;
 
 bool gIsLayered = false;
 
@@ -482,7 +482,7 @@ LRESULT HandlePaintMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     BITMAPINFO info = gAppSurface->getBitmapInfo();
     
     // Make sure we sync all current drawing
-    gAppSurface->flush();
+    //gAppSurface->sync();
 
     int pResult = StretchDIBits(hdc,
         xDest,yDest,
@@ -584,7 +584,8 @@ void subscribe(PointerEventTopic::Subscriber s)
 
 
 // Controlling the runtime
-void halt() {
+void halt() 
+{
     ::PostQuitMessage(0);
 }
 
@@ -691,7 +692,7 @@ bool setCanvasSize(long aWidth, long aHeight)
     }
 
 
-    gAppSurface = std::make_shared<Surface>(aWidth, aHeight);
+    gAppSurface = std::make_shared<User32PixelMap>(aWidth, aHeight);
     canvasWidth = aWidth;
     canvasHeight = aHeight;
 
@@ -907,12 +908,6 @@ User32WindowClass gAppWindowKind("appwindow", CS_GLOBALCLASS | CS_DBLCLKS | CS_H
 // is the networking subsystem
 bool prolog()
 {
-    // Initialize Windows networking
-    // BUGBUG - decide whether or not we care about WSAStartup failing
-    uint16_t version = MAKEWORD(2,2);
-    WSADATA lpWSAData;
-    int res = ::WSAStartup(version, &lpWSAData);
-
     // Throughout the application, we want to know the true
     // physical dots per inch and screen resolution, so the
     // first thing to do is to let Windows know we are Dpi aware
@@ -932,11 +927,8 @@ bool prolog()
 
     displayWidth = ::GetSystemMetrics(SM_CXSCREEN);
     displayHeight = ::GetSystemMetrics(SM_CYSCREEN);
-    //printf("appmain.prolog, width: %d  height: %d  DPI: %d\n", displayWidth, displayHeight, systemDpi);
 
-    //std::cout << "screen pixels: " << dpidisplayWidth << ", " << dpidisplayHeight << "  dpi: " << dpiDpi << std::endl;
-
-    auto dhdc = CreateDC(TEXT("DISPLAY"), NULL, NULL, NULL);
+    auto dhdc = ::CreateDC(TEXT("DISPLAY"), NULL, NULL, NULL);
 
     // How big is the screen physically
     // DeviceCaps gives it in millimeters, so we convert to inches
@@ -955,9 +947,9 @@ bool prolog()
 
     // set the canvas a default size to start
     // but don't show it
-    setCanvasSize(320, 240);
+    setCanvasSize(640, 480);
 
-    gAppWindow = gAppWindowKind.createWindow("Application Window", 320, 240);
+    gAppWindow = gAppWindowKind.createWindow("Application Window", 640, 480);
 
     // Get client area
     RECT cRect;
@@ -976,7 +968,7 @@ void epilog()
         gOnUnloadHandler();
     }
 
-    ::WSACleanup();
+    //::WSACleanup();
 }
 
 
@@ -990,7 +982,7 @@ void epilog()
     
     By having both, we kill two birds with one stone.
 */
-int ndtRun()
+int minweRun()
 {
     if (!prolog()) {
         printf("error in prolog\n");
@@ -1010,7 +1002,7 @@ int main(int argc, char **argv)
     gargc = argc;
     gargv = argv;
     
-    return ndtRun();
+    return minweRun();
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmdLine, int nShowCmd)
@@ -1019,5 +1011,5 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmdLine, int nShow
     //gargc = argc;
     //gargv = argv;
 
-    return ndtRun();
+    return minweRun();
 }
