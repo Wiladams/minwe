@@ -25,3 +25,55 @@ are meant to subscribe to this system, and construct their own eventing model at
 
 In addition, the framework has its own "main" eventing loop, which allows the app
 developer to create their own thing.
+
+How to Use
+==========
+If you just compile what's in the 'src' directory, you'll end up with a working
+program that will open up a blank window on the screen of size 640x480.  The main() 
+routine is in the appmain.cpp file.  So, you don't need anything more than that
+but, the application won't do much.
+
+This appmain.cpp sets up a minimal runtime environment which is ready for 
+you to program.  The runtime environment consists of a few things, and a few
+points at which you can interact with it.
+
+
+If you want to create your own application, create a project of your own, and
+include the code that's found in the 'src' directory.  The 'testy' directory
+contains several projects that demonstrate how to do this.
+
+The way you interact with the runtime is to simply implement a few key
+functions within your own code.  The runtime will look for implementations
+of these functions.  If they exist, it will call them at appropriate times.
+
+The first two functions you might want to implement are 'void onLoad()' and
+'void onUnload()'.  The first function, onLoad(), is called after the runtime
+has set itself up, and is giving you a chance to do something before
+the runtime starts its main loop.
+
+The onUnload() function is called once the runtime has exited its main loop
+and gives you a chance to do something before the application shuts down.
+
+```C
+#include "apphost.h"
+
+void onLoad()
+{
+    printf("onLoad() - called\n");
+}
+```
+
+onLoad
+void onLoad()
+
+onUnload
+void onUnload()
+
+
+onPaint
+void onPaint()
+
+onLoop
+void onLoop()
+
+

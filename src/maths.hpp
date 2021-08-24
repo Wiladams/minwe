@@ -135,6 +135,7 @@ namespace maths {
     // Lerp
     // This implementation of LERP is the most accurate
     // and guarantees you get v1 at 0.0 and v2 at 1.0
+    // The input 't' MUST be between 0.0 >= t <= 1
     //template <typename U, typename T>
     template <typename T>
     inline T Lerp(const double t, T v1, T v2)
@@ -161,37 +162,46 @@ namespace maths {
     }
     */
     
+    // Map
+    // Take a relative number in one range, and map
+    // it to the same relative position in another range
+    // The input number 'x' can fall outside the origin range, and will 
+    // map outside the result range
     inline double Map(double x, double olow, double ohigh, double rlow, double rhigh)
     {
         return rlow + (x - olow) * ((rhigh - rlow) / (ohigh - olow));
     }
 
+    // Minimum between two values
     template <typename T>
     inline T Min(T a, T b) {
         return a < b ? a : b;
     }
 
+    // Greater if two values
     template <typename T>
     inline T Max(T a, T b) {
         return a > b ? a : b;
     }
 
-        // Some useful routines
-        // returns the sign of the value
-        // value  < 0 --> -1
-        // value  > 0 -->  1
-        // value == 0 -->  0
-        // this will only work in cases where 0 represents false
-        // and 1 represents true
+    // Some useful routines
+    // returns the sign of the value
+    // value  < 0 --> -1
+    // value  > 0 -->  1
+    // value == 0 -->  0
+    // this will only work in cases where 0 represents false
+    // and 1 represents true
     template <typename T>
     inline int Sign(T val) { return ((0 < val) - (val < 0)); }
 
+    // Input radians, return degrees
     template <typename T>
     inline T Degrees(T a) { return a * 57.29577951308232; }
 
     template<>
     inline double Degrees(double x) { return x * 57.29577951308232; }
     
+    // Input degrees, return radians
     template <typename T>
     inline T Radians(T x) { return x * 0.017453292519943295; }
 

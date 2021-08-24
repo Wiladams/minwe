@@ -989,6 +989,7 @@ int minweRun()
         return -1;
     }
 
+    // Start running main event loop
     run();
 
     // do any cleanup after all is done
