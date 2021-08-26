@@ -67,9 +67,6 @@ int displayHeight= 0;
 unsigned int systemDpi = 96;    // 96 == px measurement
 unsigned int systemPpi = 192;   // starting pixel density
 
-// Client Area globals
-int clientLeft;
-int clientTop;
 
 // Raw Mouse input
 int rawMouseX = 0;
@@ -93,6 +90,7 @@ void HID_RegisterDevice(HWND hTarget, USHORT usage, USHORT usagePage = 1)
 {
     RAWINPUTDEVICE hid[1];
 
+    // RIDEV_NOLEGACY - will ignore legacy messages
     hid[0].usUsagePage = usagePage;
     hid[0].usUsage = usage;
     hid[0].dwFlags = (RIDEV_DEVNOTIFY | RIDEV_INPUTSINK);
@@ -100,7 +98,6 @@ void HID_RegisterDevice(HWND hTarget, USHORT usage, USHORT usagePage = 1)
     UINT uiNumDevices = 1;
 
     BOOL bResult = ::RegisterRawInputDevices(hid, uiNumDevices, sizeof(RAWINPUTDEVICE));
-    //printf("HID_RegisterDevice: HWND: 0x%p,  %d  %d\n", hTarget, bResult, ::GetLastError());
 }
 
 void HID_UnregisterDevice(USHORT usage)
@@ -151,12 +148,13 @@ void hide()
     gAppWindow->hide();
 }
 
+// Show the cursor, if there is one
 void cursor()
 {
     int count = ::ShowCursor(1);
 }
 
-// Show the cursor, if there is one
+
 // BUGBUG - we should be more robust here and
 // check to see if there's even a mouse attached
 // Then, decrement count enough times to make showing
@@ -165,7 +163,6 @@ void noCursor()
 {
     ::ShowCursor(0);
 }
-
 
 
 /*
@@ -337,8 +334,6 @@ LRESULT HandleTouchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     // cInputs could be set to a maximum value (10) and
     // we could reuse the same allocated array each time
     // rather than allocating a new one each time.
-    //std::cout << "wm_touch_event: " << wParam << std::endl;
-
     int cInputs = LOWORD(wParam);
     int cbSize = sizeof(TOUCHINPUT);
 
@@ -890,22 +885,11 @@ void run()
 
 }
 
-
-/*
-    The 'main()' function is in here to ensure that compiling
-    this header will result in an executable file.
-
-    The code for the user just needs to implement the 'setup()'
-    and other functions.
-*/
 // Declare some standard Window Kinds we'll be using
 User32WindowClass gAppWindowKind("appwindow", CS_GLOBALCLASS | CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW, MsgHandler);
 
-
 // do any initialization that needs to occur 
 // in the very beginning
-// The most interesting initialization at the moment
-// is the networking subsystem
 bool prolog()
 {
     // Throughout the application, we want to know the true
@@ -930,7 +914,7 @@ bool prolog()
 
     auto dhdc = ::CreateDC(TEXT("DISPLAY"), NULL, NULL, NULL);
 
-    // How big is the screen physically
+    // Get screen physical size
     // DeviceCaps gives it in millimeters, so we convert to inches
     auto screenWidth = ::GetDeviceCaps(dhdc, HORZSIZE)/25.4;
     auto screenHeight = ::GetDeviceCaps(dhdc, VERTSIZE)/25.4;
@@ -944,35 +928,28 @@ bool prolog()
     double screenVPpi = (double)dpidisplayHeight / screenHeight;
     systemPpi = (unsigned int)screenVPpi;
 
-
     // set the canvas a default size to start
     // but don't show it
     setCanvasSize(640, 480);
 
     gAppWindow = gAppWindowKind.createWindow("Application Window", 640, 480);
 
-    // Get client area
-    RECT cRect;
-    ::GetClientRect(gAppWindow->getHandle(), &cRect);
-    clientLeft = cRect.left;
-    clientTop = cRect.top;
-
     return true;
 }
 
-// Do whatever cleanup needs to be done before
-// exiting application
+// Allow cleanup before exit
 void epilog()
 {
     if (gOnUnloadHandler != nullptr) {
         gOnUnloadHandler();
     }
-
-    //::WSACleanup();
 }
 
 
 /*
+    The 'main()' function is in here to ensure that compiling
+    this file will result in an executable program.
+
     Why on Earth are there two 'main' routines in here?
     the first one 'main()' will be called when the code is compiled
     as a CONSOLE subsystem.
@@ -1009,8 +986,6 @@ int main(int argc, char **argv)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prev, LPSTR cmdLine, int nShowCmd)
 {
     // BUGBUG, need to parse those command line arguments
-    //gargc = argc;
-    //gargv = argv;
 
     return minweRun();
 }

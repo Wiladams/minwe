@@ -174,5 +174,65 @@ void onPaint()
 
 So, how to get something up on the screen?
 
+The runtime has some global variables and functions that
+are available.  These functions and variables allow you to 
+interact with the runtime.
+
+```C
+// Miscellaneous globals
+APP_EXPORT extern int gargc;
+APP_EXPORT extern char **gargv;
 
 
+APP_EXPORT extern User32Window * gAppWindow;
+APP_EXPORT extern std::shared_ptr<User32PixelMap> gAppSurface;
+
+// Globals we expect the user to consume
+APP_EXPORT extern int displayWidth;
+APP_EXPORT extern int displayHeight;
+APP_EXPORT extern unsigned int systemDpi;
+APP_EXPORT extern unsigned int systemPpi;
+
+APP_EXPORT extern int canvasWidth;
+APP_EXPORT extern int canvasHeight;
+```
+
+Functions
+=========
+
+```C
+APP_EXPORT void showAppWindow();
+APP_EXPORT void halt();
+
+APP_EXPORT void screenRefresh();
+
+APP_EXPORT void layered();
+APP_EXPORT void noLayered();
+APP_EXPORT bool isLayered();
+
+APP_EXPORT void rawInput();
+APP_EXPORT void noRawInput();
+
+APP_EXPORT void joystick();
+APP_EXPORT void noJoystick();
+
+// Touch routines apps can implement
+APP_EXPORT bool touch();
+APP_EXPORT bool noTouch();
+APP_EXPORT bool isTouch();
+
+// Turn on/off file drop handling
+APP_EXPORT bool dropFiles();
+APP_EXPORT bool noDropFiles();
+
+APP_EXPORT void cursor();
+APP_EXPORT void noCursor();
+
+APP_EXPORT void show();
+APP_EXPORT void hide();
+
+
+
+APP_EXPORT void setWindowPosition(int x, int y);
+APP_EXPORT bool setCanvasSize(long aWidth, long aHeight);
+```

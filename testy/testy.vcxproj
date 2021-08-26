@@ -143,6 +143,9 @@
     <ClCompile Include="..\src\appmain.cpp" />
     <ClCompile Include="testy.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\apphost.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
