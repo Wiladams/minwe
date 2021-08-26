@@ -56,12 +56,21 @@ and gives you a chance to do something before the application shuts down.
 
 ```C
 #include "apphost.h"
+#include <stdio.h>
 
 void onLoad()
 {
-    printf("onLoad() - called\n");
+	puts("onLoad()  :-)");
+}
+
+void onUnload()
+{
+	puts("onUnload() :-(");
 }
 ```
+
+With that you have the bare minimum application that can actually do
+your bidding.
 
 onLoad
 void onLoad()
@@ -69,11 +78,101 @@ void onLoad()
 onUnload
 void onUnload()
 
+Windows is a message driven system.  Everything that occurs from mouse
+movement, to keyboard interaction and drawing, is associated with some
+form of message.  A message is simply a chunk of data containing the
+particulars, like where the mouse is, which buttons are pressed and so on.
+
+There are many different kinds of messages in the Windows system.  The
+challenge of programming with them is knowing all the little esoteric details
+of the data structures, their flags and bitfields, and different meanings
+under differing circumstances.  minwe simplifies the situation by 
+turning the various standard messages into simpler functions that the 
+user can implement.
+
+The first of these functions has to do with the 'messaging loop'.  This
+so called loop is the top level control mechanism of the application.
+
+The core of the message loop is this
+
+```C
+    while (true) {
+        // we use peekmessage, so we don't stall on a GetMessage
+        // should probably throw a wait here
+        // WaitForSingleObject
+        BOOL bResult = ::PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE);
+        
+        if (bResult > 0) {
+            // If we see a quit message, it's time to stop the program
+            if (msg.message == WM_QUIT) {
+                break;
+            }
+
+            res = ::TranslateMessage(&msg);
+            res = ::DispatchMessageA(&msg);
+        }
+        else {
+            // call onLoop() if it exists
+            if (gOnLoopHandler != nullptr) {
+                gOnLoopHandler();
+            }
+        }
+    }
+```
+
+Basically an infinite loop which queries the Windows system for 
+any messages that might be waiting (PeekMessage()).  If there are
+any messages waiting, then deal with them (Translate/Dispatch).
+Dealing with the messages is the bulk of the rest of the code
+in appmain.cpp.
+
+Once those standard messages have been dealt with, or if there
+are no messages to deal with, then the user implemented 
+onLoop() function is called.  If the user does not implement
+a function called onLoop(), then nothing additional will be
+implemented, and we go back to checking for standard messages.
+
+onLoop
+void onLoop()
+
+Expanding on the previous example:
+
+```C
+#include "apphost.h"
+#include <stdio.h>
+
+void onLoad()
+{
+	puts("onLoad()  :-)");
+}
+
+void onUnload()
+{
+	puts("onUnload() :-(");
+}
+
+void onLoop()
+{
+	static int count = 0;
+	count = count + 1;
+	printf("Loop: %d\n", count);
+}
+```
+
+At this point, your application knows 
+* when it is loaded and ready to run
+* when the main event loop is finished and the app is ready to unload
+* each time we've gone through the main event loop
+
+The last of these user implementable functions is onPaint().  This message
+is very Windows specific, and counter to the rest of the framework, so 
+won't be covered yet, and might actually be removed.
 
 onPaint
 void onPaint()
 
-onLoop
-void onLoop()
+
+So, how to get something up on the screen?
+
 
 

@@ -8,3 +8,11 @@ Debug/*
 *.exp
 *.ipch
 *.log
+*.suo
+*.idb
+Browse.VC.db
+testy/Debug/testy.vcxproj.FileListAbsolute.txt
+testy/Debug/testy.exe.recipe
+
+
+
