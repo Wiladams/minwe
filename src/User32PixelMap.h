@@ -17,7 +17,20 @@
 #include "bitbang.h"
 #include "maths.hpp"
 
+// Doing colors using 'Pixel' which is a 32-bit int
+// 0xAARRGGBB
 typedef uint32_t Pixel;
+
+inline Pixel rgba(int r, int g, int b, int a = 255)
+{
+    return a << 24 | r << 16 | g << 8 | b;
+}
+
+inline Pixel rgb(int r, int g, int b)
+{
+    return 255 << 24 | r << 16 | g << 8 | b;
+}
+
 
 class User32PixelMap
 {
@@ -83,6 +96,12 @@ public:
 
     inline HDC getDC() {return fBitmapDC;}
 
+    // Set every pixel to a specified value
+    inline void clearToPixel(const Pixel c)
+    {
+        for (size_t offset = 0; offset < fWidth * fHeight; offset++)
+            ((Pixel*)fData)[offset] = c;
+    }
 
     inline void set(const int x, const int y, const Pixel c)
     {
@@ -108,6 +127,19 @@ public:
         // Get data from BLContext
         size_t offset = (size_t)(y * fWidth) + (size_t)x;
         return ((Pixel *)fData)[offset];
+    }
+
+    inline void hline(const int x, const int y, const int w, const Pixel c)
+    {
+        size_t offset = (size_t)(y * fWidth) + (size_t)x;
+        for (size_t counter = 0; counter < w; counter++)
+            ((Pixel*)fData)[offset++] = c;
+    }
+
+    inline void rect(const int x, const int y, const int w, const int h, const Pixel c)
+    {
+        for (int row = y; row < y + h; row++)
+            hline(x, row, w, c);
     }
 
     inline void sync() const

@@ -175,64 +175,70 @@ void onPaint()
 So, how to get something up on the screen?
 
 The runtime has some global variables and functions that
-are available.  These functions and variables allow you to 
-interact with the runtime.
+are available.  These functions and variables are the ways
+in which you interact with the runtime.
 
 ```C
-// Miscellaneous globals
-APP_EXPORT extern int gargc;
-APP_EXPORT extern char **gargv;
+// Access to command line arguments
+int gargc;
+**gargv;
 
+// pointer to the application's window
+User32Window * gAppWindow;
 
-APP_EXPORT extern User32Window * gAppWindow;
-APP_EXPORT extern std::shared_ptr<User32PixelMap> gAppSurface;
+// pointer to the app window's frame buffer
+std::shared_ptr<User32PixelMap> gAppSurface;
 
-// Globals we expect the user to consume
-APP_EXPORT extern int displayWidth;
-APP_EXPORT extern int displayHeight;
-APP_EXPORT extern unsigned int systemDpi;
-APP_EXPORT extern unsigned int systemPpi;
+// Miscellaneous useful information
+int displayWidth;
+int displayHeight;
+unsigned int systemDpi;     // System logical dots per inch
+unsigned int systemPpi;     // System physical dots per inch
 
-APP_EXPORT extern int canvasWidth;
-APP_EXPORT extern int canvasHeight;
+int canvasWidth;            // The width set by the user
+int canvasHeight;           // The height set by the user
 ```
 
 Functions
 =========
 
 ```C
-APP_EXPORT void showAppWindow();
-APP_EXPORT void halt();
+void showAppWindow();
+void halt();
 
-APP_EXPORT void screenRefresh();
+void screenRefresh();
 
-APP_EXPORT void layered();
-APP_EXPORT void noLayered();
-APP_EXPORT bool isLayered();
+void layered();
+void noLayered();
+bool isLayered();
 
-APP_EXPORT void rawInput();
-APP_EXPORT void noRawInput();
+void rawInput();
+void noRawInput();
 
-APP_EXPORT void joystick();
-APP_EXPORT void noJoystick();
+void joystick();
+void noJoystick();
 
 // Touch routines apps can implement
-APP_EXPORT bool touch();
-APP_EXPORT bool noTouch();
-APP_EXPORT bool isTouch();
+bool touch();
+bool noTouch();
+bool isTouch();
 
 // Turn on/off file drop handling
-APP_EXPORT bool dropFiles();
-APP_EXPORT bool noDropFiles();
+bool dropFiles();
+bool noDropFiles();
 
-APP_EXPORT void cursor();
-APP_EXPORT void noCursor();
+// Turn visual cursor on and off
+void cursor();
+void noCursor();
 
-APP_EXPORT void show();
-APP_EXPORT void hide();
+// show and hide the window
+void show();
+void hide();
 
 
+// Set the position of the window
+void setWindowPosition(int x, int y);
 
-APP_EXPORT void setWindowPosition(int x, int y);
-APP_EXPORT bool setCanvasSize(long aWidth, long aHeight);
+// Set the size of the drawing area of the window
+bool setCanvasSize(long aWidth, long aHeight);
 ```

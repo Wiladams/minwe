@@ -9,6 +9,7 @@
 #include <math.h>
 #include <cstdio>
 
+#define U64x(hi, lo)	(((uint64_t)0x##hi << 32) + (uint64_t)0x##lo)
 
 namespace winme {
 // Determine at runtime if the CPU is little-endian (intel standard)
