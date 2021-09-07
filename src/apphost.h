@@ -183,8 +183,11 @@ APP_EXPORT bool isLayered();
 
 APP_EXPORT void rawInput();
 APP_EXPORT void noRawInput();
+APP_EXPORT void rawMouse();
+APP_EXPORT void rawKeyboard();
+APP_EXPORT void rawJoystick();
 
-APP_EXPORT void joystick();
+APP_EXPORT void legacyJoystick();
 APP_EXPORT void noJoystick();
 
 // Touch routines apps can implement

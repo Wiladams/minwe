@@ -18,6 +18,9 @@
 
 #include <shellapi.h>   // for drag-drop support
 
+#include <hidsdi.h>     // USB HID, raw usage definitions
+
+
 #include <cstdio>
 #include <array>
 #include <iostream>
@@ -76,41 +79,7 @@ int rawMouseY = 0;
 static Joystick gJoystick1(JOYSTICKID1);
 static Joystick gJoystick2(JOYSTICKID2);
 
-//
-//    https://docs.microsoft.com/en-us/windows/desktop/inputdev/using-raw-input
-//
-//Raw input utility functions
-static const USHORT HID_MOUSE = 2;
-static const USHORT HID_JOYSTICK = 4;
-static const USHORT HID_GAMEPAD = 5;
-static const USHORT HID_KEYBOARD = 6;
 
-// Register for mouseand keyboard
-void HID_RegisterDevice(HWND hTarget, USHORT usage, USHORT usagePage = 1)
-{
-    RAWINPUTDEVICE hid[1];
-
-    // RIDEV_NOLEGACY - will ignore legacy messages
-    hid[0].usUsagePage = usagePage;
-    hid[0].usUsage = usage;
-    hid[0].dwFlags = (RIDEV_DEVNOTIFY | RIDEV_INPUTSINK);
-    hid[0].hwndTarget = hTarget;
-    UINT uiNumDevices = 1;
-
-    BOOL bResult = ::RegisterRawInputDevices(hid, uiNumDevices, sizeof(RAWINPUTDEVICE));
-}
-
-void HID_UnregisterDevice(USHORT usage)
-{
-    RAWINPUTDEVICE hid{ 0 };
-    hid.usUsagePage = 1;
-    hid.usUsage = usage;
-    hid.dwFlags = RIDEV_REMOVE;
-    hid.hwndTarget = nullptr;
-    UINT uiNumDevices = 1;
-
-    BOOL bResult = ::RegisterRawInputDevices(&hid, 1, sizeof(RAWINPUTDEVICE));
-}
 
 
 // Controlling drawing
@@ -164,6 +133,193 @@ void noCursor()
     ::ShowCursor(0);
 }
 
+/*
+    Subscription routines
+*/
+// General signal subscription
+void subscribe(SignalEventTopic::Subscriber s)
+{
+    gSignalEventTopic.subscribe(s);
+}
+
+// Allow subscription to keyboard events
+void subscribe(KeyboardEventTopic::Subscriber s)
+{
+    gKeyboardEventTopic.subscribe(s);
+}
+
+// Allow subscription to mouse events
+void subscribe(MouseEventTopic::Subscriber s)
+{
+    gMouseEventTopic.subscribe(s);
+}
+
+// Allow subscription to mouse events
+void subscribe(JoystickEventTopic::Subscriber s)
+{
+    gJoystickEventTopic.subscribe(s);
+}
+
+void subscribe(FileDropEventTopic::Subscriber s)
+{
+    gFileDropEventTopic.subscribe(s);
+}
+
+void subscribe(TouchEventTopic::Subscriber s)
+{
+    gTouchEventTopic.subscribe(s);
+}
+
+void subscribe(PointerEventTopic::Subscriber s)
+{
+    gPointerEventTopic.subscribe(s);
+}
+
+
+//
+// Handling messages
+//
+
+//
+//  https://docs.microsoft.com/en-us/windows/desktop/inputdev/using-raw-input
+//  https://www.codeproject.com/articles/185522/using-the-raw-input-api-to-process-joystick-input
+//  https://github.com/supersmo/Using-Raw-Input-API-to-Process-Joystick-Input/blob/master/RawInput.c
+
+
+// Register a device for raw input
+bool HID_RegisterDevice(HWND hTarget, USHORT usage, USHORT usagePage = HID_USAGE_PAGE_GENERIC, USHORT flags = 0)
+{
+    RAWINPUTDEVICE hid;
+
+    hid.usUsagePage = usagePage;
+    hid.usUsage = usage;
+    hid.dwFlags = flags; // (RIDEV_DEVNOTIFY | RIDEV_INPUTSINK | RIDEV_NOLEGACY);
+    hid.hwndTarget = hTarget;
+
+
+    BOOL bResult = ::RegisterRawInputDevices(&hid, 1, sizeof(RAWINPUTDEVICE));
+    if (bResult == 0)
+    {
+        auto res = ::GetLastError();
+        printf("HID_RegisterDevice Error: 0x%x\n", res);
+        return false;
+    }
+
+    // successful registration
+    return true;
+}
+
+void HID_UnregisterDevice(USHORT usage)
+{
+    RAWINPUTDEVICE hid{ 0 };
+    hid.usUsagePage = 1;
+    hid.usUsage = usage;
+    hid.dwFlags = RIDEV_REMOVE;
+    hid.hwndTarget = nullptr;
+    UINT uiNumDevices = 1;
+
+    BOOL bResult = ::RegisterRawInputDevices(&hid, 1, sizeof(RAWINPUTDEVICE));
+}
+
+
+void ParseRawInput(PRAWINPUT raw)
+{
+    // See what we got
+    //printf("RAWINPUT: %d\n", raw->header.dwType);
+
+    // For mouse and keyboard, there are data structures that already
+    // parse the contents
+    // Got others, the data needs to be parsed
+    switch (raw->header.dwType)
+    {
+        case RIM_TYPEMOUSE:
+        {
+            rawMouseX = raw->data.mouse.lLastX;
+            rawMouseY = raw->data.mouse.lLastY;
+            //mouseEvent();
+            //printf("RAWMOUSE: %d %d\n", raw->data.mouse.lLastX, raw->data.mouse.lLastY);
+        }
+        break;
+
+        case RIM_TYPEKEYBOARD:
+        {
+            //keyboardEvent
+        }
+        break;
+
+        case RIM_TYPEHID:
+        {
+            PHIDP_PREPARSED_DATA pPreparsedData = nullptr;
+            UINT bufferSize = 0;
+
+            // get the name of the device
+            //char nameBuff[1024] = {0};
+            //UINT nameBuffSize = 1024;
+            //GetRawInputDeviceInfo(raw->header.hDevice, RIDI_DEVICENAME, nameBuff, &nameBuffSize);
+
+
+            // Get the device info, using two phase allocation
+            GetRawInputDeviceInfo(raw->header.hDevice, RIDI_PREPARSEDDATA, NULL, &bufferSize);
+            std::vector<uint8_t> buff(bufferSize, 0);
+            pPreparsedData = (PHIDP_PREPARSED_DATA)buff.data();
+            GetRawInputDeviceInfo(raw->header.hDevice, RIDI_PREPARSEDDATA, pPreparsedData, &bufferSize);
+
+            // Get the device capabilities
+            // Button caps
+            HIDP_CAPS            Caps;
+            PHIDP_BUTTON_CAPS    pButtonCaps = nullptr;
+            USHORT capsLength = 0;
+
+            auto res = HidP_GetCaps(pPreparsedData, &Caps);
+            std::vector<uint8_t> buttonCapsBuff(sizeof(HIDP_BUTTON_CAPS) * Caps.NumberInputButtonCaps, 0);
+            pButtonCaps = (PHIDP_BUTTON_CAPS)buttonCapsBuff.data();
+
+            capsLength = Caps.NumberFeatureButtonCaps;
+            HidP_GetButtonCaps(HidP_Input, pButtonCaps, &capsLength, pPreparsedData);
+            int g_NumberOfButtons = pButtonCaps->Range.UsageMax - pButtonCaps->Range.UsageMin + 1;
+
+            // It's not one of the easy ones, so need
+            // to parse
+            //printf("HID INPUT: 0x%p\n", raw->header.hDevice);
+        }
+        break;
+
+        default:
+            printf("RAW UNKNOWN TYPE: %d\n", raw->header.dwType);
+        break;
+    }
+}
+
+LRESULT HandleHIDMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    LRESULT res = 0;
+
+    //printf("WM_INPUT\n");
+    bool inBackground = GET_RAWINPUT_CODE_WPARAM(wParam) == 1;
+    HRAWINPUT inputHandle = (HRAWINPUT)lParam;
+    UINT uiCommand = RID_INPUT;
+    UINT cbSize = 0;
+
+    // First, find out how much space will be needed
+    // to accomodate the HID message
+    UINT size = ::GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &cbSize, sizeof(RAWINPUTHEADER));
+
+
+    // Allocate space, and try it again
+    std::vector<uint8_t> buff(cbSize, 0);
+    size = ::GetRawInputData((HRAWINPUT)lParam, uiCommand, buff.data(), &cbSize, sizeof(RAWINPUTHEADER));
+    //printf("WM_INPUT: %d - %d\n", cbSize, size);
+
+    // confirm we got what we expected in terms of size
+    if (size == cbSize) {
+        RAWINPUT* raw = (RAWINPUT*)buff.data();
+
+        ParseRawInput(raw);
+
+    }
+
+    return res;
+}
 
 /*
     Turn Windows keyboard messages into keyevents that can 
@@ -532,47 +688,7 @@ LRESULT HandleFileDropMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 
-/*
-    Subscription routines
-*/
-// General signal subscription
-void subscribe(SignalEventTopic::Subscriber s)
-{
-    gSignalEventTopic.subscribe(s);
-}
 
-// Allow subscription to keyboard events
-void subscribe(KeyboardEventTopic::Subscriber s)
-{
-    gKeyboardEventTopic.subscribe(s);
-}
-
-// Allow subscription to mouse events
-void subscribe(MouseEventTopic::Subscriber s)
-{
-    gMouseEventTopic.subscribe(s);
-}
-
-// Allow subscription to mouse events
-void subscribe(JoystickEventTopic::Subscriber s)
-{
-    gJoystickEventTopic.subscribe(s);
-}
-
-void subscribe(FileDropEventTopic::Subscriber s)
-{
-    gFileDropEventTopic.subscribe(s);
-}
-
-void subscribe(TouchEventTopic::Subscriber s)
-{
-    gTouchEventTopic.subscribe(s);
-}
-
-void subscribe(PointerEventTopic::Subscriber s)
-{
-    gPointerEventTopic.subscribe(s);
-}
 
 
 
@@ -585,24 +701,41 @@ void halt()
 }
 
 
+void rawMouse()
+{
+    HWND localWindow = gAppWindow->getHandle();
+    HID_RegisterDevice(gAppWindow->getHandle(), HID_USAGE_GENERIC_MOUSE);
+}
+
+void rawKeyboard()
+{
+    HWND localWindow = gAppWindow->getHandle();
+    HID_RegisterDevice(gAppWindow->getHandle(), HID_USAGE_GENERIC_KEYBOARD);
+}
+
+void rawJoystick()
+{
+    HID_RegisterDevice(gAppWindow->getHandle(), HID_USAGE_GENERIC_JOYSTICK);
+}
 
 void rawInput()
 {
-    HWND localWindow = gAppWindow->getHandle();
-
-    HID_RegisterDevice(gAppWindow->getHandle(), HID_MOUSE);
-    HID_RegisterDevice(gAppWindow->getHandle(), HID_KEYBOARD);
+    rawMouse();
+    rawKeyboard();
+    rawJoystick();
 }
 
 void noRawInput()
 {
     // unregister devices
-    HID_UnregisterDevice(HID_MOUSE);
-    HID_UnregisterDevice(HID_KEYBOARD);
+    HID_UnregisterDevice(HID_USAGE_GENERIC_MOUSE);
+    HID_UnregisterDevice(HID_USAGE_GENERIC_KEYBOARD);
+    HID_UnregisterDevice(HID_USAGE_GENERIC_JOYSTICK);
 }
 
-void joystick()
+void legacyJoystick()
 {
+    //MMRESULT res = joySetCapture(localWindow,JOYSTICKID1, 0,1);
     gJoystick1.attachToWindow(gAppWindow->getHandle());
     gJoystick2.attachToWindow(gAppWindow->getHandle());
 }
@@ -709,47 +842,14 @@ void showAppWindow()
 LRESULT CALLBACK MsgHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     LRESULT res = 0;
+    //printf("MSG: 0x%x\n", msg);
 
     if ((msg >= WM_MOUSEFIRST) && (msg <= WM_MOUSELAST)) {
         // Handle all mouse messages
         HandleMouseMessage(hWnd, msg, wParam, lParam);
     }
     else if (msg == WM_INPUT) {
-        //printf("WM_INPUT\n");
-        bool inBackground = GET_RAWINPUT_CODE_WPARAM(wParam) == 1;
-        HRAWINPUT inputHandle = (HRAWINPUT)lParam;
-        UINT uiCommand = RID_INPUT;
-        UINT cbSize=0;
-
-        // First, find out how much space will be needed
-        UINT size = ::GetRawInputData((HRAWINPUT)lParam, uiCommand, nullptr, &cbSize, sizeof(RAWINPUTHEADER));
-
-
-        // Allocate space, and try it again
-        std::vector<uint8_t> buff(cbSize, 0);
-        size = ::GetRawInputData((HRAWINPUT)lParam, uiCommand, buff.data(), &cbSize, sizeof(RAWINPUTHEADER));
-        //printf("WM_INPUT: %d - %d\n", cbSize, size);
-        if (size == cbSize) {
-            RAWINPUT* raw = (RAWINPUT*)buff.data();
-
-            // See what we got
-            //printf("RAWINPUT: %d\n", raw->header.dwType);
-
-            switch (raw->header.dwType) {
-            case RIM_TYPEMOUSE: {
-                rawMouseX = raw->data.mouse.lLastX;
-                rawMouseY = raw->data.mouse.lLastY;
-                //mouseEvent();
-                //printf("RAWMOUSE: %d %d\n", raw->data.mouse.lLastX, raw->data.mouse.lLastY);
-            }
-                              break;
-
-            case RIM_TYPEKEYBOARD: {
-                //keyboardEvent
-            }
-                                 break;
-            }
-        }
+        res = HandleHIDMessage(hWnd, msg, wParam, lParam);
     }
     else if (msg == WM_DESTROY) {
         // By doing a PostQuitMessage(), a 
@@ -762,14 +862,15 @@ LRESULT CALLBACK MsgHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         // Handle all keyboard messages
         HandleKeyboardMessage(hWnd, msg, wParam, lParam);
     }
-    else if ((msg >= MM_JOY1MOVE) && (msg <= MM_JOY2BUTTONUP)) {
+    else if ((msg >= MM_JOY1MOVE) && (msg <= MM_JOY2BUTTONUP)) 
+    {
+        // Legacy joystick messages
         //printf("MM_JOYxxx: %p\n", gJoystickHandler);
         HandleJoystickMessage(hWnd, msg, wParam, lParam);
     }
     else if (msg == WM_TOUCH) {
-        //std::cout << "WM_TOUCH" << std::endl;
-
         // Handle touch specific messages
+        //std::cout << "WM_TOUCH" << std::endl;
         HandleTouchMessage(hWnd, msg, wParam, lParam);
     }
     //else if (msg == WM_GESTURE) {
@@ -802,6 +903,7 @@ LRESULT CALLBACK MsgHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         HandleFileDropMessage(hWnd, msg, wParam, lParam);
     }
     else {
+        // Not a message we want to handle specifically
         res = ::DefWindowProcA(hWnd, msg, wParam, lParam);
     }
 

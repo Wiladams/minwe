@@ -34,6 +34,11 @@ static void mouseSubscriber(const MouseEventTopic& p, const MouseEvent& e)
 	printf("mouse: %d %d : 0x%x\n",e.x, e.y, e.activity);
 }
 
+static void joySubscriber(const JoystickEventTopic& p, const JoystickEvent& e)
+{
+	printf("joy: %3.2f %3.2f %3.2f\n", e.x, e.y, e.z);
+}
+
 // Do what's necessary before window opens
 // Typically do window sizing, and setup 
 // subscriptions for events
@@ -41,8 +46,31 @@ void onLoad()
 {
 	puts("onLoad()  :-)");
 
+	// Generate all raw input
+	//rawInput();
+
+
+
 	// register a mouse event handler
-	subscribe(mouseSubscriber);
+	//subscribe(mouseSubscriber);
+	//rawMouse();
+
+
+	subscribe(joySubscriber);
+	//legacyJoystick();
+	rawJoystick();
+
+	// try to checkout the raw joystick information
+	UINT numDevices = 0;
+	PRAWINPUTDEVICE pRawInputDevices = nullptr;
+
+	auto res = GetRegisteredRawInputDevices(pRawInputDevices, &numDevices,sizeof(RAWINPUTDEVICE));
+	std::vector<uint8_t> buff(numDevices*sizeof(RAWINPUTDEVICE), 0);
+
+	pRawInputDevices = (PRAWINPUTDEVICE)buff.data();
+	res = GetRegisteredRawInputDevices(pRawInputDevices, &numDevices, sizeof(RAWINPUTDEVICE));
+
+
 
 	doSomeDrawing();
 

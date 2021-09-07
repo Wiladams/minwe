@@ -1,2 +1,0 @@
-D:\repos\minwe\tests\test1\Debug\test1.exe
-D:\repos\minwe\tests\test1\Debug\test1.pdb

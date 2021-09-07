@@ -99,7 +99,7 @@ public:
     // Set every pixel to a specified value
     inline void clearToPixel(const Pixel c)
     {
-        for (size_t offset = 0; offset < fWidth * fHeight; offset++)
+        for (int offset = 0; offset < fWidth * fHeight; offset++)
             ((Pixel*)fData)[offset] = c;
     }
 
