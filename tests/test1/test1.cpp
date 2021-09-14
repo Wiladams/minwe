@@ -9,7 +9,7 @@
 void doSomeDrawing()
 {
 	// clear buffer to white to start
-	gAppSurface->clearToPixel(rgb(255, 255, 255));
+	gAppSurface->setAllPixels(rgb(255, 255, 255));
 
 	// draw a few horizontal lines
 	gAppSurface->hline(10, 100, 320, rgb(255, 0, 0));

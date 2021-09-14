@@ -19,7 +19,7 @@
 #include <shellapi.h>   // for drag-drop support
 
 #include <hidsdi.h>     // USB HID, raw usage definitions
-
+#pragma comment (lib, "hid.lib")
 
 #include <cstdio>
 #include <array>
@@ -257,7 +257,7 @@ void ParseRawInput(PRAWINPUT raw)
             //UINT nameBuffSize = 1024;
             //GetRawInputDeviceInfo(raw->header.hDevice, RIDI_DEVICENAME, nameBuff, &nameBuffSize);
 
-
+            /*
             // Get the device info, using two phase allocation
             GetRawInputDeviceInfo(raw->header.hDevice, RIDI_PREPARSEDDATA, NULL, &bufferSize);
             std::vector<uint8_t> buff(bufferSize, 0);
@@ -277,7 +277,7 @@ void ParseRawInput(PRAWINPUT raw)
             capsLength = Caps.NumberFeatureButtonCaps;
             HidP_GetButtonCaps(HidP_Input, pButtonCaps, &capsLength, pPreparsedData);
             int g_NumberOfButtons = pButtonCaps->Range.UsageMax - pButtonCaps->Range.UsageMin + 1;
-
+            */
             // It's not one of the easy ones, so need
             // to parse
             //printf("HID INPUT: 0x%p\n", raw->header.hDevice);

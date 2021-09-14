@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{b46dd86f-50f7-4188-b0b8-4e589087c527}</ProjectGuid>
-    <RootNamespace>rtiw</RootNamespace>
+    <ProjectGuid>{e7a30a99-0bbc-427c-b338-2aec20a1a577}</ProjectGuid>
+    <RootNamespace>timertopic</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -88,7 +88,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\repos\minwe\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,28 +141,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\appmain.cpp" />
-    <ClCompile Include="cornell_box.cc" />
+    <ClCompile Include="ttopic.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\apphost.h" />
+    <ClInclude Include="..\..\src\pubsub.h" />
+    <ClInclude Include="..\..\src\ticktopic.h" />
     <ClInclude Include="..\..\src\User32PixelMap.h" />
-    <ClInclude Include="aabb.h" />
-    <ClInclude Include="bvh.h" />
-    <ClInclude Include="camera.h" />
-    <ClInclude Include="color.h" />
-    <ClInclude Include="constant_medium.h" />
-    <ClInclude Include="hittable.h" />
-    <ClInclude Include="hittable_list.h" />
-    <ClInclude Include="interval.h" />
-    <ClInclude Include="material.h" />
-    <ClInclude Include="onb.h" />
-    <ClInclude Include="pdf.h" />
-    <ClInclude Include="perlin.h" />
-    <ClInclude Include="quad.h" />
-    <ClInclude Include="ray.h" />
-    <ClInclude Include="scene.h" />
-    <ClInclude Include="sphere.h" />
-    <ClInclude Include="texture.h" />
-    <ClInclude Include="vec3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

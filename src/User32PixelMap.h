@@ -13,26 +13,16 @@
 
 #include <windows.h>
 #include <cstdio>
+#include <intrin.h>
 
 #include "bitbang.h"
 #include "maths.hpp"
+#include "pixelmap.h"
 
-// Doing colors using 'Pixel' which is a 32-bit int
-// 0xAARRGGBB
-typedef uint32_t Pixel;
-
-inline Pixel rgba(int r, int g, int b, int a = 255)
-{
-    return a << 24 | r << 16 | g << 8 | b;
-}
-
-inline Pixel rgb(int r, int g, int b)
-{
-    return 255 << 24 | r << 16 | g << 8 | b;
-}
+#pragma intrinsic(__stosd)
 
 
-class User32PixelMap
+class User32PixelMap : public PixelMap
 {
     // for interacting with win32
     BITMAPINFO fBMInfo{0};
@@ -96,18 +86,13 @@ public:
 
     inline HDC getDC() {return fBitmapDC;}
 
-    // Set every pixel to a specified value
-    inline void clearToPixel(const Pixel c)
-    {
-        for (int offset = 0; offset < fWidth * fHeight; offset++)
-            ((Pixel*)fData)[offset] = c;
-    }
 
-    inline void set(const int x, const int y, const Pixel c)
+    // Set a single pixel (srccopy)
+    inline virtual void set(const int x, const int y, const Pixel c)
     {
         // reject pixel if out of boundary
         if ((x < 0) || (x >= fWidth) ||
-            (y < 0) || (y >= fHeight)){
+            (y < 0) || (y >= fHeight)) {
             return;
         }
 
@@ -116,7 +101,24 @@ public:
         ((Pixel*)fData)[offset] = c;
     }
 
-    inline Pixel get(const int x, const int y) const
+
+    // set consecutive pixels in a row 
+    inline void setPixels(const int x, const int y, const int width, const Pixel src)
+    {
+        uint32_t* pixelPtr = (uint32_t*)getPixelPointer(x, y);
+        __stosd((unsigned long*)pixelPtr, src.intValue, width);
+    }
+
+    // Set every pixel to a specified value
+    inline void setAllPixels(const Pixel c)
+    {
+        size_t nPixels = fWidth * fHeight;
+        __stosd((unsigned long*)fData, c, nPixels);
+    }
+
+
+    // Retrieve a single pixel
+    inline virtual Pixel get(const int x, const int y) const
     {
         // reject pixel if out of boundary
         if ((x < 0) || (x >= fWidth) ||
@@ -129,12 +131,15 @@ public:
         return ((Pixel *)fData)[offset];
     }
 
+
+    /*
     inline void hline(const int x, const int y, const int w, const Pixel c)
     {
         size_t offset = (size_t)(y * fWidth) + (size_t)x;
-        for (size_t counter = 0; counter < w; counter++)
+        for (size_t counter = 0; counter < (size_t)w; counter++)
             ((Pixel*)fData)[offset++] = c;
     }
+    */
 
     inline void rect(const int x, const int y, const int w, const int h, const Pixel c)
     {
