@@ -823,6 +823,9 @@ bool setCanvasSize(long aWidth, long aHeight)
     gAppSurface = std::make_shared<User32PixelMap>(aWidth, aHeight);
     canvasWidth = aWidth;
     canvasHeight = aHeight;
+    
+    if (gAppWindow != nullptr)
+        gAppWindow->setCanvasSize(aWidth, aHeight);
 
     return true;
 }

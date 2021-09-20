@@ -99,7 +99,6 @@ public:
         RECT cRect = {0,0,awidth,aheight};
         bResult = AdjustWindowRect(&cRect, WS_OVERLAPPEDWINDOW, 1);
 
-        //HWND hWndInsertAfter = (HWND)-1;
         HWND hWndInsertAfter = NULL;
         int X = wRect.left;
         int Y = wRect.top;

@@ -30,15 +30,16 @@ class User32PixelMap : public PixelMap
     HDC     fBitmapDC = nullptr;
     void * fData = nullptr;       // A pointer to the data
     size_t fDataSize=0;       // How much data is allocated
-    long fWidth=0;
-    long fHeight=0;
+    //long fWidth=0;
+    //long fHeight=0;
 
 
 public:
     User32PixelMap(const long awidth, const long aheight)
-        : fWidth(awidth),
-        fHeight(aheight)
     {
+        width = awidth;
+        height = aheight;
+
         int bitsPerPixel = 32;
         int alignment = 4;
         int bytesPerRow = winme::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
@@ -75,12 +76,13 @@ public:
         // and destroy it
     }
 
-    inline long getWidth() const { return fWidth; }
-    inline long getHeight() const { return fHeight; }
-    inline Pixel * getData() { return (Pixel *)fData; }
+    inline long getWidth() const { return width; }
+    inline long getHeight() const { return height; }
+    inline PixelRGBA* getData() { return (PixelRGBA*)fData; }
+    inline PixelRGBA* getPixelPointer(const int x, const int y) {return &((PixelRGBA*)fData)[(y * getWidth()) + x]; }
 
     // Calculate whether a point is whithin our bounds
-    inline bool contains(double x, double y) const { return ((x >= 0) && (x < fWidth) && (y >= 0) && (y < fHeight)); }
+    inline bool contains(double x, double y) const { return ((x >= 0) && (x < width) && (y >= 0) && (y < height)); }
 
     inline BITMAPINFO getBitmapInfo() {return fBMInfo;}
 
@@ -88,63 +90,56 @@ public:
 
 
     // Set a single pixel (srccopy)
-    inline virtual void set(const int x, const int y, const Pixel c)
+    inline virtual void set(const int x, const int y, const PixelRGBA c)
     {
         // reject pixel if out of boundary
-        if ((x < 0) || (x >= fWidth) ||
-            (y < 0) || (y >= fHeight)) {
+        if ((x < 0) || (x >= width) ||
+            (y < 0) || (y >= height)) {
             return;
         }
 
 
-        size_t offset = (size_t)(y * fWidth) + (size_t)x;
-        ((Pixel*)fData)[offset] = c;
+        size_t offset = (size_t)(y * width) + (size_t)x;
+        ((PixelRGBA*)fData)[offset] = c;
     }
 
 
     // set consecutive pixels in a row 
-    inline void setPixels(const int x, const int y, const int width, const Pixel src)
+    inline void setPixels(const int x, const int y, const int width, const PixelRGBA src)
     {
+        // do line clipping
+        // copy actual pixel data
         uint32_t* pixelPtr = (uint32_t*)getPixelPointer(x, y);
         __stosd((unsigned long*)pixelPtr, src.intValue, width);
     }
 
     // Set every pixel to a specified value
-    inline void setAllPixels(const Pixel c)
+    inline void setAllPixels(const PixelRGBA c)
     {
-        size_t nPixels = fWidth * fHeight;
-        __stosd((unsigned long*)fData, c, nPixels);
+        size_t nPixels = width * height;
+        __stosd((unsigned long*)fData, c.intValue, nPixels);
     }
 
 
+
     // Retrieve a single pixel
-    inline virtual Pixel get(const int x, const int y) const
+    inline virtual PixelRGBA get(const int x, const int y) const
     {
         // reject pixel if out of boundary
-        if ((x < 0) || (x >= fWidth) ||
-            (y < 0) || (y >= fHeight)) {
+        if ((x < 0) || (x >= width) ||
+            (y < 0) || (y >= height)) {
             return 0;    // return transparent pixel
         }
 
         // Get data from BLContext
-        size_t offset = (size_t)(y * fWidth) + (size_t)x;
-        return ((Pixel *)fData)[offset];
+        size_t offset = (size_t)(y * width) + (size_t)x;
+        return ((PixelRGBA*)fData)[offset];
     }
 
-
-    /*
-    inline void hline(const int x, const int y, const int w, const Pixel c)
-    {
-        size_t offset = (size_t)(y * fWidth) + (size_t)x;
-        for (size_t counter = 0; counter < (size_t)w; counter++)
-            ((Pixel*)fData)[offset++] = c;
-    }
-    */
-
-    inline void rect(const int x, const int y, const int w, const int h, const Pixel c)
+    inline void rect(const int x, const int y, const int w, const int h, const PixelRGBA c)
     {
         for (int row = y; row < y + h; row++)
-            hline(x, row, w, c);
+            setPixels(x, row, w, c);
     }
 
     inline void sync() const

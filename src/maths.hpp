@@ -19,9 +19,21 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <cmath>
+#include <intrin.h>
 
 #include "bitbang.h"
 
+#pragma intrinsic(__stosd)
+
+// turn a division by 255 into something 
+// much cheaper to calculate
+// for values between 0 and 65534
+#define div255(num) ((num + (num >> 8)) >> 8)
+
+// perform a linear interpolation between a value 'a'
+// a background value, and a foreground value, using
+// fast div255
+#define lerp255(bg, fg, a) ((uint8_t)div255((fg*a+bg*(255-a))))
 
 namespace maths {
     typedef double Float;

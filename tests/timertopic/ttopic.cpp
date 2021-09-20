@@ -30,7 +30,7 @@ void drawFrame()
 	//printf("frameTicker: %3.2f\n", t);
 
 	// draw a red line across 
-	gAppSurface->hline(0, line, canvasWidth, rgb(255, 0, 0));
+	gAppSurface->setPixels(0, line, canvasWidth, rgb(255, 0, 0));
 
 	// increment position
 	line = line + 1;
@@ -55,6 +55,8 @@ static void refreshTicker(const Topic<double>& p, const double t)
 // Testing out the timer topic
 void onLoad()
 {
+	layered();
+
 	// clear screen to white
 	gAppSurface->setAllPixels(rgb(255, 255, 255));
 

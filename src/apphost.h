@@ -79,8 +79,6 @@ APP_EXPORT extern User32Window * gAppWindow;
 APP_EXPORT extern std::shared_ptr<User32PixelMap> gAppSurface;
 
 
-//EXPORT extern bool gRunning;
-
 
 // Globals we expect the user to consume
 APP_EXPORT extern int displayWidth;
