@@ -1,4 +1,5 @@
 #include "apphost.h"
+#include "gui.h"
 #include "draw2d.h"
 
 #define pLightGray 0xffCCCCCC
@@ -18,6 +19,14 @@ double random(const float rndMax)
 	return randomRange(0, rndMax);
 }
 
+PixelRGBA randomColor()
+{
+	int r = random(255);
+	int g = random(255);
+	int b = random(255);
+
+	return { r,g,b,255 };
+}
 
 void background(PixelRGBA c)
 {
@@ -26,9 +35,9 @@ void background(PixelRGBA c)
 
 void draw()
 {
-	//background(pLightGray);
 	PixelRGBA stroke;
 	PixelRGBA fill;
+	PixelRGBA c;
 
 	for (int i = 1; i <= 1000; i++)
 	{
@@ -36,35 +45,29 @@ void draw()
 		int y1 = random(canvasHeight - 1);
 		int lwidth = randomRange(4, 64);
 		int lheight = randomRange(4, 64);
-		int r = random(255);
-		int g = random(255);
-		int b = random(255);
+		c = randomColor();
 
 		if (outlineOnly)
 		{
-			stroke = PixelRGBA(r, g, b, 255);
-			//noFill();
-			//GdSetMode(DPROP_COPY);
+			stroke = c;
 		}
 		else
 		{
-			fill = PixelRGBA(r, g, b, 127);
-			//noStroke();
-			//GdSetMode(DPROP_SRC_OVER);
+			fill = c;
+			fill.alpha = 127;
 			fillRectangle(*gAppSurface, x1, y1, lwidth, lheight, fill);
 		}
-
-		//rect(x1, y1, lwidth, lheight);
 	}
 }
 
 void onLoop()
 {
 	draw();
-	screenRefresh();
+	refreshScreen();
 }
 
-void onLoad()
+void setup()
 {
-	setCanvasSize(640, 480);
+	//fullscreen();
+	setCanvasSize(800, 600);
 }

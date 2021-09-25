@@ -133,6 +133,12 @@ namespace maths {
         return std::floor(val);
     }
 
+    template <typename T>
+    inline T Round(T val)
+    {
+        return Floor(val + 0.5);
+    }
+
     // isNaN only applies to floating point (float, double)
     template <typename T>
     inline bool isNaN(const T x) {

@@ -110,7 +110,7 @@ APP_EXPORT void showAppWindow();
 APP_EXPORT void halt();
 
 //EXPORT void forceRedraw(void* param, int64_t tickCount);
-APP_EXPORT void screenRefresh();
+APP_EXPORT void refreshScreen();
 
 APP_EXPORT void layered();
 APP_EXPORT void noLayered();

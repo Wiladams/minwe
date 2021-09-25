@@ -96,9 +96,8 @@ void draw()
 	drawRandomRectangles({ canvasWidth / 2, 0, canvasWidth / 2, canvasHeight / 2 });
 	drawRandomLines({ 0,canvasHeight / 2,canvasWidth / 2,canvasHeight / 2 });
 	drawRandomEllipses({ canvasWidth/2,canvasHeight/2,canvasWidth / 2, canvasHeight / 2 });
-	//drawRandomPoints({ canvasWidth / 2,canvasHeight / 2,canvasWidth / 2, canvasHeight / 2 });
 
-	screenRefresh();
+	refreshScreen();
 }
 
 void onLoop()
@@ -109,9 +108,4 @@ void onLoop()
 void onLoad()
 {
 	setCanvasSize(800, 600);
-	
-	// In order to see faster refresh rate
-	// and transparency, use the following 
-	//gAppWindow->moveTo(0, 0);
-	//layered();
 }

@@ -23,6 +23,7 @@
 
     0xAARRGGBB
 */
+//struct PixelBuffer PixelBuffer;
 
 typedef union PixelRGBA {
     uint32_t intValue;
@@ -44,12 +45,12 @@ typedef union PixelRGBA {
 
 } PixelRGBA;
 
-struct PixelPoint {
+struct PixelCoord {
     int x;
     int y;
 
-    PixelPoint() : x(0), y(0) {}
-    PixelPoint(const int x, const int y) :x(x), y(y) {}
+    PixelCoord() : x(0), y(0) {}
+    PixelCoord(const int x, const int y) :x(x), y(y) {}
 
 };
 
@@ -63,6 +64,99 @@ struct PixelRect {
     PixelRect(const int x, const int y, const int w, const int h)
         :x(x), y(y), width(w), height(h) {}
 
+    bool containsPoint(const int x1, const int y1)
+    {
+        if ((x1 < this->x) || (y1 < this->y))
+            return false;
+
+        if ((x1 >= this->x + this->width) || (y1 >= this->y + this->height))
+            return false;
+
+        return true;
+    }
+
+    bool containsRect(const PixelRect& other)
+    {
+        if (!containsPoint(other.x, other.y))
+        {
+            return false;
+        }
+
+        if (!containsPoint(other.x + other.width - 1, other.y + other.height - 1))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    // return the intersection of rectangles a and b
+// if there is no intersection, one or both of width and height
+// will be == zero
+    PixelRect intersection(const PixelRect& b)
+    {
+        int x = this->x > b.x ? this->x : b.x;
+        int y = this->y > b.y ? this->y : b.y;
+        int right = ((this->x + this->width) < (b.x + b.width)) ? (this->x + this->width) : (b.x + b.width);
+        int bottom = ((this->y + this->height) < (b.y + b.height)) ? (this->y + this->height) : (b.y + b.height);
+
+        int width = ((right - x) > 0) ? (right - x) : 0;
+        int height = ((bottom - y) > 0) ? (bottom - y) : 0;
+
+        return{ x, y, width, height };
+
+    }
+
+};
+
+/*
+  PixelTriangle
+
+  A triangle representation
+*/
+struct PixelTriangle {
+    PixelCoord verts[3];   // A triangle has 3 vertices
+
+    // Basic constructor take coordinates in any order, sorts them
+    // so that subsequent drawing will be faster.
+    PixelTriangle(const int x1, const int y1,
+        const int x2, const int y2,
+        const int x3, const int y3)
+    {
+        verts[0] = { x1, y1 };
+        verts[1] = { x2, y2 };
+        verts[2] = { x3, y3 };
+
+        // sort the coordinates from topmost
+        // to bottommost, so drawing is easier
+        // This is essentially a 3 element bubble sort
+        PixelCoord tmp;
+        if (verts[0].y > verts[1].y) {
+            tmp = verts[0];
+            verts[0] = verts[1];
+            verts[1] = tmp;
+        }
+
+        if (verts[1].y > verts[2].y) {
+            tmp = verts[1];
+            verts[1] = verts[2];
+            verts[2] = tmp;
+        }
+
+        // One more round to ensure the second isn't the smallest
+        if (verts[0].y > verts[1].y) {
+            tmp = verts[0];
+            verts[0] = verts[1];
+            verts[1] = tmp;
+        }
+    }
+};
+
+// Simple description of an ellipse
+struct PixelEllipse
+{
+    int cx, cy;
+    int rx, ry;
 };
 
 /*

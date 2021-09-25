@@ -85,7 +85,7 @@ static Joystick gJoystick2(JOYSTICKID2);
 // Controlling drawing
 // This function is called at any time to display whatever is in the app 
 // window to the actual screen
-void screenRefresh()
+void refreshScreen ()
 {
     if ((gAppSurface == nullptr)) {
         printf("forceRedraw, NULL PTRs\n");

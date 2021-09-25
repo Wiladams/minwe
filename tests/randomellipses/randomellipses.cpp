@@ -44,11 +44,10 @@ void onLoop()
 {
 	background(0xffcccccc);
 	drawRandomEllipses({ 0,0,canvasWidth,canvasHeight });
-	screenRefresh();
+	refreshScreen();
 }
 
 void onLoad()
 {
-	setCanvasSize(800, 600);
-	setWindowPosition(0, 0);
+	setCanvasSize(1024, 768);
 }

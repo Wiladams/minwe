@@ -73,7 +73,7 @@ inline int computeOutCode(PixelRect rct, const int x, const int y)
 // and the input coordinates are changed to those that will
 // fit within the clipping rectangle.
 //
-bool clipLine(const PixelRect bounds, int& x0, int& y0, int& x1, int& y1)
+inline bool clipLine(const PixelRect bounds, int& x0, int& y0, int& x1, int& y1)
 {
     // compute outcodes for P0, P1, and whatever point lies outside the clip rectangle
     int outcode0 = computeOutCode(bounds, x0, y0);
@@ -202,10 +202,12 @@ inline void line(PixelMap& pmap, const int x1, const int y1, const int x2, const
 
 
 
-    //if (dyabs == 0) {
+    if (dyabs == 0) {
         // optimize for horizontal line
-    //    setSpan(pmap, x11, y11, dxabs, c);
-    //}
+        x = x11 > x21 ? x21 : x11;
+        setSpan(pmap, x, y11, dxabs, c);
+        return;
+    }
 
     x = dyabs >> 1;
     y = dxabs >> 1;
@@ -329,7 +331,7 @@ inline void fill2EllipseLines(PixelMap& pb, const int cx, const int cy, const in
     //raster_rgba_hline_blend(pb, cx - x, cy - y, 2 * x, color);
 }
 
-void raster_ellipse(PixelMap& pb, const int cx, const int cy, const size_t xradius, size_t yradius, const PixelRGBA color, EllipseHandler handler)
+inline void raster_ellipse(PixelMap& pb, const int cx, const int cy, const size_t xradius, size_t yradius, const PixelRGBA color, EllipseHandler handler)
 {
     int x, y;
     int xchange, ychange;
@@ -397,4 +399,213 @@ inline void strokeEllipse(PixelMap& pb, const int cx, const int cy, const size_t
 inline void fillEllipse(PixelMap& pb, const int cx, const int cy, const size_t xradius, size_t yradius, const PixelRGBA color)
 {
     raster_ellipse(pb, cx, cy, xradius, yradius, color, fill2EllipseLines);
+}
+
+
+/*
+* Polygons, and triangles
+    Triangles
+*/
+
+struct APolyDda {
+    short vertIndex;
+    short vertNext;
+    float x;
+    float dx;
+    short ybeg;
+    short yend;
+
+
+    void setupPolyDda(const PixelCoord* pVerts, const int numVerts, short ivert, int dir)
+    {
+        vertIndex = ivert;
+        vertNext = ivert + dir;
+        if (vertNext < 0) {
+            vertNext = numVerts - 1;
+        }
+        else if (vertNext == numVerts) {
+            vertNext = 0;
+        }
+
+        // set starting/ending ypos and current xpos
+        ybeg = yend;
+        yend = round(pVerts[vertNext].y);
+        x = pVerts[vertIndex].x;
+
+        // Calculate fractional number of pixels to step in x (dx)
+        float xdelta = pVerts[vertNext].x - pVerts[vertIndex].x;
+        int ydelta = yend - ybeg;
+        if (ydelta > 0) {
+            dx = xdelta / ydelta;
+        }
+        else {
+            dx = 0;
+        }
+    }
+};
+
+inline void fillTriangle(PixelMap& pb, const int x1, const int y1,
+    const int x2, const int y2,
+    const int x3, const int y3, PixelRGBA color, const PixelRect& clipRect)
+{
+    int nverts = 3;
+
+    // Create a triangle object
+    PixelTriangle tri(x1, y1, x2, y2, x3, y3);
+
+    // find topmost vertex of the polygon
+    int vmin = 0;
+
+    // set starting line
+    APolyDda ldda, rdda;
+    int y = tri.verts[vmin].y;
+    ldda.yend = rdda.yend = y;
+
+    // setup polygon scanner for left side, starting from top
+    ldda.setupPolyDda(tri.verts, nverts, vmin, +1);
+
+    // setup polygon scanner for right side, starting from top
+    rdda.setupPolyDda(tri.verts, nverts, vmin, -1);
+
+    while (true)
+    {
+        if (y >= ldda.yend)
+        {
+            if (y >= rdda.yend)
+            {
+                if (ldda.vertNext == rdda.vertNext) { // if same vertex, then done
+                    break;
+                }
+
+                int vnext = rdda.vertNext - 1;
+
+                if (vnext < 0) {
+                    vnext = nverts - 1;
+                }
+
+                if (vnext == ldda.vertNext)
+                {
+                    break;
+                }
+            }
+            ldda.setupPolyDda(tri.verts, nverts, ldda.vertNext, +1);	// reset left side
+        }
+
+        // check for right dda hitting end of polygon side
+        // if so, reset scanner
+        if (y >= rdda.yend) {
+            rdda.setupPolyDda(tri.verts, nverts, rdda.vertNext, -1);
+        }
+
+        // fill span between two line-drawers, advance drawers when
+        // hit vertices
+        if (y >= clipRect.y) {
+            int rx = round(rdda.x);
+            int lx = round(ldda.x);
+            int w = abs(rx - lx);
+            int x = lx < rx ? lx : rx;
+            setSpan(pb, x, y, w, color);
+            //line(pb, round(ldda.x), y, round(rdda.x), y, color);
+        }
+
+        ldda.x += ldda.dx;
+        rdda.x += rdda.dx;
+
+        // Advance y position.  Exit if run off its bottom
+        y += 1;
+        if (y >= clipRect.y + clipRect.height)
+        {
+            break;
+        }
+    }
+}
+
+/*
+void fillConvexPolygon(PixelMap& pb, PixelCoord * verts, const int nverts, const DPCLIPRECT& clipRect, PixelRGBA color)
+{
+    // find topmost vertex of the polygon
+    int vmin = findTopmostVertex(verts, nverts);
+
+    // set starting line
+    APolyDda ldda, rdda;
+    int y = int(verts[vmin * 2 + 1]);
+    ldda.yend = rdda.yend = y;
+
+    // setup polygon scanner for left side, starting from top
+    ldda.setupPolyDda(verts, nverts, vmin, +1);
+
+    // setup polygon scanner for right side, starting from top
+    rdda.setupPolyDda(verts, nverts, vmin, -1);
+
+    //setColor(poly.colorNative);
+
+    while (true)
+    {
+        if (y >= ldda.yend)
+        {
+            if (y >= rdda.yend)
+            {
+                if (ldda.vertNext == rdda.vertNext) { // if same vertex, then done
+                    break;
+                }
+
+                int vnext = rdda.vertNext - 1;
+
+                if (vnext < 0) {
+                    vnext = nverts - 1;
+                }
+
+                if (vnext == ldda.vertNext)
+                {
+                    break;
+                }
+            }
+            ldda.setupPolyDda(verts, nverts, ldda.vertNext, +1);	// reset left side
+        }
+
+        // check for right dda hitting end of polygon side
+        // if so, reset scanner
+        if (y >= rdda.yend) {
+            rdda.setupPolyDda(verts, nverts, rdda.vertNext, -1);
+        }
+
+        // fill span between two line-drawers, advance drawers when
+        // hit vertices
+        if (y >= clipRect.y) {
+            raster_rgba_hline_blend(pb, round(ldda.x), y, round(rdda.x) - round(ldda.x), color);
+        }
+
+        ldda.x += ldda.dx;
+        rdda.x += rdda.dx;
+
+        // Advance y position.  Exit if run off its bottom
+        y += 1;
+        if (y >= clipRect.y + clipRect.height)
+        {
+            break;
+        }
+    }
+}
+*/
+
+inline void blit(PixelMap & pb, const int x, const int y, PixelMap & src)
+{
+    PixelRect bounds(0, 0, pb.width, pb.height);
+    PixelRect srcFrame(x, y, src.width, src.height);
+
+    PixelRect isect = bounds.intersection(srcFrame);
+    int srcX = isect.x - x;
+    int srcY = isect.y - y;
+
+    uint32_t* dstPtr = (uint32_t *)pb.getPixelPointer(isect.x,isect.y);
+
+    int rowCount = 0;
+    for (int srcrow = srcY; srcrow < srcY+src.height; srcrow++)
+    {
+        uint32_t* srcPtr = nullptr;
+        srcPtr = (uint32_t*)src.getPixelPointer(srcX, srcrow);
+        memcpy(dstPtr, srcPtr, isect.width * 4);
+        rowCount++;
+        dstPtr = (uint32_t*)pb.getPixelPointer(isect.x, isect.y+rowCount);
+    }
 }
