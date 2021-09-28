@@ -175,8 +175,13 @@ struct PixelEllipse
 class PixelMap
 {
 public:
+    int x;
+    int y;
     int width;
     int height;
+
+    // virtual destructor so base classes setup properly
+    virtual ~PixelMap() {}
 
     virtual PixelRGBA* getPixelPointer(const int x, const int y) =0;
 

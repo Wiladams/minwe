@@ -402,10 +402,26 @@ inline void fillEllipse(PixelMap& pb, const int cx, const int cy, const size_t x
 }
 
 
-/*
-* Polygons, and triangles
-    Triangles
-*/
+//
+// Polygons, and triangles
+// Triangles
+//
+
+static int findTopmostVertex(PixelCoord* verts, const int numVerts)
+{
+    int ymin= 65535;
+    int vmin = 0;
+
+    for (int i = 0; i < numVerts; i++) {
+        if (verts[i].y < ymin)
+        {
+            ymin = verts[i].y;
+            vmin = i;
+        }
+    }
+
+    return vmin;
+}
 
 struct APolyDda {
     short vertIndex;
@@ -444,91 +460,11 @@ struct APolyDda {
     }
 };
 
-inline void fillTriangle(PixelMap& pb, const int x1, const int y1,
-    const int x2, const int y2,
-    const int x3, const int y3, PixelRGBA color, const PixelRect& clipRect)
+inline void setConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, int vmin, PixelRGBA color, const PixelRect& clipRect)
 {
-    int nverts = 3;
-
-    // Create a triangle object
-    PixelTriangle tri(x1, y1, x2, y2, x3, y3);
-
-    // find topmost vertex of the polygon
-    int vmin = 0;
-
     // set starting line
     APolyDda ldda, rdda;
-    int y = tri.verts[vmin].y;
-    ldda.yend = rdda.yend = y;
-
-    // setup polygon scanner for left side, starting from top
-    ldda.setupPolyDda(tri.verts, nverts, vmin, +1);
-
-    // setup polygon scanner for right side, starting from top
-    rdda.setupPolyDda(tri.verts, nverts, vmin, -1);
-
-    while (true)
-    {
-        if (y >= ldda.yend)
-        {
-            if (y >= rdda.yend)
-            {
-                if (ldda.vertNext == rdda.vertNext) { // if same vertex, then done
-                    break;
-                }
-
-                int vnext = rdda.vertNext - 1;
-
-                if (vnext < 0) {
-                    vnext = nverts - 1;
-                }
-
-                if (vnext == ldda.vertNext)
-                {
-                    break;
-                }
-            }
-            ldda.setupPolyDda(tri.verts, nverts, ldda.vertNext, +1);	// reset left side
-        }
-
-        // check for right dda hitting end of polygon side
-        // if so, reset scanner
-        if (y >= rdda.yend) {
-            rdda.setupPolyDda(tri.verts, nverts, rdda.vertNext, -1);
-        }
-
-        // fill span between two line-drawers, advance drawers when
-        // hit vertices
-        if (y >= clipRect.y) {
-            int rx = round(rdda.x);
-            int lx = round(ldda.x);
-            int w = abs(rx - lx);
-            int x = lx < rx ? lx : rx;
-            setSpan(pb, x, y, w, color);
-            //line(pb, round(ldda.x), y, round(rdda.x), y, color);
-        }
-
-        ldda.x += ldda.dx;
-        rdda.x += rdda.dx;
-
-        // Advance y position.  Exit if run off its bottom
-        y += 1;
-        if (y >= clipRect.y + clipRect.height)
-        {
-            break;
-        }
-    }
-}
-
-/*
-void fillConvexPolygon(PixelMap& pb, PixelCoord * verts, const int nverts, const DPCLIPRECT& clipRect, PixelRGBA color)
-{
-    // find topmost vertex of the polygon
-    int vmin = findTopmostVertex(verts, nverts);
-
-    // set starting line
-    APolyDda ldda, rdda;
-    int y = int(verts[vmin * 2 + 1]);
+    int y = verts[vmin].y;
     ldda.yend = rdda.yend = y;
 
     // setup polygon scanner for left side, starting from top
@@ -536,8 +472,6 @@ void fillConvexPolygon(PixelMap& pb, PixelCoord * verts, const int nverts, const
 
     // setup polygon scanner for right side, starting from top
     rdda.setupPolyDda(verts, nverts, vmin, -1);
-
-    //setColor(poly.colorNative);
 
     while (true)
     {
@@ -572,7 +506,14 @@ void fillConvexPolygon(PixelMap& pb, PixelCoord * verts, const int nverts, const
         // fill span between two line-drawers, advance drawers when
         // hit vertices
         if (y >= clipRect.y) {
-            raster_rgba_hline_blend(pb, round(ldda.x), y, round(rdda.x) - round(ldda.x), color);
+            int rx = round(rdda.x);
+            int lx = round(ldda.x);
+            int w = abs(rx - lx);
+            int x = lx < rx ? lx : rx;
+            setSpan(pb, x, y, w, color);
+
+
+            //raster_rgba_hline_blend(pb, round(ldda.x), y, round(rdda.x) - round(ldda.x), color);
         }
 
         ldda.x += ldda.dx;
@@ -586,26 +527,60 @@ void fillConvexPolygon(PixelMap& pb, PixelCoord * verts, const int nverts, const
         }
     }
 }
-*/
 
+void fillConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, PixelRGBA color, const PixelRect& clipRect)
+{
+    // find topmost vertex of the polygon
+    int vmin = findTopmostVertex(verts, nverts);
+    setConvexPolygon(pb, verts, nverts, vmin, color, clipRect);
+}
+
+inline void fillTriangle(PixelMap& pb, const int x1, const int y1,
+    const int x2, const int y2,
+    const int x3, const int y3, PixelRGBA color, const PixelRect& clipRect)
+{
+    // Create a triangle object
+    PixelTriangle tri(x1, y1, x2, y2, x3, y3);
+
+    // find topmost vertex of the polygon
+    int nverts = 3;
+    int vmin = 0;
+
+    setConvexPolygon(pb, tri.verts, nverts, vmin, color, clipRect);
+}
+
+
+// This is a straight up pixel copy
+// no scaling, no alpha blending
+// it will deal with clipping so we don't
+// crash when going off the edges
 inline void blit(PixelMap & pb, const int x, const int y, PixelMap & src)
 {
     PixelRect bounds(0, 0, pb.width, pb.height);
-    PixelRect srcFrame(x, y, src.width, src.height);
+    PixelRect dstFrame(x, y, src.width, src.height);
 
-    PixelRect isect = bounds.intersection(srcFrame);
-    int srcX = isect.x - x;
-    int srcY = isect.y - y;
+    PixelRect dstisect = bounds.intersection(dstFrame);
 
-    uint32_t* dstPtr = (uint32_t *)pb.getPixelPointer(isect.x,isect.y);
+    if ((dstisect.width == 0) || (dstisect.height == 0))
+        return;
+
+    int dstX = dstisect.x;
+    int dstY = dstisect.y;
+
+    int srcX = dstX - x;
+    int srcY = dstY - y;
+
+    // we're trying to avoid knowing the internal details of the
+    // pixel maps, so we use getPixelPointer() to get a pointer
+    // realistically, the blit should be implemented in PixelMap
+    uint32_t* dstPtr = (uint32_t *)pb.getPixelPointer(dstX,dstY);
 
     int rowCount = 0;
-    for (int srcrow = srcY; srcrow < srcY+src.height; srcrow++)
+    for (int srcrow = srcY; srcrow < srcY+ dstisect.height; srcrow++)
     {
-        uint32_t* srcPtr = nullptr;
-        srcPtr = (uint32_t*)src.getPixelPointer(srcX, srcrow);
-        memcpy(dstPtr, srcPtr, isect.width * 4);
+        uint32_t* srcPtr = (uint32_t*)src.getPixelPointer(srcX, srcrow);
+        memcpy(dstPtr, srcPtr, dstisect.width * 4);
         rowCount++;
-        dstPtr = (uint32_t*)pb.getPixelPointer(isect.x, isect.y+rowCount);
+        dstPtr = (uint32_t*)pb.getPixelPointer(dstisect.x, dstisect.y+rowCount);
     }
 }

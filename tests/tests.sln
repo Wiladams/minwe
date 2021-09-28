@@ -29,6 +29,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "randomtriangles", "randomtr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "randomblit", "randomblit\randomblit.vcxproj", "{51C916A5-59F6-4ECD-A259-855662F11E36}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "randompolygons", "randompolygons\randompolygons.vcxproj", "{0EA245C5-8530-40A9-A27B-66AAB5C8ED72}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -141,6 +143,14 @@ Global
 		{51C916A5-59F6-4ECD-A259-855662F11E36}.Release|x64.Build.0 = Release|x64
 		{51C916A5-59F6-4ECD-A259-855662F11E36}.Release|x86.ActiveCfg = Release|Win32
 		{51C916A5-59F6-4ECD-A259-855662F11E36}.Release|x86.Build.0 = Release|Win32
+		{0EA245C5-8530-40A9-A27B-66AAB5C8ED72}.Debug|x64.ActiveCfg = Debug|x64
+		{0EA245C5-8530-40A9-A27B-66AAB5C8ED72}.Debug|x64.Build.0 = Debug|x64
+		{0EA245C5-8530-40A9-A27B-66AAB5C8ED72}.Debug|x86.ActiveCfg = Debug|Win32
+		{0EA245C5-8530-40A9-A27B-66AAB5C8ED72}.Debug|x86.Build.0 = Debug|Win32
+		{0EA245C5-8530-40A9-A27B-66AAB5C8ED72}.Release|x64.ActiveCfg = Release|x64
+		{0EA245C5-8530-40A9-A27B-66AAB5C8ED72}.Release|x64.Build.0 = Release|x64
+		{0EA245C5-8530-40A9-A27B-66AAB5C8ED72}.Release|x86.ActiveCfg = Release|Win32
+		{0EA245C5-8530-40A9-A27B-66AAB5C8ED72}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

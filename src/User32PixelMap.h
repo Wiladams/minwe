@@ -30,13 +30,14 @@ class User32PixelMap : public PixelMap
     HDC     fBitmapDC = nullptr;
     void * fData = nullptr;       // A pointer to the data
     size_t fDataSize=0;       // How much data is allocated
-    //long fWidth=0;
-    //long fHeight=0;
+
 
 
 public:
     User32PixelMap(const long awidth, const long aheight)
     {
+        x = 0;
+        y = 0;
         width = awidth;
         height = aheight;
 
