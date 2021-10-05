@@ -82,5 +82,5 @@ void onLoad()
     scene_desc.render(gAppSurface);
 
     // make sure to display contents
-    screenRefresh();
+    refreshScreen();
 }

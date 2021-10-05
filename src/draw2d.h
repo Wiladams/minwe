@@ -528,7 +528,7 @@ inline void setConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, 
     }
 }
 
-void fillConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, PixelRGBA color, const PixelRect& clipRect)
+inline void fillConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, PixelRGBA color, const PixelRect& clipRect)
 {
     // find topmost vertex of the polygon
     int vmin = findTopmostVertex(verts, nverts);
@@ -549,6 +549,53 @@ inline void fillTriangle(PixelMap& pb, const int x1, const int y1,
     setConvexPolygon(pb, tri.verts, nverts, vmin, color, clipRect);
 }
 
+// Value of curve at parametric position 'u'
+// control points are P0, P1, P2, P3
+// This function calculates a single component (x, y, or whatever)
+// use another function to combine
+inline double bezier_cubic(const double u, double p1, double p2, double p3, double p4)
+{
+    double oneminusu = 1 - u;
+    double BEZ03 = oneminusu * oneminusu * oneminusu;				// (1-u)^3
+    double BEZ13 = 3 * u * (oneminusu * oneminusu);	// 3u(1-u)^2
+    double BEZ23 = 3 * u * u * oneminusu;				// 3u^2(1-u)
+    double BEZ33 = u * u * u;							// u^3
+
+    return BEZ03 * p1 + BEZ13 * p2 + BEZ23 * p3 + BEZ33 * p4;
+}
+
+inline PixelCoord bezier_point(double u, const PixelCoord& p1, const PixelCoord& p2, const PixelCoord& p3, const PixelCoord& p4)
+{
+    double x = bezier_cubic(u, p1.x, p2.x, p3.x, p4.x);
+    double y = bezier_cubic(u, p1.y, p2.y, p3.y, p4.y);
+
+    return { (int)x,(int)y };
+
+}
+
+inline void bezier(PixelMap& pmap, const int x1, const int y1, const int x2, const int y2,
+    const int x3, const int y3, const int x4, const int y4, int segments, PixelRGBA c)
+{
+    PixelBezier bez(x1, y1, x2, y2, x3, y3, x4, y4);
+    
+    // Get starting point
+    PixelCoord lp = bezier_point(0, bez.p1, bez.p2, bez.p3, bez.p4);
+
+    int i = 1;
+    while (i <= segments) {
+        double u = (double)i / segments;
+
+        PixelCoord p = bezier_point(u, bez.p1, bez.p2, bez.p3, bez.p4);
+
+        // draw line segment from last point to current point
+        line(pmap, lp.x, lp.y, p.x, p.y, c);
+
+        // Assign current to last
+        lp = p;
+
+        i = i + 1;
+    }
+}
 
 // This is a straight up pixel copy
 // no scaling, no alpha blending

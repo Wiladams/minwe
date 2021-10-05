@@ -159,6 +159,28 @@ struct PixelEllipse
     int rx, ry;
 };
 
+
+// Cubic Bezier, defined by 4 points
+struct PixelBezier
+{
+        PixelCoord p1;
+        PixelCoord p2;
+        PixelCoord p3;
+        PixelCoord p4;
+        size_t fSegments;
+
+    public:
+        PixelBezier(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, size_t segments = 60)
+            :p1(x1, y1),
+            p2(x2, y2),
+            p3(x3, y3),
+            p4(x4, y4),
+            fSegments(segments)
+        {
+        }
+
+};
+
 /*
     PixelMap is an abstraction for a 2D representation of Pixel values.
     We want this abstraction layer so that we can implement different

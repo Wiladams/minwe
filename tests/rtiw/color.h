@@ -16,7 +16,7 @@
 #include <iostream>
 
 
-Pixel get_color(color pixel_color, int samples_per_pixel) 
+PixelRGBA get_color(color pixel_color, int samples_per_pixel) 
 {
     static const interval intensity(0.000, 0.999);
 
@@ -40,7 +40,7 @@ Pixel get_color(color pixel_color, int samples_per_pixel)
     int G = static_cast<int>(256 * intensity.clamp(g));
     int B = static_cast<int>(256 * intensity.clamp(b));
 
-    return rgb( R,G,B);
+    return { R,G,B, 255 };
 }
 
 void write_color(std::ostream& out, color pixel_color, int samples_per_pixel) 
