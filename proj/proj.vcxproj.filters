@@ -42,9 +42,24 @@
     <ClInclude Include="..\src\User32PixelMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\event.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\timing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\thread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\gui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\appmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

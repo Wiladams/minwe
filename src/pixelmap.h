@@ -170,7 +170,7 @@ struct PixelBezier
         size_t fSegments;
 
     public:
-        PixelBezier(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4, size_t segments = 60)
+        PixelBezier(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, size_t segments = 60)
             :p1(x1, y1),
             p2(x2, y2),
             p3(x3, y3),

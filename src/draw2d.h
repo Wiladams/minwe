@@ -123,13 +123,13 @@ inline bool clipLine(const PixelRect bounds, int& x0, int& y0, int& x1, int& y1)
             // Now we move outside point to intersection point to clip
             // and get ready for next pass.
             if (outcodeOut == outcode0) {
-                x0 = x;
-                y0 = y;
+                x0 = (int)x;
+                y0 = (int)y;
                 outcode0 = computeOutCode(bounds, x0, y0);
             }
             else {
-                x1 = x;
-                y1 = y;
+                x1 = (int)x;
+                y1 = (int)y;
                 outcode1 = computeOutCode(bounds, x1, y1);
             }
         }

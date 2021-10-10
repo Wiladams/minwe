@@ -103,7 +103,6 @@ void handleMouseEvent(const MouseEventTopic& p, const MouseEvent& e)
 
 void fullscreen() noexcept
 {
-
     setCanvasSize(displayWidth, displayHeight);
     setWindowPosition(0, 0);
     layered();
@@ -115,7 +114,7 @@ bool isFullscreen() noexcept
     return gIsFullscreen;
 }
 
-void clearScreenTo(PixelRGBA c)
+void background(PixelRGBA c)
 {
     gAppSurface->setAllPixels(c);
 }
@@ -153,6 +152,7 @@ void onLoop()
         frameCount += 1;
         if (gDrawHandler != nullptr) {
             gDrawHandler();
+            refreshScreen();
         }
 
         // catch up to next frame interval
@@ -190,11 +190,15 @@ void onLoad()
     subscribe(handleKeyboardEvent);
     subscribe(handleMouseEvent);
 
+    // Start with a default background before setup
+    // does something.
+    background(0xffffffff);
+
     // Call a setup routine if the user specified one
     if (gSetupHandler != nullptr) {
         gSetupHandler();
     }
 
-
+    refreshScreen();
 }
 

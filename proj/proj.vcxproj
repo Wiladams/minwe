@@ -141,16 +141,21 @@
   <ItemGroup>
     <ClInclude Include="..\src\apphost.h" />
     <ClInclude Include="..\src\bitbang.h" />
+    <ClInclude Include="..\src\event.h" />
+    <ClInclude Include="..\src\gui.h" />
     <ClInclude Include="..\src\joystick.h" />
     <ClInclude Include="..\src\LayeredWindow.hpp" />
     <ClInclude Include="..\src\maths.hpp" />
     <ClInclude Include="..\src\NativeWindow.hpp" />
     <ClInclude Include="..\src\pubsub.h" />
+    <ClInclude Include="..\src\thread.h" />
+    <ClInclude Include="..\src\timing.h" />
     <ClInclude Include="..\src\User32PixelMap.h" />
     <ClInclude Include="..\src\uievent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\appmain.cpp" />
+    <ClCompile Include="..\src\gui.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

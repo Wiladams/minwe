@@ -16,7 +16,7 @@ extern "C" {
 	APP_EXPORT void onFrame();
 
 	APP_EXPORT void fullscreen();
-	APP_EXPORT void clearScreenTo(PixelRGBA c);
+	APP_EXPORT void background(PixelRGBA c);
 
 	// keyboard event processing
 	typedef void (*KeyEventHandler)(const KeyboardEvent& e);

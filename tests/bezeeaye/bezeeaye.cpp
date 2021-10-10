@@ -2,70 +2,62 @@
 
 #include "gui.h"
 
-double randomRange(const float low, const float high)
-{
-	double frac = (double)rand() / RAND_MAX;
-	double ret = low + frac * (high - low);
 
-	return ret;
-}
-
-double random(const float rndMax)
-{
-	return randomRange(0, rndMax);
-}
-
-PixelRGBA randomColor()
-{
-	return { (int)random(255),(int)random(255), (int)random(255) };
-}
-
-int maxLines = 10;
-int currentLine = 1;
+int iterations = 30;
+int currentIteration = 1;
 int segments = 50;
+int dir = 1;
 
-void drawRandomBezier()
+void keyReleased(const KeyboardEvent& e) {
+	if (e.keyCode == VK_ESCAPE)
+		halt();
+}
+
+void drawRandomBezier(const PixelRect bounds)
 {
-
 	// clear to black
 	gAppSurface->setAllPixels(0xff000000);
 
 	// draw axis line
-	line(*gAppSurface, 0, canvasHeight / 2, canvasWidth, canvasHeight / 2, 0xffff0000);
-
-	if (currentLine > maxLines)
-		currentLine = 1;
+	line(*gAppSurface, bounds.x, bounds.y+bounds.height / 2, bounds.x+bounds.width, bounds.y + bounds.height / 2, 0xffff0000);
 
 
-	int x1 = 10;
-	int y1 = 400;
+	int x1 = bounds.x;
+	int y1 = bounds.y + bounds.height / 2;
 
-	int x2 = (int)maths::Map(currentLine,1,maxLines, 10, 790);
-	int y2 = 10;
+	int x2 = (int)maths::Map(currentIteration,1, iterations, 0, bounds.x + bounds.width - 1);
+	int y2 = bounds.y;
+	//int y2 = 100;
 
-	int x3 = (int)maths::Map(currentLine, 1, maxLines, 790, 10);
-	int y3 = 790;
+	int x3 = (int)maths::Map(currentIteration, 1, iterations, bounds.x+bounds.width-1, 0);
+	int y3 = bounds.y+bounds.height-1;
+	//int y3 = 100;
 
-	int x4 = canvasWidth - 10;
-	int y4 = 400;
+	int x4 = bounds.x+bounds.width-1;
+	int y4 = bounds.y+bounds.height / 2;
 
-		///auto c = randomColor();
-		auto c = 0xff00ffff;
+	bezier(*gAppSurface, x1, y1, x2, y2, x3, y3, x4, y4, segments, 0xff00ffff);
 
-	bezier(*gAppSurface, x1, y1, x2, y2, x3, y3, x4, y4, segments, c);
-	refreshScreen();
+	// Draw control lines
+	line(*gAppSurface, x1, y1, x2, y2, 0xffffffff);
+	line(*gAppSurface, x2, y2, x3, y3, 0xffffffff);
+	line(*gAppSurface, x3, y3, x4, y4, 0xffffffff);
 
-	currentLine += 1;
+	currentIteration += dir;
+	
+	// reverse direction if needs be
+	if ((currentIteration >= iterations) || (currentIteration <= 1))
+		dir = dir < 1 ? 1 : -1;
 
 }
 
 void onFrame()
 {
-	drawRandomBezier();
+	drawRandomBezier({ 0,0,canvasWidth,canvasHeight });
 }
 
 void setup()
 {
-	setCanvasSize(800, 800);
+	setCanvasSize(800, 600);
 	setFrameRate(30);
 }
