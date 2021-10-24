@@ -18,17 +18,45 @@ static MouseEventHandler gMouseClickedHandler = nullptr;
 static MouseEventHandler gMousePressedHandler = nullptr;
 static MouseEventHandler gMouseReleasedHandler = nullptr;
 static MouseEventHandler gMouseWheelHandler = nullptr;
+static MouseEventHandler gMouseHWheelHandler = nullptr;
 static MouseEventHandler gMouseDraggedHandler = nullptr;
+
+uint64_t fFrameRate = 15;
+uint64_t fInterval = 1000;
+double fNextMillis = 0;
+uint64_t fDroppedFrames = 0;
+uint64_t frameCount;
+
+int width;
+int height;
+
+
+PixelRGBA* pixels = nullptr;
+
+// Keyboard Globals
+int keyCode=0;
+int keyChar=0;
+
+// Mouse Globals
+bool mouseIsPressed = false;
+int mouseX=0;
+int mouseY=0;
+int mouseDelta=0;
+
+int pmouseX=0;
+int pmouseY=0;
+
+StopWatch fsw;
 
 
 
 void handleKeyboardEvent(const KeyboardEventTopic& p, const KeyboardEvent& e)
 {
     //std::cout << "keyboardEvent: " << e.activity << "\n" ;
+    keyCode = e.keyCode;
 
-    switch (e.activity) {
-
-
+    switch (e.activity) 
+    {
     case KEYPRESSED:
         //p5::keyCode = e.keyCode;
         if (gKeyPressedHandler) {
@@ -42,7 +70,7 @@ void handleKeyboardEvent(const KeyboardEventTopic& p, const KeyboardEvent& e)
         }
         break;
     case KEYTYPED:
-        //p5::keyChar = e.keyCode;
+        keyChar = e.keyCode;
         if (gKeyTypedHandler) {
             gKeyTypedHandler(e);
         }
@@ -62,9 +90,12 @@ void handleMouseEvent(const MouseEventTopic& p, const MouseEvent& e)
 
     // If the user has implemented explicit mouse handling routines
     // send the event there.
+    pmouseX = mouseX;
+    pmouseY = mouseY;
+    mouseX = e.x;
+    mouseY = e.y;
+
     switch (e.activity) {
-
-
     case MOUSEMOVED:
 
         if (gMouseMovedHandler != nullptr) {
@@ -77,11 +108,14 @@ void handleMouseEvent(const MouseEventTopic& p, const MouseEvent& e)
         break;
 
     case MOUSEPRESSED:
+        mouseIsPressed = true;
         if (gMousePressedHandler != nullptr) {
             gMousePressedHandler(e);
         }
         break;
+
     case MOUSERELEASED:
+        mouseIsPressed = false;
         if (gMouseReleasedHandler != nullptr) {
             gMouseReleasedHandler(e);
         }
@@ -89,10 +123,17 @@ void handleMouseEvent(const MouseEventTopic& p, const MouseEvent& e)
             gMouseClickedHandler(e);
         }
         break;
+
     case MOUSEWHEEL:
         //p5::mouseDelta = e.delta;
         if (gMouseWheelHandler != nullptr) {
             gMouseWheelHandler(e);
+        }
+        break;
+
+    case MOUSEHWHEEL:
+        if (gMouseHWheelHandler != nullptr) {
+            gMouseHWheelHandler(e);
         }
         break;
     }
@@ -119,13 +160,7 @@ void background(PixelRGBA c)
     gAppSurface->setAllPixels(c);
 }
 
-uint64_t fFrameRate = 15;
-uint64_t fInterval=1000;
-double fNextMillis=0;
-uint64_t fDroppedFrames=0;
-uint64_t frameCount = 0;
 
-StopWatch fsw;
 
 void setFrameRate(const int rate)
 {
@@ -180,6 +215,7 @@ void onLoad()
     gMousePressedHandler = (MouseEventHandler)GetProcAddress(hInst, "mousePressed");
     gMouseReleasedHandler = (MouseEventHandler)GetProcAddress(hInst, "mouseReleased");
     gMouseWheelHandler = (MouseEventHandler)GetProcAddress(hInst, "mouseWheel");
+    gMouseHWheelHandler = (MouseEventHandler)GetProcAddress(hInst, "mouseHWheel");
     gMouseDraggedHandler = (MouseEventHandler)GetProcAddress(hInst, "mouseDragged");
 
 

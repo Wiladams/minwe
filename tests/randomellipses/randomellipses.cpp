@@ -1,6 +1,7 @@
 #include "apphost.h"
 #include "draw2d.h"
 
+
 double randomRange(const float low, const float high)
 {
 	double frac = (double)rand() / RAND_MAX;
@@ -14,9 +15,9 @@ double random(const float rndMax)
 	return randomRange(0, rndMax);
 }
 
-inline PixelRGBA randomColor()
+inline PixelRGBA randomColor(int alpha=255)
 {
-	return { (int)random(255), (int)random(255), (int)random(255) };
+	return { (int)random(255), (int)random(255), (int)random(255), alpha };
 }
 
 
@@ -34,15 +35,13 @@ void drawRandomEllipses(PixelRect bounds)
 
 		int xRadius = randomRange(4, 60);
 		int yRadius = randomRange(4, 60);
-		fillEllipse(*gAppSurface, cx, cy, xRadius, yRadius, randomColor());
+		fillEllipse(*gAppSurface, cx, cy, xRadius, yRadius, randomColor(0xcd));
 	}
-	
-
 }
 
 void onLoop()
 {
-	background(0xffcccccc);
+	background(0x00);
 	drawRandomEllipses({ 0,0,canvasWidth,canvasHeight });
 	refreshScreen();
 }
@@ -50,4 +49,5 @@ void onLoop()
 void onLoad()
 {
 	setCanvasSize(1024, 768);
+	layered();
 }

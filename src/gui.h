@@ -9,9 +9,6 @@
 extern "C" {
 #endif
 
-	APP_EXPORT extern uint64_t frameCount;
-
-
 	APP_EXPORT void setup();
 	APP_EXPORT void onFrame();
 
@@ -34,8 +31,39 @@ extern "C" {
 	APP_EXPORT void mousePressed(const MouseEvent& e);
 	APP_EXPORT void mouseReleased(const MouseEvent& e);
 	APP_EXPORT void mouseWheel(const MouseEvent& e);
+	APP_EXPORT void mouseHWheel(const MouseEvent& e);
 
 	APP_EXPORT void setFrameRate(const int);
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+	// Size of the application area, set through
+	// createCanvas()
+	APP_EXPORT extern int width;
+	APP_EXPORT extern int height;
+
+	APP_EXPORT extern uint64_t frameCount;
+	APP_EXPORT extern uint64_t droppedFrames;
+
+	APP_EXPORT extern PixelRGBA* pixels;
+
+	// Keyboard Globals
+	APP_EXPORT extern int keyCode;
+	APP_EXPORT extern int keyChar;
+
+	// Mouse Globals
+	APP_EXPORT extern bool mouseIsPressed;
+	APP_EXPORT extern int mouseX;
+	APP_EXPORT extern int mouseY;
+	APP_EXPORT extern int mouseDelta;
+	APP_EXPORT extern int pmouseX;
+	APP_EXPORT extern int pmouseY;
+
+
 #ifdef __cplusplus
 }
 #endif

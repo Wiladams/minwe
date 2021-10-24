@@ -329,7 +329,7 @@ LRESULT HandleKeyboardMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     LRESULT res = 0;
     KeyboardEvent e;
-    e.keyCode = (int)wParam;
+    e.keyCode = LOWORD(wParam);
     e.repeatCount =LOWORD(lParam);  // 0 - 15
     e.scanCode = ((lParam & 0xff0000) >> 16);        // 16 - 23
     e.isExtended = (lParam & 0x1000000) != 0;    // 24
@@ -373,15 +373,18 @@ LRESULT HandleMouseMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     e.x = GET_X_LPARAM(lParam);
     e.y = GET_Y_LPARAM(lParam);
 
-    e.control = (wParam & MK_CONTROL) != 0;
-    e.shift = (wParam& MK_SHIFT) != 0;
-    e.lbutton = (wParam & MK_LBUTTON) != 0;
-    e.rbutton = (wParam & MK_RBUTTON) != 0;
-    e.mbutton = (wParam & MK_MBUTTON) != 0;
-    e.xbutton1 = (wParam & MK_XBUTTON1) != 0;
-    e.xbutton2 = (wParam & MK_XBUTTON2) != 0;
+    auto fwKeys = GET_KEYSTATE_WPARAM(wParam);
+    e.control = (fwKeys & MK_CONTROL) != 0;
+    e.shift = (fwKeys & MK_SHIFT) != 0;
+
+    e.lbutton = (fwKeys & MK_LBUTTON) != 0;
+    e.rbutton = (fwKeys & MK_RBUTTON) != 0;
+    e.mbutton = (fwKeys & MK_MBUTTON) != 0;
+    e.xbutton1 = (fwKeys & MK_XBUTTON1) != 0;
+    e.xbutton2 = (fwKeys & MK_XBUTTON2) != 0;
     bool isPressed = e.lbutton || e.rbutton || e.mbutton;
 
+    //printf("MOUSE: %d\n", msg);
     switch(msg) {
         case WM_LBUTTONDBLCLK:
 	    case WM_MBUTTONDBLCLK:
@@ -408,8 +411,10 @@ LRESULT HandleMouseMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             e.activity = MOUSEWHEEL;
             e.delta = GET_WHEEL_DELTA_WPARAM(wParam);
             break;
-
-        default:
+        case WM_MOUSEHWHEEL:
+            e.activity = MOUSEHWHEEL;
+            e.delta = GET_WHEEL_DELTA_WPARAM(wParam);
+            break;
             
         break;
     }

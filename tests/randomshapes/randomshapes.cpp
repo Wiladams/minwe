@@ -90,7 +90,7 @@ void drawRandomEllipses(PixelRect bounds)
 
 }
 
-void draw()
+void onFrame()
 {
 	drawRandomPoints({ 0,0,canvasWidth / 2, canvasHeight / 2 });
 	drawRandomRectangles({ canvasWidth / 2, 0, canvasWidth / 2, canvasHeight / 2 });
@@ -102,10 +102,11 @@ void draw()
 
 void onLoop()
 {
-	draw();
+	onFrame();
 }
 
 void onLoad()
 {
-	setCanvasSize(800, 600);
+	setCanvasSize(800, 800);
+	layered();
 }

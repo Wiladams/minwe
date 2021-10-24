@@ -19,7 +19,7 @@ void onFrame()
 	int x = cx + (radius * cos(maths::Radians(angle)));
 	int y = cy + (radius * sin(maths::Radians(angle)));
 
-	fillEllipse(*gAppSurface, cx, cy, 8, 4, 0xff00ff00);
+	fillEllipse(*gAppSurface, cx, cy, 18, 18, 0xff00ff00);
 	line(*gAppSurface, cx, cy, x, y, 0xff00ffff);
 
 

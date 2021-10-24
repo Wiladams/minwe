@@ -28,7 +28,8 @@ enum {
     MOUSEMOVED,
     MOUSEPRESSED,
     MOUSERELEASED,
-    MOUSEWHEEL,
+    MOUSEWHEEL,         // A vertical wheel
+    MOUSEHWHEEL,        // A horizontal wheel
 
     // These are based on application semantics
     MOUSECLICKED,

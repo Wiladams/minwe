@@ -70,4 +70,5 @@ void onLoop()
 void onLoad()
 {
 	setCanvasSize(1024, 768);
+	layered();
 }

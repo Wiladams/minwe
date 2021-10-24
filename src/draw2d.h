@@ -21,10 +21,6 @@
 // Set a single pixel
 inline void point(PixelMap& pmap, const int x, const int y, const PixelRGBA src)
 {
-    // check for containment
-    if ((x < 0) || (x >= pmap.width) || (y < 0) || (y >= pmap.height))
-        return;
-
     pmap.set(x, y, src);
 }
 
@@ -142,18 +138,6 @@ inline bool clipLine(const PixelRect bounds, int& x0, int& y0, int& x1, int& y1)
 // This assumes coordinates have already been clipped
 inline void setSpan(PixelMap& pmap, const int x, const int y, const int width, const PixelRGBA src)
 {
-    /*
-    // need to do line clipping
-    int x1 = x;
-    int y1 = y;
-    int x2 = x1 + width - 1;
-    int y2 = y;
-
-    if (!clipLine({ 0,0,pmap.width, pmap.height }, x1, y1, x2, y2))
-        return;
-
-    int w = x2 - x1;
-    */
     PixelRGBA* pixelPtr = (PixelRGBA*)pmap.getPixelPointer(x, y);
     __stosd((unsigned long*)pixelPtr, src.intValue, width);
 }
@@ -162,6 +146,22 @@ inline void verticalLine(PixelMap& pmap, const int x, const int y, const int hei
 {
     for (int row = y; row < y + height - 1; row++)
         pmap.set(x, row, src);
+}
+
+// 
+// Vertical line drawing
+// draw a vertical line from (x, y) to (x, y + height - 1)
+//
+inline void vline(PixelMap& pmap, const int x, const int y, const int height, const PixelRGBA src)
+{
+    int vheight = height;
+    int x1 = x;
+    int y1  = y;
+    int x2 = x;
+    int y2 = y+height-1;
+
+    if (clipLine(pmap.getBounds(), x1, y1, x2, y2))
+        verticalLine(pmap, x1, y1, y2-y1, src);
 }
 
 /*
@@ -246,37 +246,7 @@ inline void line(PixelMap& pmap, const int x1, const int y1, const int x2, const
 
 }
 
-// Draw the outline of a rectangle
-inline void strokeRectangle(PixelMap& pmap, const int x, const int y, const int w, const int h, PixelRGBA c)
-{
-    // draw top and bottom
-    setSpan(pmap, x, y, w, c);
-    setSpan(pmap, x, y + h - 1, w, c);
 
-    // draw sides
-    verticalLine(pmap, x, y, h, c);
-    verticalLine(pmap, x + w - 1, y, h, c);
-}
-
-// fill the inside of a rectangle
-inline void fillRectangle(PixelMap &pmap, const int x, const int y, const int w, const int h, PixelRGBA c)
-{
-    for (int row = y; row < y + h; row++)
-    {
-        // Check for clip of each span
-        int x1 = x;
-        int y1 = row;
-        int x2 = x + w - 1;
-        int y2 = row;
-
-        if (!clipLine({ 0,0,pmap.width, pmap.height }, x1, y1, x2, y2))
-            continue;
-
-        int newWidth = x2 - x1;
-
-        setSpan(pmap, x1, y1, newWidth, c);
-    }
-}
 
 /*
     Bresenham ellipse drawing algorithm
@@ -291,24 +261,10 @@ inline void Plot4EllipsePoints(PixelMap& pb, const int cx, const int cy, const i
     int lowy = cy - y;
     int maxy = cy + y;
 
-    point(pb, cx + x, cy + y, color);
-    point(pb, cx - x, cy + y, color);
-    point(pb, cx - x, cy - y, color);
-    point(pb, cx + x, cy - y, color);
-
-    /*
-    if (containsPoint(pb->frame, maxx, maxy))
-        pb_rgba_cover_pixel(pb, cx + x, cy + y, color);
-
-    if (containsPoint(pb->frame, lowx, maxy))
-        pb_rgba_cover_pixel(pb, cx - x, cy + y, color);
-
-    if (containsPoint(pb->frame, lowx, lowy))
-        pb_rgba_cover_pixel(pb, cx - x, cy - y, color);
-
-    if (containsPoint(pb->frame, maxx, lowy))
-        pb_rgba_cover_pixel(pb, cx + x, cy - y, color);
-        */
+    pb.set(cx + x, cy - y, color);
+    pb.set(cx - x, cy - y, color);
+    pb.set(cx - x, cy + y, color);
+    pb.set(cx + x, cy + y, color);
 }
 
 inline void fill2EllipseLines(PixelMap& pb, const int cx, const int cy, const int x, const int y, const PixelRGBA color)
@@ -327,29 +283,19 @@ inline void fill2EllipseLines(PixelMap& pb, const int cx, const int cy, const in
     if (clipLine({0,0,pb.width, pb.height}, x1, y1, x2, y2)) {
         setSpan(pb, x1, y1, x2 - x1, color);
     }
-
-    //raster_rgba_hline_blend(pb, cx - x, cy - y, 2 * x, color);
 }
 
 inline void raster_ellipse(PixelMap& pb, const int cx, const int cy, const size_t xradius, size_t yradius, const PixelRGBA color, EllipseHandler handler)
 {
-    int x, y;
-    int xchange, ychange;
-    int ellipseerror;
-    int twoasquare, twobsquare;
-    int stoppingx, stoppingy;
-
-    twoasquare = 2 * xradius * xradius;
-    twobsquare = 2 * yradius * yradius;
-
-    x = xradius;
-    y = 0;
-
-    xchange = yradius * yradius * (1 - 2 * xradius);
-    ychange = xradius * xradius;
-    ellipseerror = 0;
-    stoppingx = twobsquare * xradius;
-    stoppingy = 0;
+    int x = xradius;
+    int y = 0;
+    int xchange = yradius * yradius * (1 - 2 * xradius);
+    int ychange = xradius * xradius;
+    int ellipseerror = 0;
+    int twoasquare = 2 * xradius * xradius;
+    int twobsquare = 2 * yradius * yradius;
+    int stoppingx = twobsquare * xradius;
+    int stoppingy = 0;
 
     // first set of points, sides
     while (stoppingx >= stoppingy)
@@ -366,7 +312,7 @@ inline void raster_ellipse(PixelMap& pb, const int cx, const int cy, const size_
             xchange += twobsquare;
         }
     }
-
+    
     // second set of points, top and bottom
     x = 0;
     y = yradius;
@@ -389,16 +335,12 @@ inline void raster_ellipse(PixelMap& pb, const int cx, const int cy, const size_
             ychange += twoasquare;
         }
     }
+    
 }
 
 inline void strokeEllipse(PixelMap& pb, const int cx, const int cy, const size_t xradius, size_t yradius, const PixelRGBA color)
 {
     raster_ellipse(pb, cx, cy, xradius, yradius, color, Plot4EllipsePoints);
-}
-
-inline void fillEllipse(PixelMap& pb, const int cx, const int cy, const size_t xradius, size_t yradius, const PixelRGBA color)
-{
-    raster_ellipse(pb, cx, cy, xradius, yradius, color, fill2EllipseLines);
 }
 
 
@@ -445,7 +387,8 @@ struct APolyDda {
 
         // set starting/ending ypos and current xpos
         ybeg = yend;
-        yend = round(pVerts[vertNext].y);
+        //yend = round(pVerts[vertNext].y);
+        yend = pVerts[vertNext].y;
         x = pVerts[vertIndex].x;
 
         // Calculate fractional number of pixels to step in x (dx)
@@ -506,14 +449,18 @@ inline void setConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, 
         // fill span between two line-drawers, advance drawers when
         // hit vertices
         if (y >= clipRect.y) {
+            int y1 = y;
+            int y2 = y;
             int rx = round(rdda.x);
             int lx = round(ldda.x);
-            int w = abs(rx - lx);
-            int x = lx < rx ? lx : rx;
-            setSpan(pb, x, y, w, color);
+            int w = abs(rx - lx)+1;
+            int x1 = lx < rx ? lx : rx;
+            int x2 = x1 + w-1;
 
-
-            //raster_rgba_hline_blend(pb, round(ldda.x), y, round(rdda.x) - round(ldda.x), color);
+            if (clipLine({ 0,0,pb.width, pb.height }, x1, y1, x2, y2)) {
+                w = x2 - x1;
+                setSpan(pb, x1, y1, w, color);
+            }
         }
 
         ldda.x += ldda.dx;
@@ -528,10 +475,8 @@ inline void setConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, 
     }
 }
 
-inline void fillConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, PixelRGBA color, const PixelRect& clipRect)
+inline void fillConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, int vmin, PixelRGBA color, const PixelRect& clipRect)
 {
-    // find topmost vertex of the polygon
-    int vmin = findTopmostVertex(verts, nverts);
     setConvexPolygon(pb, verts, nverts, vmin, color, clipRect);
 }
 
@@ -547,6 +492,62 @@ inline void fillTriangle(PixelMap& pb, const int x1, const int y1,
     int vmin = 0;
 
     setConvexPolygon(pb, tri.verts, nverts, vmin, color, clipRect);
+}
+
+// Draw the outline of a rectangle
+inline void strokeRectangle(PixelMap& pmap, const int x, const int y, const int w, const int h, PixelRGBA c)
+{
+    // draw top and bottom
+    setSpan(pmap, x, y, w, c);
+    setSpan(pmap, x, y + h - 1, w, c);
+
+    // draw sides
+    verticalLine(pmap, x, y, h, c);
+    verticalLine(pmap, x + w - 1, y, h, c);
+}
+
+// fill the inside of a rectangle
+inline void fillRectangle(PixelMap& pmap, const int x, const int y, const int w, const int h, PixelRGBA c)
+{
+    // We calculate clip area up front
+    // so we don't have to do clipLine for every single line
+    PixelRect dstRect = PixelRect(pmap.x, pmap.y, pmap.width, pmap.height).intersection({ x,y,w,h });
+
+    // If the rectangle is outside the frame of the pixel map
+    // there's nothing to be drawn
+    if (dstRect.isEmpty())
+        return;
+
+    // Do a line by line draw
+    for (int row = dstRect.y; row < dstRect.y + dstRect.height; row++)
+    {
+        setSpan(pmap, dstRect.x, row, dstRect.width, c);
+    }
+}
+
+// A rather simple ellipse drawing routine
+// not the most performant, but uses the 
+// already available polygon filling routine
+inline void fillEllipse(PixelMap& pmap, int centerx, int centery, int xRadius, int yRadius, PixelRGBA c)
+{
+    static const int nverts = 72;
+    int steps = nverts;
+    PixelCoord verts[nverts];
+
+    int awidth = xRadius * 2;
+    int aheight = yRadius * 2;
+
+    for (int i = 0; i < steps; i++) {
+        float u = (double)i / steps;
+        float angle = u * 2 * maths::Pi;
+
+        int x = awidth / 2 * cos(angle);
+        int y = aheight / 2 * sin(angle);
+        verts[i] = PixelCoord(x + centerx, y + centery);
+    }
+    
+    int vmin = findTopmostVertex(verts, nverts);
+    setConvexPolygon(pmap, verts, nverts, vmin, c, { 0,0,canvasWidth,canvasHeight });
 }
 
 // Value of curve at parametric position 'u'
@@ -597,6 +598,14 @@ inline void bezier(PixelMap& pmap, const int x1, const int y1, const int x2, con
     }
 }
 
+
+// We can create a generalized form of blit which can take
+// a sampler instead of a pixelmap.  Then, it will be possible
+// to easily handle scaling, as well as a wealth of different
+// kinds of images.
+// blit is an optimization to deal with fixed sizes and fixed
+// images.
+
 // This is a straight up pixel copy
 // no scaling, no alpha blending
 // it will deal with clipping so we don't
@@ -608,7 +617,7 @@ inline void blit(PixelMap & pb, const int x, const int y, PixelMap & src)
 
     PixelRect dstisect = bounds.intersection(dstFrame);
 
-    if ((dstisect.width == 0) || (dstisect.height == 0))
+    if (dstisect.isEmpty())
         return;
 
     int dstX = dstisect.x;

@@ -68,6 +68,10 @@ public:
         // select the DIBSection into the memory context so we can 
         // peform operations with it
         ::SelectObject(fBitmapDC, fDIBHandle);
+
+        // Do some setup to the DC
+        ::SetBkMode(fBitmapDC, TRANSPARENT);
+        ::SetGraphicsMode(fBitmapDC, GM_ADVANCED);
     }
 
     virtual ~User32PixelMap()
@@ -98,7 +102,6 @@ public:
             (y < 0) || (y >= height)) {
             return;
         }
-
 
         size_t offset = (size_t)(y * width) + (size_t)x;
         ((PixelRGBA*)fData)[offset] = c;

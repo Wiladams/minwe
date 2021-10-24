@@ -146,6 +146,7 @@
     <ClCompile Include="timey.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\event.h" />
     <ClInclude Include="..\..\src\thread.h" />
     <ClInclude Include="..\..\src\timing.h" />
   </ItemGroup>

@@ -29,7 +29,10 @@ typedef union PixelRGBA {
     uint32_t intValue;
     uint8_t data[4];
     struct {
-        uint8_t blue, green, red, alpha;
+        uint32_t blue   : 8;
+        uint32_t green  : 8;
+        uint32_t red    : 8;
+        uint32_t alpha  : 8;
     };
 
     // default constructor, transparent
@@ -43,7 +46,23 @@ typedef union PixelRGBA {
     PixelRGBA(int r, int g, int b) :red(r), green(g), blue(b), alpha(255) {}
     PixelRGBA(uint32_t val) : intValue(val) {}
 
+    // When you need a COLORREF to be compatible with 
+    // Windows colors
+    uint32_t toCOLORREF() {return red | (green << 8) | (blue << 16);}
+
 } PixelRGBA;
+
+struct ColorRgba {
+    float red;
+    float green;
+    float blue;
+    float alpha;
+
+    ColorRgba(float r, float g, float b, float a) :red(r), green(g), blue(b), alpha(a) {}
+    ColorRgba(float r, float g, float b) :red(r), green(g), blue(b), alpha(1.0) {}
+
+    operator PixelRGBA () { return { (int)(red * 255), int(green * 255),int(blue * 255),int(alpha * 255) }; }
+};
 
 struct PixelCoord {
     int x;
@@ -52,6 +71,12 @@ struct PixelCoord {
     PixelCoord() : x(0), y(0) {}
     PixelCoord(const int x, const int y) :x(x), y(y) {}
 
+};
+
+// Representation of a line segment
+struct PixelLine {
+    PixelCoord pt1;
+    PixelCoord pt2;
 };
 
 struct PixelRect {
@@ -63,6 +88,11 @@ struct PixelRect {
     PixelRect() : x(0), y(0), width(0), height(0) {}
     PixelRect(const int x, const int y, const int w, const int h)
         :x(x), y(y), width(w), height(h) {}
+
+    bool isEmpty()
+    {
+        return ((width <= 0) || (height <= 0));
+    }
 
     bool containsPoint(const int x1, const int y1)
     {
@@ -206,7 +236,7 @@ public:
     virtual ~PixelMap() {}
 
     virtual PixelRGBA* getPixelPointer(const int x, const int y) =0;
-
+    PixelRect getBounds() { return{ x,y,width,height }; }
 
     virtual void set(const int x, const int y, const PixelRGBA c)=0;
     virtual void setAllPixels(const PixelRGBA c) = 0;

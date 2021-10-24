@@ -1,8 +1,6 @@
-#include "apphost.h"
+
 #include "gui.h"
 #include "draw2d.h"
-
-#define pLightGray 0xffCCCCCC
 
 bool outlineOnly = false;
 
@@ -28,23 +26,30 @@ PixelRGBA randomColor()
 	return { r,g,b,255 };
 }
 
-void background(PixelRGBA c)
+void keyReleased(const KeyboardEvent& e)
 {
-	gAppSurface->setAllPixels(c);
+	if (e.keyCode == VK_ESCAPE)
+		halt();
 }
 
-void draw()
+void onFrame()
 {
 	PixelRGBA stroke;
 	PixelRGBA fill;
 	PixelRGBA c;
 
-	for (int i = 1; i <= 1000; i++)
+	for (int i = 1; i <= 2000; i++)
 	{
 		int x1 = random(canvasWidth - 1);
 		int y1 = random(canvasHeight - 1);
-		int lwidth = randomRange(4, 64);
-		int lheight = randomRange(4, 64);
+		//int lwidth = randomRange(4, 64);
+		//int lheight = randomRange(4, 64);
+
+		//int x1 = 10;
+		//int y1 = 10;
+		int lwidth = 100;
+		int lheight = 100;
+
 		c = randomColor();
 
 		if (outlineOnly)
@@ -60,14 +65,12 @@ void draw()
 	}
 }
 
-void onLoop()
-{
-	draw();
-	refreshScreen();
-}
 
 void setup()
 {
 	//fullscreen();
-	setCanvasSize(800, 600);
+	setCanvasSize(800, 800);
+	//layered();
+
+	setFrameRate(100);
 }
