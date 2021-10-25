@@ -38,5 +38,8 @@
     <ClInclude Include="..\..\src\sampler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="checkerboard.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

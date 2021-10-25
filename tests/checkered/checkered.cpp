@@ -1,28 +1,17 @@
 #include "gui.h"
-#include "sampler.h"
 
-// 
-// Be careful with operator precedence
-// canvasWidth / freq * 2 !== canvasWidth / (freq*2)
-//
+#include "checkerboard.h"
+
 void setup()
 {
-	setCanvasSize(1920, 1920);
+	setCanvasSize(640, 640);
 
-    int freq = 64;
-    int xExtent = canvasWidth / (freq*2);
-    int yExtent = canvasHeight / (freq * 2);
-    CheckerPattern chk(0xff555555, 0xffdddddd, freq);
+    Checkerboard chkbg({ 0,0,canvasWidth,canvasHeight }, 
+        0xff555555, 0xffdddddd, 64);
+    chkbg.draw(gAppSurface);
 
-
-    for (int row=1;row<=freq*2;row++)
-        for (int col = 1; col <= freq * 2; col++)
-        {
-            double u = maths::Map(col, 1, freq*2.0, 0, 1);
-            double v = maths::Map(row, 1, freq*2.0, 0, 1);
-
-            auto c = chk(u, v);
-
-            fillRectangle(*gAppSurface, (col-1) * (xExtent), (row-1) * yExtent, xExtent, yExtent, c);
-        }
+    Checkerboard chkfg({ (canvasWidth/2)-(canvasWidth/4),
+        (canvasHeight/2)-(canvasHeight/4),canvasWidth/2,canvasHeight/2 }, 
+        0x1ccccccc, 0xff0c0c0c, 8);
+    chkfg.draw(gAppSurface);
 }

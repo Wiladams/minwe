@@ -150,6 +150,7 @@
     <ClInclude Include="..\..\src\gui.h" />
     <ClInclude Include="..\..\src\maths.hpp" />
     <ClInclude Include="..\..\src\sampler.h" />
+    <ClInclude Include="checkerboard.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
