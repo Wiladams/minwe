@@ -16,6 +16,8 @@
 
 #include "pixelmap.h"
 #include "maths.hpp"
+#include <memory>
+
 
 
 // Set a single pixel

@@ -26,10 +26,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="texture.h">
+    <ClInclude Include="..\..\src\maths.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\maths.hpp">
+    <ClInclude Include="..\..\src\pixelmap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -6,6 +6,21 @@
 #include "maths.hpp"
 
 //
+// Commentary
+// Using a checkerboard pattern is a common thing to do in 
+// graphics development.  It can serve as a background, letting
+// you know when drawing is not present (good for alpha blend testing)
+// Or it can be used as a common texture to be wrapped around 
+// 3D objects.
+// Here we have the sampler and a graphic object.  They are 
+// separate because the sampler typically responds to
+// parametric u,v values (betwee 0 and 1), whereas the graphic
+// object is intended to match actual pixel space, so it 
+// has pixel dimensions.
+//
+// The two could be combined, but I think it's cleaner and
+// more versatile to keep them separate.
+//
 // To get a checkerboard, we're essentially running two
 // threshold patterns using a sine wave
 // We use the sine function because it ranges from -1 to +1
@@ -16,9 +31,9 @@
 //
 class CheckerPattern : public ISample2D<PixelRGBA>
 {
-    PixelRGBA t1;
-    PixelRGBA t2;
-    int frequency;
+    std::shared_ptr<ISample2D<PixelRGBA> > t1;   // First color
+    std::shared_ptr<ISample2D<PixelRGBA> > t2;   // Second color
+    int frequency;  // How many times the pattern repeats
 
     // simple step function
     // if the value 'u' is below the threshold, then the low
@@ -32,17 +47,28 @@ class CheckerPattern : public ISample2D<PixelRGBA>
 public:
     // Default constructor, black and white colors
     CheckerPattern()
-        :t1(0xff000000),
-        t2(0xffffffff),
+        :t1(std::make_shared< SolidColorSampler>(0xff000000)),
+        t2(std::make_shared<SolidColorSampler>(0xffffffff)),
         frequency(4) {}
 
-    CheckerPattern(PixelRGBA t0, PixelRGBA t1, int freq) : t1(t0), t2(t1), frequency(freq) {}
+    // Constructor taking two colors and frequency
+    CheckerPattern(PixelRGBA c1, PixelRGBA c2, int freq) 
+        : t1(std::make_shared< SolidColorSampler>(c1)),
+        t2(std::make_shared< SolidColorSampler>(c2)),
+        frequency(freq) {}
+
+    CheckerPattern(
+        std::shared_ptr<ISample2D<PixelRGBA> > s1, 
+        std::shared_ptr<ISample2D<PixelRGBA> > s2, 
+        int freq)
+        : t1(s1),t2(s2),frequency(freq) 
+    {}
 
     // u and v range from 0 to 1 inclusive
     // We want to turn that range into values
     // based on the frequency and colors given
     // at construction time
-    virtual PixelRGBA value(double u, double v) const
+    virtual PixelRGBA getValue(double u, double v) const
     {
         double xrad = maths::Map(u, 0, 1, 0, frequency * (2 * maths::Pi));
         double yrad = maths::Map(v, 0, 1, 0, frequency * (2 * maths::Pi));
@@ -54,19 +80,15 @@ public:
 
         auto sines = stepu * stepv;
 
-        return sines <= 0 ? t1 : t2;
+        return sines <= 0 ? t1->getValue(u,v) : t2->getValue(u,v);
     }
 
-    virtual PixelRGBA operator()(double u, double v) const
-    {
-        return value(u, v);
-    }
 
 };
 
 // The checkerboard is a graphic which uses the 
 // CheckerPattern, and surrounds it with the stuff
-// necessary for it to print independently.
+// necessary for it to draw independently.
 class Checkerboard
 {
     CheckerPattern fPattern;
@@ -78,6 +100,18 @@ class Checkerboard
 public:
     Checkerboard(PixelRect frame, PixelRGBA c1, PixelRGBA c2, int freq)
         : fFrame(frame), fPattern(c1, c2, freq), fFrequency(freq)
+    {
+        xExtent = frame.width / (freq * 2);
+        yExtent = frame.height / (freq * 2);
+    }
+    
+    Checkerboard(PixelRect frame, 
+        std::shared_ptr<ISample2D<PixelRGBA> > s1, 
+        std::shared_ptr<ISample2D<PixelRGBA> > s2, 
+        int freq)
+        : fFrame(frame), 
+        fPattern(s1, s2, freq), 
+        fFrequency(freq)
     {
         xExtent = frame.width / (freq * 2);
         yExtent = frame.height / (freq * 2);

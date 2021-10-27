@@ -49,17 +49,17 @@
     https://github.com/ssloy/tinyrenderer/
 */
 
-/*
-    Honors the following properties
-    vertical orientation
-    horizontal orientation
-    truecolor (16, 24, 32)
-    indexed (16, 24, 32)
-    monochrome (8)
-    compressed - RLE, RAW
-
-    We use PixelRGBA type to hold color values
-*/
+//
+//    Honors the following properties
+//    vertical orientation
+//    horizontal orientation
+//    truecolor (16, 24, 32)
+//    indexed (16, 24, 32)
+//    monochrome (8)
+//    compressed - RLE, RAW
+//
+//    We use PixelRGBA type to hold color values
+//
 
 
 #include "User32PixelMap.h"
@@ -274,16 +274,16 @@ namespace targa {
     }
 
 
-    /*
-         Targa images come in many different formats, and there are
-         a couple of different versions of the specification.
-
-        First thing to do is determine if the file is adhereing to version
-        2.0 of the spcification.  We do that by reading a 'footer', which
-        is the last 26 bytes of the file.
-
-        Return a PixelBuffer if we can read the file successfully.
-    */
+    //
+    //    Targa images come in many different formats, and there are
+    //    a couple of different versions of the specification.
+    //
+    //    First thing to do is determine if the file is adhereing to version
+    //    2.0 of the spcification.  We do that by reading a 'footer', which
+    //    is the last 26 bytes of the file.
+    //
+    //    Return a PixelBuffer if we can read the file successfully.
+    //
 
     static bool readFooter(BinStream& bs, tgaFooter& rs)
     {
@@ -306,15 +306,15 @@ namespace targa {
         return true;
     }
 
-    /*
-     We want to figure out the mapping between positions as we
-     read them and their locations in our pixel buffer in one place
-     This iterator figures that out, return x,y pairs for the positions
-     according to the horizontal and vertical orientation.  Ideally this
-     would do interleaving as well, but we don't have an image to test
-     with
-    */
-    class LocIterator //: IEnumerator<Location>
+    //
+    // We want to figure out the mapping between positions as we
+    // read them and their locations in our pixel buffer in one place
+    // This iterator figures that out, return x,y pairs for the positions
+    // according to the horizontal and vertical orientation.  Ideally this
+    // would do interleaving as well, but we don't have an image to test
+    // with
+    //
+    class LocIterator
     {
         int xSign, xStart, xEnd, xincr;
         int ySign, yStart, yEnd, yincr;
@@ -384,11 +384,11 @@ namespace targa {
         Location operator *() { return getCurrent(); }
     };
 
-    /*
+    //
     // An iterator which will return the uncompressed
     // pixels in row order
-    */
-    class PixelsUncompressed //: IEnumerator<BLRgba32>
+    //
+    class PixelsUncompressed
     {
         TargaMeta& fMeta;
         int bytesPerPixel;
@@ -487,7 +487,7 @@ namespace targa {
         }
     };
 
-
+/*
     static PixelMap* readBody(BinStream& bs, TargaMeta& meta)
     {
         PixelMap* lpb = new User32PixelMap(meta.header.Width, meta.header.Height);
@@ -570,4 +570,81 @@ namespace targa {
 
         return abuff;
     }
+*/
+    static bool initBody(PixelMap &lpb, BinStream& bs, TargaMeta& meta)
+    {
+        lpb.init(meta.header.Width, meta.header.Height);
+
+        LocIterator li(meta.header);
+
+        if (!meta.header.Compressed) {
+            PixelsUncompressed pi(bs, meta);
+
+            while (li.moveNext()) {
+                Location loc = li.getCurrent();
+                if (!pi.moveNext()) {
+                    break;
+                }
+
+                PixelRGBA c = pi.getCurrent();
+                lpb.set(loc.x, loc.y, c);
+            }
+        } else {
+            PixelsCompressed pi(bs, meta);
+
+            while (li.moveNext()) {
+                Location loc = li.getCurrent();
+
+                if (!pi.moveNext()) {
+                    break;
+                }
+
+                PixelRGBA c = pi.getCurrent();
+                lpb.set(loc.x, loc.y, c);
+            }
+        }
+
+        return true;
+    }
+
+    static bool initFromStream(PixelMap &pmap, BinStream& bs)
+    {
+        TargaMeta res;
+        // position 26 bytes from the end and try 
+        // to read the footer.  Success indicates extended
+        // image format.  Otherwise, false
+        bs.seek(bs.size() - footerSize);
+        bool success = readFooter(bs, res.footer);
+
+        //time to read the header
+        bs.seek(0);
+        success = readHeader(bs, res.header);
+
+        if (!success) {
+            //printf("targa::readFromStream(), failed to read header\n");
+            return false;
+        }
+
+        // We have the header, so we should be able
+        // to read the body
+        return initBody(pmap, bs, res);
+    }
+
+    static bool initFromFile(PixelMap& pmap, const char* filename)
+    {
+        auto bs = FileStream(filename);
+
+        if (!bs.isValid()) {
+            printf("Could not map file: %s\n", filename);
+            return false;
+        }
+
+        if (!bs.isValid()) {
+            printf("BinaryStream not valid.\n");
+            return false;
+        }
+
+        return initFromStream(pmap, bs);
+    }
+
 }   // end of targa namespace

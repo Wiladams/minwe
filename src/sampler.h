@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pixelmap.h"
+#include "coloring.h"
 
 // The ISample interface is meant to support a generic interface
 // for generating color values based on parameters.
@@ -17,23 +18,37 @@
 template <typename T>
 struct ISample1D
 {
-	virtual T operator()(double u) const = 0;
+    virtual T getValue(double u) const = 0;
+	virtual T operator()(double u) const
+    {
+        return getValue(u);
+    }
 };
 
 // A 2 dimentional sampler
 template <typename T>
 struct ISample2D
 {
-	virtual T operator()(double u, double v) const = 0;
+    virtual T getValue(double u, double v) const = 0;
+    virtual T operator()(double u, double v) const
+        {return getValue(u, v);}
 };
 
 // A 3 dimensional sampler
 template <typename T>
 struct ISample3D
 {
-	virtual T operator()(double u, double v, double w) const = 0;
+    virtual T getValue(double u, double v, double w) const = 0;
+    virtual T operator()(double u, double v, double w) const
+    {
+        return getValue(u, v, w);
+    }
 };
 
+
+
+//
+// Some simple samplers
 // Return solid color
 class SolidColorSampler : public ISample2D<PixelRGBA>
 {
@@ -42,10 +57,30 @@ class SolidColorSampler : public ISample2D<PixelRGBA>
 public:
     SolidColorSampler(PixelRGBA c) :fColor(c) {}
 
-    virtual PixelRGBA operator()(double u, double v, double w) const
+    virtual PixelRGBA getValue(double u, double v) const
     {
         return fColor;
     }
 };
 
 
+class RainbowSampler : public ISample1D<PixelRGBA>
+{
+    double fGamma;
+
+public:
+    RainbowSampler()
+        :fGamma(1.0)
+    {}
+
+    RainbowSampler(double gamma)
+        :fGamma(gamma)
+    {}
+
+    PixelRGBA getValue(double u) const
+    {
+        double wl = maths::Map(u, 0, 1, 380, 780);
+        auto c = ColorRGBAFromWavelength(wl, fGamma);
+        return (PixelRGBA)c;
+    }
+};

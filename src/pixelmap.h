@@ -47,7 +47,7 @@ typedef union PixelRGBA {
     PixelRGBA(uint32_t val) : intValue(val) {}
 
     // When you need a COLORREF to be compatible with 
-    // Windows colors
+    // some Windows GDI routines
     uint32_t toCOLORREF() {return red | (green << 8) | (blue << 16);}
 
 } PixelRGBA;
@@ -234,6 +234,8 @@ public:
 
     // virtual destructor so base classes setup properly
     virtual ~PixelMap() {}
+
+    virtual bool init(int w, int h) = 0;
 
     virtual PixelRGBA* getPixelPointer(const int x, const int y) =0;
     PixelRect getBounds() { return{ x,y,width,height }; }

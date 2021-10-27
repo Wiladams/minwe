@@ -31,16 +31,39 @@ class User32PixelMap : public PixelMap
     void * fData = nullptr;       // A pointer to the data
     size_t fDataSize=0;       // How much data is allocated
 
-
-
 public:
+    User32PixelMap()
+    {
+        x = 0;
+        y = 0;
+        width = 0;
+        height = 0;
+    }
+
     User32PixelMap(const long awidth, const long aheight)
     {
         x = 0;
         y = 0;
         width = awidth;
         height = aheight;
+        fDataSize = 0;
 
+        init(awidth, aheight);
+    }
+
+    virtual ~User32PixelMap()
+    {
+        // BUGBUG
+        // unload the dib section
+        // and destroy it
+    }
+
+    virtual bool init(int awidth, int aheight)
+    {
+        x = 0;
+        y = 0;
+        width = awidth;
+        height = aheight;
         int bitsPerPixel = 32;
         int alignment = 4;
         int bytesPerRow = winme::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
@@ -72,13 +95,8 @@ public:
         // Do some setup to the DC
         ::SetBkMode(fBitmapDC, TRANSPARENT);
         ::SetGraphicsMode(fBitmapDC, GM_ADVANCED);
-    }
 
-    virtual ~User32PixelMap()
-    {
-        // BUGBUG
-        // unload the dib section
-        // and destroy it
+        return true;
     }
 
     inline long getWidth() const { return width; }
@@ -144,11 +162,6 @@ public:
     {
         for (int row = y; row < y + h; row++)
             setPixels(x, row, w, c);
-    }
-
-    inline void sync() const
-    {
-        // just sync the thing
     }
 
  };

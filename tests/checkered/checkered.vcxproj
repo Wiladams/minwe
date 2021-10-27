@@ -146,10 +146,13 @@
     <ClCompile Include="checkered.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\coloring.h" />
     <ClInclude Include="..\..\src\draw2d.h" />
     <ClInclude Include="..\..\src\gui.h" />
     <ClInclude Include="..\..\src\maths.hpp" />
     <ClInclude Include="..\..\src\sampler.h" />
+    <ClInclude Include="..\..\src\targa.h" />
+    <ClInclude Include="..\..\src\User32PixelMap.h" />
     <ClInclude Include="checkerboard.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
