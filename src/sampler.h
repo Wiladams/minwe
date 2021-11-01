@@ -45,22 +45,36 @@ struct ISample3D
     }
 };
 
+template <typename T>
+struct ISampleRGBA :
+    public ISample1D<T>,
+    public ISample2D<T>,
+    public ISample3D<T>
+{
 
+};
 
 //
 // Some simple samplers
 // Return solid color
-class SolidColorSampler : public ISample2D<PixelRGBA>
+class SolidColorSampler1D : public ISample1D<PixelRGBA>
 {
     PixelRGBA fColor;
 
 public:
-    SolidColorSampler(PixelRGBA c) :fColor(c) {}
+    SolidColorSampler1D(PixelRGBA c) :fColor(c) {}
 
-    virtual PixelRGBA getValue(double u, double v) const
-    {
-        return fColor;
-    }
+    virtual PixelRGBA getValue(double u) const { return fColor; }
+};
+
+class SolidColorSampler2D : public ISample2D<PixelRGBA>
+{
+    PixelRGBA fColor;
+
+public:
+    SolidColorSampler2D(PixelRGBA c) :fColor(c) {}
+
+    virtual PixelRGBA getValue(double u, double v) const {return fColor;}
 };
 
 

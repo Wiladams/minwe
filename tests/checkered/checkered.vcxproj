@@ -106,7 +106,7 @@
       <AdditionalIncludeDirectories>..\..\src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -149,8 +149,10 @@
     <ClInclude Include="..\..\src\coloring.h" />
     <ClInclude Include="..\..\src\draw2d.h" />
     <ClInclude Include="..\..\src\gui.h" />
+    <ClInclude Include="..\..\src\imagesampler.h" />
     <ClInclude Include="..\..\src\maths.hpp" />
     <ClInclude Include="..\..\src\sampler.h" />
+    <ClInclude Include="..\..\src\screensnapshot.h" />
     <ClInclude Include="..\..\src\targa.h" />
     <ClInclude Include="..\..\src\User32PixelMap.h" />
     <ClInclude Include="checkerboard.h" />

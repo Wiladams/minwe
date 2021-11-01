@@ -16,6 +16,8 @@
 
 #include "pixelmap.h"
 #include "maths.hpp"
+#include "sampler.h"
+
 #include <memory>
 
 
@@ -575,6 +577,8 @@ inline PixelCoord bezier_point(double u, const PixelCoord& p1, const PixelCoord&
     return { (int)x,(int)y };
 
 }
+
+
 
 inline void bezier(PixelMap& pmap, const int x1, const int y1, const int x2, const int y2,
     const int x3, const int y3, const int x4, const int y4, int segments, PixelRGBA c)

@@ -11,26 +11,24 @@
 
     ScreenSnapshot ss(x,y, width, height);
 
-    getting an actual snapshot, call next()
+    You can now use this as a 2D sampler
+    Call next() whenever you want to take a snapshot
 
     ss.next()
 
-    And finally to get a pixelbuffer that was captured
-
-    ss.getCurrent()
-    ss.getImage()
+    Then you can use getValue(u,v)
 
     References:
     https://www.codeproject.com/articles/5051/various-methods-for-capturing-the-screen
 */
 
-#include "Surface.h"
-#include "texture.h"
+#include "User32PixelMap.h"
+#include "sampler.h"
 
-class ScreenSnapshot : public Texture
+class ScreenSnapshot : public ISample2D<PixelRGBA>
 {
     HDC fScreenDC;
-    Surface fSurface;
+    User32PixelMap fSurface;
 
     int fOriginX;
     int fOriginY;
@@ -38,8 +36,8 @@ class ScreenSnapshot : public Texture
     int fHeight;
 
 public:
-    ScreenSnapshot(int x, int y, int awidth, int aheight, uint32_t threadCount=0)
-        : fSurface(awidth, aheight, threadCount),
+    ScreenSnapshot(int x, int y, int awidth, int aheight)
+        : fSurface(awidth, aheight),
         fOriginX(x),
         fOriginY(y),
         fWidth(awidth),
@@ -49,36 +47,15 @@ public:
         fScreenDC = CreateDCA("DISPLAY", nullptr, nullptr, nullptr);
     }
 
-    void reset() {
-        // do nothing
-    }
-
     size_t width() { return fWidth; }
     size_t height() { return fHeight; }
 
-    virtual rtcolor value(const double u, const double v, const vec3& p) const
+    virtual PixelRGBA getValue(double u, double v) const
     {
-        auto pval = pixelValue(u,v,p);
-        return { (double)pval.r / 255, (double)pval.g / 255, (double)pval.b / 255 };
-    }
-
-    virtual BLRgba32 pixelValue(double u, double v, const vec3& p) const
-    {
-        int x = int(u * (fWidth - 1));
-        int y = int(v * (fHeight - 1));
+        int x = int((u * ((double)fWidth - 1))+0.5);
+        int y = int((v * ((double)fHeight - 1))+0.5);
 
         return fSurface.get(x, y);
-    }
-
-    Surface & getCurrent()
-    {
-        return fSurface;
-    }
-
-    // return image directly
-    BLImage& getImage()
-    {
-        return fSurface.getImage();
     }
 
     // take a snapshot
@@ -89,5 +66,4 @@ public:
 
         return true;
     }
-
 };

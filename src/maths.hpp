@@ -298,4 +298,18 @@ namespace maths {
         return (T)std::tanh(a);
     }
     
+
+    inline double randomRange(const float low, const float high)
+    {
+        double frac = (double)rand() / RAND_MAX;
+        double ret = low + frac * (high - low);
+
+        return ret;
+    }
+
+    inline double random(const float rndMax)
+    {
+        return randomRange(0, rndMax);
+    }
+
 }

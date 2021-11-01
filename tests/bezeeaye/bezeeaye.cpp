@@ -1,17 +1,15 @@
 
-
 #include "gui.h"
-
+#include "sampler.h"
+#include "sampledraw2d.h"
 
 int iterations = 30;
 int currentIteration = 1;
 int segments = 50;
 int dir = 1;
+RainbowSampler s(1.0);
+//SolidColorSampler1D s(0xffffff00);
 
-void keyReleased(const KeyboardEvent& e) {
-	if (e.keyCode == VK_ESCAPE)
-		halt();
-}
 
 void drawRandomBezier(const PixelRect bounds)
 {
@@ -36,7 +34,7 @@ void drawRandomBezier(const PixelRect bounds)
 	int x4 = bounds.x+bounds.width-1;
 	int y4 = bounds.y+bounds.height / 2;
 
-	bezier(*gAppSurface, x1, y1, x2, y2, x3, y3, x4, y4, segments, 0xff00ffff);
+	sampledBezier(*gAppSurface, x1, y1, x2, y2, x3, y3, x4, y4, segments, s);
 
 	// Draw control lines
 	line(*gAppSurface, x1, y1, x2, y2, 0xffffffff);
@@ -51,13 +49,19 @@ void drawRandomBezier(const PixelRect bounds)
 
 }
 
-void onFrame()
-{
-	drawRandomBezier({ 0,0,canvasWidth,canvasHeight });
-}
 
 void setup()
 {
 	setCanvasSize(800, 600);
 	setFrameRate(30);
+}
+
+void keyReleased(const KeyboardEvent& e) {
+	if (e.keyCode == VK_ESCAPE)
+		halt();
+}
+
+void onFrame()
+{
+	drawRandomBezier({ 0,0,canvasWidth,canvasHeight });
 }

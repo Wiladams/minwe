@@ -47,14 +47,14 @@ class CheckerPattern : public ISample2D<PixelRGBA>
 public:
     // Default constructor, black and white colors
     CheckerPattern()
-        :t1(std::make_shared< SolidColorSampler>(0xff000000)),
-        t2(std::make_shared<SolidColorSampler>(0xffffffff)),
+        :t1(std::make_shared< SolidColorSampler2D>(0xff000000)),
+        t2(std::make_shared<SolidColorSampler2D>(0xffffffff)),
         frequency(4) {}
 
     // Constructor taking two colors and frequency
     CheckerPattern(PixelRGBA c1, PixelRGBA c2, int freq) 
-        : t1(std::make_shared< SolidColorSampler>(c1)),
-        t2(std::make_shared< SolidColorSampler>(c2)),
+        : t1(std::make_shared< SolidColorSampler2D>(c1)),
+        t2(std::make_shared< SolidColorSampler2D>(c2)),
         frequency(freq) {}
 
     CheckerPattern(

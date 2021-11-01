@@ -3,12 +3,14 @@
 #include <math.h>
 #include "pixelmap.h"
 
+// Some routines in here to deal with colors in various
+// ways.
 // 
 // Utility function.  Turn a visible wavelength into 
 // an RGB color value
 // 380 <= wl <= 780 nanometers
 // gamma typically 1.0
-ColorRgba  ColorRGBAFromWavelength(double wl, double gamma = 1.0)
+static inline ColorRgba  ColorRGBAFromWavelength(double wl, double gamma = 1.0)
 {
     ColorRgba t = { 0,0,0,1 };
 
