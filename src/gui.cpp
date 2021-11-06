@@ -187,9 +187,11 @@ void onLoop()
         frameCount += 1;
         if (gDrawHandler != nullptr) {
             gDrawHandler();
-            refreshScreen();
-        }
 
+        }
+        
+        refreshScreen();
+        
         // catch up to next frame interval
         while (fNextMillis <= fsw.millis())
         {

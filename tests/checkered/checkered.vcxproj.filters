@@ -38,9 +38,6 @@
     <ClInclude Include="..\..\src\sampler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="checkerboard.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\targa.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,6 +51,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\screensnapshot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\checkerboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

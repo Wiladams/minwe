@@ -16,6 +16,16 @@ inline void sampleSpan(PixelMap& pmap, const int x, const int y, const int width
     }
 }
 
+inline void sampleHLine2D(PixelMap& pb, int x1, int y1, int w,
+    double v, ISample2D<PixelRGBA>& src)
+{
+    for (int x = x1; x < x1 + w - 1; x++)
+    {
+        double u = maths::Map(x, x1, x1 + w - 1, 0, 1);
+        pb.set(x, y1, src.getValue(u, v));
+    }
+}
+
 //
 // fill in a rectangle using the specified 
 // 2D sampler.  This will deal with clipping
@@ -80,15 +90,7 @@ inline void sampledBezier(PixelMap& pmap, const int x1, const int y1, const int 
     }
 }
 
-inline void sampleHLine2D(PixelMap& pb, int x1, int y1, int w,
-    double v,ISample2D<PixelRGBA>& src)
-{
-    for (int x = x1; x < x1 + w - 1; x++)
-    {
-        double u = maths::Map(x, x1, x1 + w - 1, 0, 1);
-        pb.set(x, y1, src.getValue(u, v));
-    }
-}
+
 
 inline void sampleConvexPolygon(PixelMap& pb, 
     PixelCoord* verts, const int nverts, int vmin, 
@@ -193,4 +195,21 @@ inline void sampleTriangle(PixelMap& pb, const int x1, const int y1,
     int vmin = 0;
 
     sampleConvexPolygon(pb, tri.verts, nverts, vmin, src, clipRect);
+}
+
+void sampleCircle(PixelMap& pmap, int centerX, int centerY, int radius, ISample2D<PixelRGBA>& fillStyle) {
+    auto x1 = centerX - radius, y1 = centerY - radius;
+    auto  x2 = centerX + radius, y2 = centerY + radius;
+    for (int y = y1; y < y2; y++) {
+        for (int x = x1; x < x2; x++) {
+            auto distX = (x - centerX + 0.5), distY = (y - centerY + 0.5);
+            auto distance = sqrt(distX * distX + distY * distY);
+            if (distance <= radius) {
+                auto u = maths::Map(x, x1, x2,0,1);
+                auto v = maths::Map(y, y1, y2, 0, 1);
+                auto rgb = fillStyle.getValue(u, v);
+                pmap.set(x, y, rgb);
+            }
+        }
+    }
 }

@@ -9,7 +9,11 @@
 // along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 //==============================================================================================
 
-#include "apphost.h"
+#include "gui.h"
+#include "draw2d.h"
+#include "Thread.h"
+#include "checkerboard.h"
+#include "recorder.h"
 
 #include "rtweekend.h"
 
@@ -22,22 +26,25 @@
 #include "scene.h"
 #include "sphere.h"
 
+/*
+    Cornell Box scene rendered using winme
+*/
+void cornell_box(scene * scene_desc, int width) 
+{
+    scene_desc->image_width = width;
+    scene_desc->aspect_ratio      = 1.0;
+    scene_desc->samples_per_pixel = 150;    // 100
+    scene_desc->max_depth         = 50;   // 50
+    scene_desc->background        = color(0,0,0);
 
-void cornell_box(scene& scene_desc) {
-    scene_desc.image_width = 600; // 600;
-    scene_desc.aspect_ratio      = 1.0;
-    scene_desc.samples_per_pixel = 100;
-    scene_desc.max_depth         = 50;   // 50
-    scene_desc.background        = color(0,0,0);
+    scene_desc->cam.lookfrom     = point3(278, 278, -800);
+    scene_desc->cam.lookat       = point3(278, 278, 0);
+    scene_desc->cam.vup          = vec3(0, 1, 0);
+    scene_desc->cam.vfov         = 40.0;
+    scene_desc->cam.aperture     = 0.0;
+    scene_desc->cam.focus_dist   = 10.0;
 
-    scene_desc.cam.lookfrom     = point3(278, 278, -800);
-    scene_desc.cam.lookat       = point3(278, 278, 0);
-    scene_desc.cam.vup          = vec3(0, 1, 0);
-    scene_desc.cam.vfov         = 40.0;
-    scene_desc.cam.aperture     = 0.0;
-    scene_desc.cam.focus_dist   = 10.0;
-
-    hittable_list& world = scene_desc.world;
+    hittable_list& world = scene_desc->world;
 
     auto red   = make_shared<lambertian>(color(.65, .05, .05));
     auto white = make_shared<lambertian>(color(.73, .73, .73));
@@ -66,21 +73,53 @@ void cornell_box(scene& scene_desc) {
     world.add(make_shared<sphere>(point3(190,90,190), 90, glass));
 
     // Light Sources
-    hittable_list& lights = scene_desc.lights;
+    hittable_list& lights = scene_desc->lights;
     auto m = shared_ptr<material>();
     lights.add(make_shared<quad>(point3(343,554,332), vec3(-130,0,0), vec3(0,0,-105), m));
     lights.add(make_shared<sphere>(point3(190, 90, 190), 90, m));
 }
 
+// Since the rendering will be multi-threaded
+// we need to ensure the lifetime of the scene
+// is long enough, so we allocate the scene instead
+// of allowing it to be created on the stack in setup()
+scene* scene_desc = nullptr;
+Recorder* reco = nullptr;
 
-void onLoad() 
+void onFrame()
 {
-    setCanvasSize(640, 600);
+    reco->saveFrame();
+}
 
-    scene scene_desc;
-    cornell_box(scene_desc);
-    scene_desc.render(gAppSurface);
+// create the canvas size
+void setup() 
+{
+    int sceneWidth = 800;
 
-    // make sure to display contents
-    refreshScreen();
+    // Create a scene
+    scene_desc = new scene();
+    cornell_box(scene_desc, sceneWidth);
+
+    // Use the size of the scene to construct the canvas
+    setCanvasSize(sceneWidth, scene_desc->getHeight());
+
+    // set a frame rate so we can see progress
+    // it does not have to be a high frame rate, because
+    // the raytrace is fairly slow
+    setFrameRate(5);
+
+    // Draw a background to start things
+    Checkerboard chkbg({ 0,0,canvasWidth,canvasHeight },
+        0xff0c0c0c,
+        0xff1c1c1c,32);
+
+    chkbg.draw(gAppSurface);
+
+    // Setup Recorder
+    reco = new Recorder(&(*gAppSurface), "frame", 0);
+    reco->record();
+
+    // begin scene rendering, specifying number of threads
+    // to be used
+    scene_desc->render(&*gAppSurface, 16);
 }

@@ -13,25 +13,89 @@
 
 #include "camera.h"
 #include "hittable_list.h"
-#include "User32PixelMap.h"
-#include "apphost.h"
+
+#include "pixelmap.h"
+
+
+
 
 class scene {
-  public:
-    void render(std::shared_ptr<User32PixelMap> pmap)
+    // This structure is defined in here so we 
+    // don't have to declare a friend class or 
+    // use any other tricks to get the self reference
+    struct RayTraceCtx {
+        PixelMap* fPixelMap;
+        scene* fScene;
+        int fLow;
+        int fHigh;
+
+        RayTraceCtx(PixelMap* pmap, scene* s, int starting, int ending)
+            : fPixelMap(pmap),
+            fScene(s),
+            fLow(starting),
+            fHigh(ending)
+        {
+        }
+    };
+    
+    // This is the thread start routine
+    // It will call the render() function of the 
+    // scene, passing parameters
+    static DWORD WINAPI renderScene(void* param)
+    {
+        RayTraceCtx* ctx = (RayTraceCtx*)param;
+        ctx->fScene->renderSegment(ctx->fPixelMap, ctx->fLow, ctx->fHigh);
+
+        // when done, need to delete the context
+        // delete ctx
+
+        // The return value is not used
+        // but we'll return 1 anyway
+        return 1;
+    }
+
+public:
+    // Return the calculated height of the image
+    int getHeight()
+    {
+          return static_cast<int>(image_width / aspect_ratio);
+    }
+
+    // This is the primary function called to render the scene
+    // Just pass in a pixelmap and number of segments
+    // This will use multiple threads
+    void render(PixelMap* pmap, int numSegments = 1)
+    {
+        // Setup the individual segment threads
+        int segLength = getHeight() / numSegments;
+
+        for (int i = 0; i < numSegments; i++)
+        {
+            int starting = i * segLength;
+            int ending = starting + segLength - 1;
+            RayTraceCtx* ctx = new RayTraceCtx(&(*gAppSurface), this, ending, starting);
+            Thread* t1 = new Thread(renderScene, ctx);
+            t1->resume();
+        }
+    }
+
+    // This is the workhorse routine of the scene
+    // We render a single portion of the overall 
+    // image, from a starting row to an ending row
+    void renderSegment(PixelMap* pmap, int starting, int ending)
     {
         const int image_height = static_cast<int>(image_width / aspect_ratio);
 
         cam.initialize(aspect_ratio);
 
+        for (int j = starting; j >= ending; --j) {
 
-        for (int j = image_height-1; j >= 0; --j) {
-            std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+            //std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
             for (int i = 0; i < image_width; ++i) {
                 color pixel_color(0,0,0);
                 for (int s = 0; s < samples_per_pixel; ++s) {
-                    auto u = (i + random_double()) / (image_width-1);
-                    auto v = (j + random_double()) / (image_height-1);
+                    auto u = (i + random_double()) / ((double)image_width-1);
+                    auto v = (j + random_double()) / ((double)image_height-1);
                     ray r = cam.get_ray(u, v);
                     pixel_color += ray_color(r, max_depth);
                 }
@@ -87,6 +151,7 @@ class scene {
                                 * ray_color(scattered, depth-1) / pdf_val;
     }
 };
+
 
 
 #endif

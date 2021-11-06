@@ -12,6 +12,9 @@
 
     All operations are SRCCOPY.  It is relatively to add different
     pixel covering functions with these base routines.
+
+    // Reference
+    // https://magcius.github.io/xplain/article/rast1.html
 */
 
 #include "pixelmap.h"
@@ -552,6 +555,23 @@ inline void fillEllipse(PixelMap& pmap, int centerx, int centery, int xRadius, i
     
     int vmin = findTopmostVertex(verts, nverts);
     setConvexPolygon(pmap, verts, nverts, vmin, c, { 0,0,canvasWidth,canvasHeight });
+}
+
+// filling a circle with a fixed color
+//
+inline void fillCircle(PixelMap& pmap, int centerX, int centerY, int radius, PixelRGBA fillStyle) {
+    auto x1 = centerX - radius, y1 = centerY - radius;
+    auto  x2 = centerX + radius, y2 = centerY + radius;
+    for (int y = y1; y < y2; y++) {
+        for (int x = x1; x < x2; x++) {
+            auto distX = (x - centerX + 0.5), distY = (y - centerY + 0.5);
+            auto distance = sqrt(distX * distX + distY * distY);
+            if (distance <= radius) {
+                //auto rgb = fillStyle(x, y);
+                pmap.set(x, y, fillStyle);
+            }
+        }
+    }
 }
 
 // Value of curve at parametric position 'u'

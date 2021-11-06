@@ -142,9 +142,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\appmain.cpp" />
+    <ClCompile Include="..\..\src\gui.cpp" />
     <ClCompile Include="cornell_box.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\checkerboard.h" />
     <ClInclude Include="..\..\src\User32PixelMap.h" />
     <ClInclude Include="aabb.h" />
     <ClInclude Include="bvh.h" />
@@ -160,6 +162,7 @@
     <ClInclude Include="perlin.h" />
     <ClInclude Include="quad.h" />
     <ClInclude Include="ray.h" />
+    <ClInclude Include="rtweekend.h" />
     <ClInclude Include="scene.h" />
     <ClInclude Include="sphere.h" />
     <ClInclude Include="texture.h" />
