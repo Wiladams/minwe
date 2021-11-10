@@ -89,12 +89,12 @@ struct PixelRect {
     PixelRect(const int x, const int y, const int w, const int h)
         :x(x), y(y), width(w), height(h) {}
 
-    bool isEmpty()
+    bool isEmpty() const
     {
         return ((width <= 0) || (height <= 0));
     }
 
-    bool containsPoint(const int x1, const int y1)
+    bool containsPoint(const int x1, const int y1) const
     {
         if ((x1 < this->x) || (y1 < this->y))
             return false;
@@ -105,7 +105,7 @@ struct PixelRect {
         return true;
     }
 
-    bool containsRect(const PixelRect& other)
+    bool containsRect(const PixelRect& other) const
     {
         if (!containsPoint(other.x, other.y))
         {
@@ -123,7 +123,7 @@ struct PixelRect {
     // return the intersection of rectangles a and b
 // if there is no intersection, one or both of width and height
 // will be == zero
-    PixelRect intersection(const PixelRect& b)
+    PixelRect intersection(const PixelRect& b) const
     {
         int x = this->x > b.x ? this->x : b.x;
         int y = this->y > b.y ? this->y : b.y;
@@ -226,21 +226,38 @@ struct PixelBezier
 */
 class PixelMap
 {
+protected:
+    PixelRect fBounds;
+
 public:
-    int x;
-    int y;
-    int width;
-    int height;
+    PixelMap() :fBounds(0,0,0,0){}
 
     // virtual destructor so base classes setup properly
+    PixelMap(int x, int y, int w, int h)
+        :fBounds(x,y,w,h) {}
+
     virtual ~PixelMap() {}
 
     virtual bool init(int w, int h) = 0;
 
-    virtual PixelRGBA* getPixelPointer(const int x, const int y) =0;
-    PixelRect getBounds() { return{ x,y,width,height }; }
+    inline int x() const { return fBounds.x; }
+    inline int y() const { return fBounds.y; }
+    inline int width() const { return fBounds.width; }
+    inline int height() const { return fBounds.height; }
+    
+    // Calculate whether a point is whithin our bounds
+    inline bool contains(double x, double y) const { return fBounds.containsPoint((int)x, (int)y); }
 
-    virtual void set(const int x, const int y, const PixelRGBA c)=0;
+    virtual PixelRGBA* getPixelPointer(const int x, const int y) =0;
+    const PixelRect& getBounds() { return fBounds; }
+
+
+    virtual void setPixel(const int x, const int y, const PixelRGBA c) = 0;
+    virtual void set(const int x, const int y, const PixelRGBA c) {
+        if (!fBounds.containsPoint(x, y))
+            return;
+        setPixel(x, y, c);
+    }
     virtual void setAllPixels(const PixelRGBA c) = 0;
 
     virtual PixelRGBA get(const int x, const int y) const = 0;

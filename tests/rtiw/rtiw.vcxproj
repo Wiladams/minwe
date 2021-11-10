@@ -106,7 +106,7 @@
       <AdditionalIncludeDirectories>..\..\src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -143,7 +143,8 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\appmain.cpp" />
     <ClCompile Include="..\..\src\gui.cpp" />
-    <ClCompile Include="cornell_box.cc" />
+    <ClCompile Include="raytracer.cpp" />
+    <ClCompile Include="rtiw.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\checkerboard.h" />
@@ -162,6 +163,7 @@
     <ClInclude Include="perlin.h" />
     <ClInclude Include="quad.h" />
     <ClInclude Include="ray.h" />
+    <ClInclude Include="raytracer.h" />
     <ClInclude Include="rtweekend.h" />
     <ClInclude Include="scene.h" />
     <ClInclude Include="sphere.h" />

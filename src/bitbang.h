@@ -11,6 +11,7 @@
 
 #define U64x(hi, lo)	(((uint64_t)0x##hi << 32) + (uint64_t)0x##lo)
 
+
 namespace winme {
 // Determine at runtime if the CPU is little-endian (intel standard)
 static inline bool isLE () {
@@ -18,9 +19,56 @@ static inline bool isLE () {
     return (int)*((unsigned char *)&i)==1;
 }
 
+// return at runtime whether machine is Big-Endian
 static inline bool isBE() {return !isLE();}
 
 
+
+// Some things for 32-bit integers
+// there may be intrinsics for these, but 
+// the following are portable implementations
+const int i4_huge = 2147483647;
+static inline bool i4_is_even(int i) { int value = ((i % 2) == 0); return value; }
+static inline bool i4_is_odd(int i) { int value = ((i % 2) != 0); return value; }
+static inline bool i4_is_power_of_two(int n) {
+    if (n <= 0)
+    {
+        return false;
+    }
+
+    while (1 < n)
+    {
+        if ((n % 2) == 1) {
+            return false;
+        }
+        n = n / 2;
+    }
+
+    return true;
+}
+static inline int i4_max(int i1, int i2) { return i2 < i1 ? i1 : i2; }
+static inline int i4_min(int i1, int i2) { return i2 > i1 ? i1 : i2; }
+
+// Returns the 2-way sign of an integer
+// very important that 0 is 'positive' along with '>0'
+//
+// I < 0 i4_sign(I) == -1
+// I >= 0   i4_sign(I) == 1
+//
+static inline int i4_sign(int i) {
+    if (i<0)
+        return -1;
+
+    return 1;
+}
+
+// Returns the 3-way sign of an integer
+//
+// I < 0    sign(I) = -1
+// I == 0   sign(I) = 0
+// I > 0    sign(I) = 1
+//
+static inline int i4_sign3(int val){ return ((0 < val) - (val < 0)); }
 
 
 // Return various forms of pow(2,bitnum)
@@ -38,7 +86,8 @@ static inline uint64_t BIT64(size_t bitnum) {return (uint64_t)1 << bitnum; }
 static inline bool isset(const uint64_t value, const size_t bitnum) {return (value & BIT64(bitnum)) > 0; }
 
 // set a specific bit within a value
-static inline uint64_t setbit(const uint64_t value, const size_t bitnum) {return (value | BIT64(bitnum));}
+static inline uint64_t i8_set_bit(const uint64_t value, const size_t bitnum) { return (value | BIT64(bitnum)); }
+//static inline uint64_t setbit(const uint64_t value, const size_t bitnum) {return (value | BIT64(bitnum));}
 
 // BITMASK64
 // A bitmask is an integer where all the bits from the 
@@ -73,6 +122,8 @@ static inline uint32_t BITMASK32(const size_t low, const size_t high) {return (u
 
 // BITSVALUE
 // Retrieve a value from a lowbit highbit pair
+// This is useful when you're trying to unpack bits that 
+// are in an integer
 static inline  uint64_t BITSVALUE(uint64_t src, size_t lowbit, size_t highbit)
 {
     return ((src & BITMASK64(lowbit, highbit)) >> lowbit);
@@ -87,7 +138,8 @@ static inline void getbitbyteoffset(size_t bitnumber, size_t &byteoffset, size_t
     bitoffset = bitnumber % 8;
 }
 
-
+//
+// Return an integer value from an array of bytes
 static inline uint64_t bitsValueFromBytes(const uint8_t *bytes, const size_t startbit, const size_t bitcount, bool bigendian = false)
 {
     // Sanity check
@@ -104,7 +156,7 @@ static inline uint64_t bitsValueFromBytes(const uint8_t *bytes, const size_t sta
             bool bitval = isset(bytes[byteoffset], bitoffset);
 //printf("byte, bit: %Id, %Id, %d\n", byteoffset, bitoffset, bitval);
 		    if (bitval) {
-			    value = setbit(value, i);
+			    value = i8_set_bit(value, i);
             }
         }
     } else {
@@ -115,7 +167,7 @@ static inline uint64_t bitsValueFromBytes(const uint8_t *bytes, const size_t sta
             bool bitval = isset(bytes[byteoffset], bitoffset);
 //printf("byte, bit: %Id, %Id, %d\n", byteoffset, bitoffset, bitval);
             if (bitval) {
-                value = setbit(value, i);
+                value = i8_set_bit(value, i);
             }
         }
     }
@@ -153,6 +205,10 @@ static inline uint64_t swapUInt64(const uint64_t num)
           (num << 56);
 }
 
+// Typically used in a graphics context where we want to allocated byte
+// aligned chunks of memory based on a good integer size.
+// when bitsperpixel/8 == alignment, then things are very simple
+// otherwise, there's some padding.
 static inline int GetAlignedByteCount(const int width, const int bitsperpixel, const int alignment)
 {
     return (((width * (bitsperpixel / 8)) + (alignment - 1)) & ~(alignment - 1));

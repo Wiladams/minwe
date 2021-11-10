@@ -24,15 +24,15 @@ public:
 			return false;
 
 		// write out the image header
-		fprintf(fp, "P6\n%d %d\n255\n", pb.width, pb.height);
+		fprintf(fp, "P6\n%d %d\n255\n", pb.width(), pb.height());
 
 		// write the individual pixel values in binary form
 		PixelRGBA pix;
 		uint8_t pixdata[3];
 
-		for (size_t row = 0; row < pb.height; row++)
+		for (size_t row = 0; row < pb.height(); row++)
 		{
-			for (size_t col = 0; col < pb.width; col++)
+			for (size_t col = 0; col < pb.width(); col++)
 			{
 				pix = pb.get(col, row);
 

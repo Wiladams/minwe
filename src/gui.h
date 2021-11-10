@@ -1,5 +1,16 @@
 #pragma once
 
+//
+// gui.h
+// apphost.h/appmain.cpp give a reasonable core for a windows
+// based program.  It fillows a pub/sub paradigm for events, which
+// is pretty simple to use.
+//
+// gui.h/.cpp gives you a function based interface which which 
+// is similar to p5 (processing), or other very simple APIs
+// If you want something very simple, where you can just implement
+// the functions that you use, include gui.h in your application.
+//
 #include "apphost.h"
 #include "draw2d.h"
 

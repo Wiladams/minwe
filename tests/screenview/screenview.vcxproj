@@ -147,9 +147,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\gui.h" />
+    <ClInclude Include="..\..\src\pixelmap.h" />
     <ClInclude Include="..\..\src\sampledraw2d.h" />
     <ClInclude Include="..\..\src\sampler.h" />
     <ClInclude Include="..\..\src\screensnapshot.h" />
+    <ClInclude Include="..\..\src\User32PixelMap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

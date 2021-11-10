@@ -18,10 +18,10 @@
 template <typename T>
 struct ISample1D
 {
-    virtual T getValue(double u) const = 0;
-	virtual T operator()(double u) const
+    virtual T getValue(double u, const PixelCoord& p) const = 0;
+	virtual T operator()(double u, const PixelCoord &p) const
     {
-        return getValue(u);
+        return getValue(u,p);
     }
 };
 
@@ -29,19 +29,19 @@ struct ISample1D
 template <typename T>
 struct ISample2D
 {
-    virtual T getValue(double u, double v) const = 0;
-    virtual T operator()(double u, double v) const
-        {return getValue(u, v);}
+    virtual T getValue(double u, double v, const PixelCoord& p) const = 0;
+    virtual T operator()(double u, double v, const PixelCoord& p) const
+        {return getValue(u, v,p);}
 };
 
 // A 3 dimensional sampler
 template <typename T>
 struct ISample3D
 {
-    virtual T getValue(double u, double v, double w) const = 0;
-    virtual T operator()(double u, double v, double w) const
+    virtual T getValue(double u, double v, double w, const PixelCoord& p) const = 0;
+    virtual T operator()(double u, double v, double w, const PixelCoord& p) const
     {
-        return getValue(u, v, w);
+        return getValue(u, v, w, p);
     }
 };
 
@@ -57,16 +57,18 @@ struct ISampleRGBA :
 //
 // Some simple samplers
 // Return solid color
-class SolidColorSampler1D : public ISample1D<PixelRGBA>
+class SolidColorSampler : public ISampleRGBA<PixelRGBA>
 {
     PixelRGBA fColor;
 
 public:
-    SolidColorSampler1D(PixelRGBA c) :fColor(c) {}
+    SolidColorSampler(PixelRGBA c) :fColor(c) {}
 
-    virtual PixelRGBA getValue(double u) const { return fColor; }
+    virtual PixelRGBA getValue(double u, const PixelCoord& p) const { return fColor; }
+    virtual PixelRGBA getValue(double u, double v, const PixelCoord& p) const { return fColor; }
+    virtual PixelRGBA getValue(double u, double v, double w, const PixelCoord& p) const { return fColor; }
 };
-
+/*
 class SolidColorSampler2D : public ISample2D<PixelRGBA>
 {
     PixelRGBA fColor;
@@ -76,7 +78,40 @@ public:
 
     virtual PixelRGBA getValue(double u, double v) const {return fColor;}
 };
+*/
 
+// grayscale sampler
+class GrayscaleSampler : public ISample2D<PixelRGBA>
+{
+    std::shared_ptr<ISample2D<PixelRGBA> > fWrapped = nullptr;
+
+    static inline uint8_t toGray(const PixelRGBA& pix)
+    {
+        return (0.2125 * pix.red) + (0.7154 * pix.green) + (0.0721 * pix.blue);
+    }
+
+public:
+    GrayscaleSampler(std::shared_ptr<ISample2D<PixelRGBA> > wrapped)
+        :fWrapped(wrapped)
+    {
+
+    }
+
+    PixelRGBA getValue(double u, double v, const PixelCoord &p) const
+    {
+        // get value from our wrapped sampler
+        PixelRGBA c = fWrapped->getValue(u, v, p);
+
+        // convert to grayscale, preserving alpha
+        uint8_t g = toGray(c);
+        c.red = g;
+        c.green = g;
+        c.blue = g;
+
+        // return it
+        return c;
+    }
+};
 
 class RainbowSampler : public ISample1D<PixelRGBA>
 {
@@ -91,7 +126,7 @@ public:
         :fGamma(gamma)
     {}
 
-    PixelRGBA getValue(double u) const
+    PixelRGBA getValue(double u, const PixelCoord& p) const
     {
         double wl = maths::Map(u, 0, 1, 380, 780);
         auto c = ColorRGBAFromWavelength(wl, fGamma);

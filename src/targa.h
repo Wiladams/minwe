@@ -62,7 +62,7 @@
 //
 
 
-#include "User32PixelMap.h"
+#include "pixelmap.h"
 #include "bitbang.h"
 #include "filestream.h"
 
@@ -487,90 +487,7 @@ namespace targa {
         }
     };
 
-/*
-    static PixelMap* readBody(BinStream& bs, TargaMeta& meta)
-    {
-        PixelMap* lpb = new User32PixelMap(meta.header.Width, meta.header.Height);
 
-        LocIterator li(meta.header);
-
-        if (!meta.header.Compressed) {
-            PixelsUncompressed pi(bs, meta);
-
-            while (li.moveNext()) {
-                Location loc = li.getCurrent();
-                if (!pi.moveNext()) {
-                    break;
-                }
-
-                PixelRGBA c = pi.getCurrent();
-                lpb->set(loc.x, loc.y, c);
-
-                //((PixelRGBA*)(imageData.pixelData))[(int)loc.y * lpb->width() + (int)loc.x] = c;
-            }
-        }
-        else {
-            PixelsCompressed pi(bs, meta);
-
-            while (li.moveNext()) {
-                Location loc = li.getCurrent();
-
-                if (!pi.moveNext()) {
-                    break;
-                }
-
-                PixelRGBA c = pi.getCurrent();
-                lpb->set(loc.x, loc.y, c);
-            }
-        }
-
-        return lpb;
-    }
-
-    // read a targa image from a stream
-    static PixelMap* readFromStream(BinStream& bs, TargaMeta& res)
-    {
-        // position 26 bytes from the end and try 
-        // to read the footer
-        bs.seek(bs.size() - footerSize);
-        bool success = readFooter(bs, res.footer);
-
-        //time to read the header
-        bs.seek(0);
-        success = readHeader(bs, res.header);
-
-        if (!success) {
-            //printf("targa::readFromStream(), failed to read header\n");
-            return nullptr;
-        }
-
-        // We have the header, so we should be able
-        // to read the body
-        PixelMap* apb = readBody(bs, res);
-
-        return apb;
-    }
-
-
-    static PixelMap* readFromFile(const char* filename, TargaMeta& meta)
-    {
-        auto bs = FileStream(filename);
-
-        if (!bs.isValid()) {
-            printf("Could not map file: %s\n", filename);
-            return nullptr;
-        }
-
-        if (!bs.isValid()) {
-            printf("BinaryStream not valid.\n");
-            return nullptr;
-        }
-
-        PixelMap* abuff = readFromStream(bs, meta);
-
-        return abuff;
-    }
-*/
     static bool initBody(PixelMap &lpb, BinStream& bs, TargaMeta& meta)
     {
         lpb.init(meta.header.Width, meta.header.Height);

@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef INTERVAL_H
 #define INTERVAL_H
 //==============================================================================================
@@ -42,6 +44,7 @@ class interval {
   public:
     double min, max;
 };
+
 
 const interval interval::empty    = interval(+infinity, -infinity);
 const interval interval::universe = interval(-infinity, +infinity);

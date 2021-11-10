@@ -54,12 +54,21 @@ public:
         fCurrentFrame = fCurrentFrame + 1;
     }
 
+    void toggleRecording()
+    {
+        if (fIsRecording)
+            pause();
+        else
+            record();
+    }
     bool record()
     {
         if (fIsRecording)
             return false;
 
         fIsRecording = true;
+
+        return true;
     }
 
     void pause()

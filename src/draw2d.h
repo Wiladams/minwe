@@ -13,8 +13,10 @@
     All operations are SRCCOPY.  It is relatively to add different
     pixel covering functions with these base routines.
 
-    // Reference
-    // https://magcius.github.io/xplain/article/rast1.html
+    Reference
+    https://magcius.github.io/xplain/article/rast1.html
+    https://www.scratchapixel.com/lessons/3d-basic-rendering/rasterization-practical-implementation/rasterization-stage
+
 */
 
 #include "pixelmap.h"
@@ -195,7 +197,7 @@ inline void line(PixelMap& pmap, const int x1, const int y1, const int x2, const
     int x21 = x2;
     int y21 = y2;
 
-    if (!clipLine({ 0,0,pmap.width, pmap.height }, x11, y11, x21, y21))
+    if (!clipLine({ 0,0,pmap.width(), pmap.height() }, x11, y11, x21, y21))
         return;
 
     int w = x21 - x11;
@@ -281,13 +283,13 @@ inline void fill2EllipseLines(PixelMap& pb, const int cx, const int cy, const in
     int x2 = cx + x;
     int y2 = cy + y;
 
-    if (clipLine({0,0,pb.width, pb.height}, x1, y1, x2, y2)) {
+    if (clipLine({0,0,pb.width(), pb.height()}, x1, y1, x2, y2)) {
         setSpan(pb, x1, y1, x2 - x1, color);
     }
 
     y1 = cy - y;
     y2 = cy - y;
-    if (clipLine({0,0,pb.width, pb.height}, x1, y1, x2, y2)) {
+    if (clipLine({0,0,pb.width(), pb.height()}, x1, y1, x2, y2)) {
         setSpan(pb, x1, y1, x2 - x1, color);
     }
 }
@@ -464,7 +466,7 @@ inline void setConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, 
             int x1 = lx < rx ? lx : rx;
             int x2 = x1 + w-1;
 
-            if (clipLine({ 0,0,pb.width, pb.height }, x1, y1, x2, y2)) {
+            if (clipLine({ 0,0,pb.width(), pb.height() }, x1, y1, x2, y2)) {
                 w = x2 - x1;
                 setSpan(pb, x1, y1, w, color);
             }
@@ -518,7 +520,7 @@ inline void fillRectangle(PixelMap& pmap, const int x, const int y, const int w,
 {
     // We calculate clip area up front
     // so we don't have to do clipLine for every single line
-    PixelRect dstRect = PixelRect(pmap.x, pmap.y, pmap.width, pmap.height).intersection({ x,y,w,h });
+    PixelRect dstRect = PixelRect(pmap.x(), pmap.y(), pmap.width(), pmap.height()).intersection({ x,y,w,h });
 
     // If the rectangle is outside the frame of the pixel map
     // there's nothing to be drawn
@@ -638,8 +640,8 @@ inline void bezier(PixelMap& pmap, const int x1, const int y1, const int x2, con
 // crash when going off the edges
 inline void blit(PixelMap & pb, const int x, const int y, PixelMap & src)
 {
-    PixelRect bounds(0, 0, pb.width, pb.height);
-    PixelRect dstFrame(x, y, src.width, src.height);
+    PixelRect bounds(0, 0, pb.width(), pb.height());
+    PixelRect dstFrame(x, y, src.width(), src.height());
 
     PixelRect dstisect = bounds.intersection(dstFrame);
 

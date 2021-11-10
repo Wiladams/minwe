@@ -11,7 +11,7 @@ inline void sampleSpan(PixelMap& pmap, const int x, const int y, const int width
     for (int col = x; col < x + width; col++)
     {
         double u = maths::Map(col, x, (double)x + width - 1, 0, 1);
-        PixelRGBA c = s.getValue(u);
+        PixelRGBA c = s.getValue(u, { col,y });
         pmap.set(col, y, c);
     }
 }
@@ -22,7 +22,7 @@ inline void sampleHLine2D(PixelMap& pb, int x1, int y1, int w,
     for (int x = x1; x < x1 + w - 1; x++)
     {
         double u = maths::Map(x, x1, x1 + w - 1, 0, 1);
-        pb.set(x, y1, src.getValue(u, v));
+        pb.set(x, y1, src.getValue(u, v, { x,y1 }));
     }
 }
 
@@ -35,7 +35,7 @@ inline void sampleRectangle(PixelMap& pmap,
     const int w, const int h,
     ISample2D<PixelRGBA>& src)
 {
-    PixelRect bounds(pmap.x, pmap.y, pmap.width, pmap.height);
+    PixelRect bounds(pmap.x(), pmap.y(), pmap.width(), pmap.height());
     PixelRect dstFrame(x, y, w, h);
 
     // find the intersection between the source rectangle
@@ -57,7 +57,7 @@ inline void sampleRectangle(PixelMap& pmap,
         {
             double u = maths::Map(col, x, (double)x + w - 1, 0, 1);
             double v = maths::Map(row, y, (double)y + h - 1, 0, 1);
-            auto c = src.getValue(u, v);
+            auto c = src.getValue(u, v, { col,row });
             pmap.set(col, row, c);
         }
 
@@ -81,7 +81,7 @@ inline void sampledBezier(PixelMap& pmap, const int x1, const int y1, const int 
         PixelCoord p = bezier_point(u, bez.p1, bez.p2, bez.p3, bez.p4);
 
         // draw line segment from last point to current point
-        line(pmap, lp.x, lp.y, p.x, p.y, c.getValue(u));
+        line(pmap, lp.x, lp.y, p.x, p.y, c.getValue(u,p));
 
         // Assign current to last
         lp = p;
@@ -160,7 +160,7 @@ inline void sampleConvexPolygon(PixelMap& pb,
             int x1 = lx < rx ? lx : rx;
             int x2 = x1 + w - 1;
 
-            if (clipLine({ 0,0,pb.width, pb.height }, x1, y1, x2, y2)) 
+            if (clipLine({ 0,0,pb.width(), pb.height() }, x1, y1, x2, y2)) 
             {
                 double v = maths::Map(y1, miny, maxy, 0, 1);
                 w = x2 - x1;
@@ -197,9 +197,18 @@ inline void sampleTriangle(PixelMap& pb, const int x1, const int y1,
     sampleConvexPolygon(pb, tri.verts, nverts, vmin, src, clipRect);
 }
 
-void sampleCircle(PixelMap& pmap, int centerX, int centerY, int radius, ISample2D<PixelRGBA>& fillStyle) {
+void sampleCircle(PixelMap& pmap, int centerX, int centerY, int radius, ISample2D<PixelRGBA>& fillStyle) 
+{
     auto x1 = centerX - radius, y1 = centerY - radius;
     auto  x2 = centerX + radius, y2 = centerY + radius;
+    // should check the clip region to optimize
+    
+    // The algorithm here is very straight forward
+    // we have a bounding rectangle for the circle
+    // so we just check each pixel within that rectangle
+    // to see if it's inside, or outside the circle.
+    // if it's inside, we set the color, otherwise not
+    //
     for (int y = y1; y < y2; y++) {
         for (int x = x1; x < x2; x++) {
             auto distX = (x - centerX + 0.5), distY = (y - centerY + 0.5);
@@ -207,7 +216,7 @@ void sampleCircle(PixelMap& pmap, int centerX, int centerY, int radius, ISample2
             if (distance <= radius) {
                 auto u = maths::Map(x, x1, x2,0,1);
                 auto v = maths::Map(y, y1, y2, 0, 1);
-                auto rgb = fillStyle.getValue(u, v);
+                auto rgb = fillStyle.getValue(u, v, { x,y });
                 pmap.set(x, y, rgb);
             }
         }

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <memory>
 
 #include "User32PixelMap.h"
@@ -47,14 +49,14 @@ class CheckerPattern : public ISample2D<PixelRGBA>
 public:
     // Default constructor, black and white colors
     CheckerPattern()
-        :t1(std::make_shared< SolidColorSampler2D>(0xff000000)),
-        t2(std::make_shared<SolidColorSampler2D>(0xffffffff)),
+        :t1(std::make_shared< SolidColorSampler>(0xff000000)),
+        t2(std::make_shared<SolidColorSampler>(0xffffffff)),
         frequency(4) {}
 
     // Constructor taking two colors and frequency
     CheckerPattern(PixelRGBA c1, PixelRGBA c2, int freq) 
-        : t1(std::make_shared< SolidColorSampler2D>(c1)),
-        t2(std::make_shared< SolidColorSampler2D>(c2)),
+        : t1(std::make_shared< SolidColorSampler>(c1)),
+        t2(std::make_shared< SolidColorSampler>(c2)),
         frequency(freq) {}
 
     CheckerPattern(
@@ -68,7 +70,7 @@ public:
     // We want to turn that range into values
     // based on the frequency and colors given
     // at construction time
-    virtual PixelRGBA getValue(double u, double v) const
+    virtual PixelRGBA getValue(double u, double v, const PixelCoord&p) const
     {
         double xrad = maths::Map(u, 0, 1, 0, frequency * (2 * maths::Pi));
         double yrad = maths::Map(v, 0, 1, 0, frequency * (2 * maths::Pi));
@@ -80,7 +82,7 @@ public:
 
         auto sines = stepu * stepv;
 
-        return sines <= 0 ? t1->getValue(u,v) : t2->getValue(u,v);
+        return sines <= 0 ? t1->getValue(u,v,p) : t2->getValue(u,v,p);
     }
 
 
@@ -125,7 +127,7 @@ public:
                 double u = maths::Map(col, 1, fFrequency * 2.0, 0, 1);
                 double v = maths::Map(row, 1, fFrequency * 2.0, 0, 1);
 
-                auto c = fPattern(u, v);
+                auto c = fPattern(u, v, { col,row });
 
                 fillRectangle(*pmap, fFrame.x + ((col - 1) * (xExtent)), fFrame.y + ((row - 1) * yExtent), xExtent, yExtent, c);
             }

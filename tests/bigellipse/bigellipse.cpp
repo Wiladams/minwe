@@ -55,11 +55,11 @@ void onFrame()
 
 	//fillRectangle(*gAppSurface, cx - xRadius, cy - yRadius, xRadius * 2, yRadius * 2, 0xff0000ff);
 
-	//fillEllipse(*gAppSurface, cx, cy, xRadius, yRadius, 0xffff0000);
+	fillEllipse(*gAppSurface, cx, cy, xRadius, yRadius, 0xffff0000);
 	//strokeEllipse(*gAppSurface, cx, cy, xRadius, yRadius, 0xffffffff);
 	
-	CheckerPattern chkbg(0xff0c0c0c,0xff1c1c1c, 8);
-	sampleCircle(*gAppSurface, cx, cy, xRadius, chkbg);
+	//CheckerPattern chkbg(0xff0c0c0c,0xff1c1c1c, 8);
+	//sampleCircle(*gAppSurface, cx, cy, xRadius, chkbg);
 
 }
 

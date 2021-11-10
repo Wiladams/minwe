@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef AABB_H
 #define AABB_H
 //==============================================================================================
@@ -89,9 +91,14 @@ class aabb {
         }
     #endif
 
+
+
   public:
     interval x, y, z;
 };
+
+
+
 
 aabb operator+(const aabb& bbox, const vec3& offset) {
     return aabb(bbox.x + offset.x(), bbox.y + offset.y(), bbox.z + offset.z());

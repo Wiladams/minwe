@@ -21,8 +21,8 @@ void onFrame()
     // color values look like
     // 0xAARRGGBB
 
-    auto s1 = std::make_shared< SolidColorSampler2D>(0xff555555);
-    auto s2 = std::make_shared< SolidColorSampler2D>(0xffdddddd);
+    auto s1 = std::make_shared< SolidColorSampler>(0xff555555);
+    auto s2 = std::make_shared< SolidColorSampler>(0xffdddddd);
 
     // smaller board with larger squares
     screenSamp->next();
@@ -47,7 +47,7 @@ void setup()
     targa::initFromFile(img2, "..\\debug\\money-256.tga");
 	isamp2 = std::make_shared<ImageSampler>(img2);
 
-    auto red1 = std::make_shared< SolidColorSampler2D>(0xffff0000);
+    auto red1 = std::make_shared< SolidColorSampler>(0xffff0000);
     Checkerboard chkbg({ 0,0,canvasWidth,canvasHeight }, 
         red1, 
         isamp2, 

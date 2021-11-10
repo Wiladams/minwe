@@ -1,3 +1,5 @@
+#pragma once 
+
 #ifndef CAMERA_H
 #define CAMERA_H
 //==============================================================================================
@@ -16,7 +18,8 @@
 
 class camera {
   public:
-    void initialize(double aspect_ratio = 1.0) {
+    void initialize(double aspect_ratio = 1.0) 
+    {
         auto theta = degrees_to_radians(vfov);
         auto h = tan(theta/2);
         auto viewport_height = 2.0 * h;

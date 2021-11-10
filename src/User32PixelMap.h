@@ -30,22 +30,19 @@ class User32PixelMap : public PixelMap
     HDC     fBitmapDC = nullptr;
     void * fData = nullptr;       // A pointer to the data
     size_t fDataSize=0;       // How much data is allocated
+    
+    // A couple of constants
+    static const int bitsPerPixel = 32;
+    static const int alignment = 4;
 
 public:
     User32PixelMap()
     {
-        x = 0;
-        y = 0;
-        width = 0;
-        height = 0;
     }
 
     User32PixelMap(const long awidth, const long aheight)
+        : PixelMap(0,0,awidth,aheight)
     {
-        x = 0;
-        y = 0;
-        width = awidth;
-        height = aheight;
         fDataSize = 0;
 
         init(awidth, aheight);
@@ -60,12 +57,8 @@ public:
 
     virtual bool init(int awidth, int aheight)
     {
-        x = 0;
-        y = 0;
-        width = awidth;
-        height = aheight;
-        int bitsPerPixel = 32;
-        int alignment = 4;
+        fBounds = { 0,0,awidth,aheight };
+
         int bytesPerRow = winme::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
 
         fBMInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -99,34 +92,25 @@ public:
         return true;
     }
 
-    inline long getWidth() const { return width; }
-    inline long getHeight() const { return height; }
     inline PixelRGBA* getData() { return (PixelRGBA*)fData; }
-    inline PixelRGBA* getPixelPointer(const int x, const int y) {return &((PixelRGBA*)fData)[(y * getWidth()) + x]; }
+    inline PixelRGBA* getPixelPointer(const int x, const int y) {return &((PixelRGBA*)fData)[(y * width()) + x]; }
 
-    // Calculate whether a point is whithin our bounds
-    inline bool contains(double x, double y) const { return ((x >= 0) && (x < width) && (y >= 0) && (y < height)); }
 
     inline BITMAPINFO getBitmapInfo() {return fBMInfo;}
 
     inline HDC getDC() {return fBitmapDC;}
 
 
-    // Set a single pixel (srccopy)
-    inline virtual void set(const int x, const int y, const PixelRGBA c)
+    // Set a single pixel value
+    // Assume range checking has already occured
+    inline virtual void setPixel(const int x, const int y, const PixelRGBA c)
     {
-        // reject pixel if out of boundary
-        if ((x < 0) || (x >= width) ||
-            (y < 0) || (y >= height)) {
-            return;
-        }
-
-        size_t offset = (size_t)(y * width) + (size_t)x;
+        size_t offset = (size_t)(y * fBounds.width) + (size_t)x;
         ((PixelRGBA*)fData)[offset] = c;
     }
 
-
     // set consecutive pixels in a row 
+    // Assume the range has already been clipped
     inline void setPixels(const int x, const int y, const int width, const PixelRGBA src)
     {
         // do line clipping
@@ -136,32 +120,37 @@ public:
     }
 
     // Set every pixel to a specified value
+    // we can use this fast intrinsic to fill
+    // the whole area
     inline void setAllPixels(const PixelRGBA c)
     {
-        size_t nPixels = width * height;
+        size_t nPixels = fBounds.width * fBounds.height;
         __stosd((unsigned long*)fData, c.intValue, nPixels);
     }
 
 
 
     // Retrieve a single pixel
-    inline virtual PixelRGBA get(const int x, const int y) const
+        // This one does no bounds checking, so the behavior is undefined
+    // if the coordinates are beyond the boundary
+    inline virtual PixelRGBA getPixel(const int x, const int y) const
     {
-        // reject pixel if out of boundary
-        if ((x < 0) || (x >= width) ||
-            (y < 0) || (y >= height)) {
-            return 0;    // return transparent pixel
-        }
-
         // Get data from BLContext
-        size_t offset = (size_t)(y * width) + (size_t)x;
+        size_t offset = (size_t)(y * fBounds.width) + (size_t)x;
         return ((PixelRGBA*)fData)[offset];
     }
 
-    inline void rect(const int x, const int y, const int w, const int h, const PixelRGBA c)
+    // when checking bounds, return totally transparent
+    // when outside bounds
+    inline virtual PixelRGBA get(const int x, const int y) const
     {
-        for (int row = y; row < y + h; row++)
-            setPixels(x, row, w, c);
+        // reject pixel if out of boundary
+        if (!fBounds.containsPoint(x, y))
+            return 0;
+
+        // Get data from BLContext
+        size_t offset = (size_t)(y * fBounds.width) + (size_t)x;
+        return ((PixelRGBA*)fData)[offset];
     }
 
  };

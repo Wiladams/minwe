@@ -18,10 +18,6 @@ void setup()
 	// create the source as a solid color
 	src.setAllPixels(0xffffff00);
 
-
-
-
-
 	// Now do the blit
 	blit(*gAppSurface, 10, 10, src);
 
@@ -36,10 +32,10 @@ void setup()
 	// partial left
 	blit(*gAppSurface, -200, 300, src);
 
-	targa::TargaMeta meta;
-	PixelMap* img = targa::readFromFile("d:\\repos\\minwe\\tests\\debug\\shuttle.tga", meta);
-	if (img != nullptr) {
-		blit(*gAppSurface, 200, 200, *img);
+	User32PixelMap img;
+	bool success = targa::initFromFile(img, "d:\\repos\\minwe\\tests\\debug\\shuttle.tga");
+	if (success) {
+		blit(*gAppSurface, 200, 200, img);
 	}
 
 	refreshScreen();

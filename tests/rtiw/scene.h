@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef SCENE_H
 #define SCENE_H
 //==============================================================================================
@@ -13,70 +15,19 @@
 
 #include "camera.h"
 #include "hittable_list.h"
+#include "pdf.h"
+#include "material.h"
+#include "color.h"
 
 #include "pixelmap.h"
 
-
-
-
 class scene {
-    // This structure is defined in here so we 
-    // don't have to declare a friend class or 
-    // use any other tricks to get the self reference
-    struct RayTraceCtx {
-        PixelMap* fPixelMap;
-        scene* fScene;
-        int fLow;
-        int fHigh;
-
-        RayTraceCtx(PixelMap* pmap, scene* s, int starting, int ending)
-            : fPixelMap(pmap),
-            fScene(s),
-            fLow(starting),
-            fHigh(ending)
-        {
-        }
-    };
-    
-    // This is the thread start routine
-    // It will call the render() function of the 
-    // scene, passing parameters
-    static DWORD WINAPI renderScene(void* param)
-    {
-        RayTraceCtx* ctx = (RayTraceCtx*)param;
-        ctx->fScene->renderSegment(ctx->fPixelMap, ctx->fLow, ctx->fHigh);
-
-        // when done, need to delete the context
-        // delete ctx
-
-        // The return value is not used
-        // but we'll return 1 anyway
-        return 1;
-    }
-
+ 
 public:
     // Return the calculated height of the image
-    int getHeight()
+    int height()
     {
           return static_cast<int>(image_width / aspect_ratio);
-    }
-
-    // This is the primary function called to render the scene
-    // Just pass in a pixelmap and number of segments
-    // This will use multiple threads
-    void render(PixelMap* pmap, int numSegments = 1)
-    {
-        // Setup the individual segment threads
-        int segLength = getHeight() / numSegments;
-
-        for (int i = 0; i < numSegments; i++)
-        {
-            int starting = i * segLength;
-            int ending = starting + segLength - 1;
-            RayTraceCtx* ctx = new RayTraceCtx(&(*gAppSurface), this, ending, starting);
-            Thread* t1 = new Thread(renderScene, ctx);
-            t1->resume();
-        }
     }
 
     // This is the workhorse routine of the scene
@@ -105,7 +56,7 @@ public:
             }
         }
 
-        std::cerr << "\nDone.\n";
+        //std::cerr << "\nDone.\n";
     }
 
   public:
