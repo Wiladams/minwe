@@ -1,7 +1,7 @@
 #pragma once
 
-#include <math.h>
-#include "pixelmap.h"
+#include <cmath>
+#include "glsl.h"
 
 // Some routines in here to deal with colors in various
 // ways.

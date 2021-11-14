@@ -20,7 +20,7 @@
 #include "User32PixelMap.h"
 #include "sampler.h"
 
-class ScreenSnapshot : public User32PixelMap, public ISample2D<PixelRGBA>
+class ScreenSnapshot : public User32PixelMap
 {
     HDC fScreenDC;  // Device Context for the screen
 
@@ -40,18 +40,6 @@ public:
         
         // take at least one snapshot
         next();
-    }
-
-    // From sampler
-    // Return a value based on the parametric (u,v) pair
-    // 'p' is passed by the caller as a hint as to the 
-    // absolute pixel value it's looking for
-    virtual PixelRGBA getValue(double u, double v, const PixelCoord &p) const
-    {
-        int x = int((u * ((double)width() - 1))+0.5);
-        int y = int((v * ((double)height() - 1))+0.5);
-
-        return get(x, y);
     }
 
     // take a snapshot of current screen

@@ -2,6 +2,8 @@
 
 #include <queue>
 
+#include "rtweekend.h"
+
 #include "scene.h"
 #include "thread.h"
 

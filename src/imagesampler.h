@@ -12,13 +12,11 @@
 class ImageSampler : public ISample2D<PixelRGBA>
 {
 	PixelMap & fImage;
-	//bool fFlipVertical;
 
 public:
 
-	ImageSampler(PixelMap & img, const bool flipVertical = false)
+	ImageSampler(PixelMap & img)
 		: fImage(img)
-		//,fFlipVertical(false)
 	{
 	}
 
@@ -27,7 +25,5 @@ public:
 		int x = int((u * ((double)fImage.width() - 1)) + 0.5);
 		int y = int((v * ((double)fImage.height() - 1)) + 0.5);
 		return fImage.get(x, y);
-
-		//return fImage.get(p.x, p.y);
 	}
 };

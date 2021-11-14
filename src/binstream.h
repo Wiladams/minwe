@@ -134,7 +134,7 @@ public:
         // if position specified outside of range
         // just set it past end of stream
         if (pos >= fsize) {
-            //fcursor = fsize;
+            fcursor = fsize;
             return false;
         }
         

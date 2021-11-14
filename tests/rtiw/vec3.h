@@ -16,8 +16,6 @@
 #include <cmath>
 #include <iostream>
 
-using std::sqrt;
-using std::fabs;
 
 class vec3 {
   public:
@@ -58,7 +56,7 @@ class vec3 {
     }
 
     double length() const {
-        return sqrt(length_squared());
+        return std::sqrt(length_squared());
     }
 
     double length_squared() const {
@@ -69,7 +67,7 @@ class vec3 {
     bool near_zero() const {
         
         const auto s = 1e-8;
-        return (fabs(e[0]) < s) && (fabs(e[1]) < s) && (fabs(e[2]) < s);
+        return (std::fabs(e[0]) < s) && (std::fabs(e[1]) < s) && (std::fabs(e[2]) < s);
     }
 
     // generate random vector
@@ -173,7 +171,7 @@ inline vec3 reflect(const vec3& v, const vec3& n) {
 inline vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat) {
     auto cos_theta = fmin(dot(-uv, n), 1.0);
     vec3 r_out_perp =  etai_over_etat * (uv + cos_theta*n);
-    vec3 r_out_parallel = -sqrt(fabs(1.0 - r_out_perp.length_squared())) * n;
+    vec3 r_out_parallel = -std::sqrt(std::fabs(1.0 - r_out_perp.length_squared())) * n;
     return r_out_perp + r_out_parallel;
 }
 
@@ -182,9 +180,9 @@ inline vec3 random_cosine_direction() {
     auto r2 = random_double();
 
     auto phi = 2*pi*r1;
-    auto x = cos(phi)*sqrt(r2);
-    auto y = sin(phi)*sqrt(r2);
-    auto z = sqrt(1-r2);
+    auto x = cos(phi)*std::sqrt(r2);
+    auto y = sin(phi)* std::sqrt(r2);
+    auto z = std::sqrt(1-r2);
 
     return vec3(x, y, z);
 }

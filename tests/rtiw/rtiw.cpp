@@ -4,18 +4,20 @@
 #include "checkerboard.h"
 #include "recorder.h"
 
-#include "rtweekend.h"
+#include "raytracer.h"
 
-#include "camera.h"
-#include "color.h"
-#include "constant_medium.h"
-#include "hittable_list.h"
-#include "material.h"
+//#include "rtweekend.h"
+
+//#include "camera.h"
+//#include "color.h"
+//#include "constant_medium.h"
+//#include "hittable_list.h"
+//#include "material.h"
 #include "quad.h"
-#include "scene.h"
+//#include "scene.h"
 #include "sphere.h"
 
-#include "raytracer.h"
+
 /*
     Cornell Box scene rendered using winme
 */

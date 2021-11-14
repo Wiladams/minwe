@@ -6,13 +6,28 @@
 #include "matrix2d.h"
 #include "sampler.h"
 
+struct CoordD { double x; double y; };
+struct ExtentD { double left; double top; double right; double bottom; };
+struct RectD { 
+	double x; double y; 
+	double width; double height; 
+
+	RectD() :x(0), y(0), width(0), height(0) {}
+	RectD(double x, double y, const double w, const double h)
+		:x(x), y(y), width(w), height(h) {}
+	RectD(const PixelRect& r) :x(r.x), y(r.y), width(r.width), height(r.height) {}
+
+	// type conversion
+	operator PixelRect () const { return {(int)x,(int)y,(int)width, (int)height}; }
+};
+
 class RenderContext
 {
 	// current transformation matrix
 	// PixelMap
 
 	std::shared_ptr<PixelMap> fPixelMap;
-	PixelRect fClipRect;
+	RectD fClipRect;
 	Matrix2D fTransform;
 
 public:
@@ -20,6 +35,7 @@ public:
 		:fPixelMap(pmap)
 	{
 		fTransform = Matrix2D::createIdentity();
+		fPixelMap->getBounds();
 		fClipRect = fPixelMap->getBounds();
 	}
 
@@ -33,9 +49,13 @@ public:
 		fPixelMap->set(x, y, c);
 	}
 
+	//
+	// A single point might have some dimension to it
+	// and can be used with styles
+	//
 	inline void point(const double x, const double y, ISample2D<PixelRGBA>& style)
 	{
-		auto bounds = fPixelMap->getBounds();
+		const auto &bounds = fPixelMap->getBounds();
 
 		// apply transform
 		double x1, y1;
@@ -80,6 +100,31 @@ public:
 		PixelCoord* verts, const int nverts, int vmin,
 		ISample2D<PixelRGBA>& style)
 	{}
+
+	virtual void rect(const RectD &dstRect, ISample2D<PixelRGBA>& style, const ExtentD& srcExt)
+	{
+		// find the intersection between the source rectangle
+		// and the frame.  This intersection is the only portion
+		// we need to draw, so we know all pixels are in bounds
+		PixelRect dstisect = fPixelMap->getBounds().intersection(dstRect);
+
+		// If there's no intersection with the boundary of the
+		// PixelMap, then there's nothing to draw
+		if (dstisect.isEmpty())
+			return;
+
+		for (int row = dstisect.y; row < dstisect.y + dstisect.height; row++)
+		{
+			for (int col = dstisect.x; col < dstisect.x + dstisect.width; col++)
+			{
+				double u = maths::Map(col, dstRect.x, dstRect.x + dstRect.width - 1, srcExt.left, srcExt.right);
+				double v = maths::Map(row, dstRect.y, dstRect.y + dstRect.height - 1, srcExt.top, srcExt.bottom);
+				auto c = style.getValue(u, v, { col,row });
+				fPixelMap->setPixel(col, row, c);
+			}
+
+		}
+	}
 
 	virtual void rectangle(const double x, const double y, const double w, const double h, ISample2D<PixelRGBA>& style)
 	{

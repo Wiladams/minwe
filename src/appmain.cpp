@@ -15,6 +15,7 @@
 
 #include "LayeredWindow.hpp"
 #include "joystick.h"
+#include "network.h"
 
 #include <shellapi.h>   // for drag-drop support
 
@@ -1002,6 +1003,11 @@ User32WindowClass gAppWindowKind("appwindow", CS_GLOBALCLASS | CS_DBLCLKS | CS_H
 // in the very beginning
 bool prolog()
 {
+    uint16_t version = MAKEWORD(2, 2);
+    WSADATA lpWSAData;
+    int res = ::WSAStartup(version, &lpWSAData);
+
+
     // Throughout the application, we want to know the true
     // physical dots per inch and screen resolution, so the
     // first thing to do is to let Windows know we are Dpi aware

@@ -95,5 +95,8 @@
     <ClInclude Include="raytracer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="rtw_stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
