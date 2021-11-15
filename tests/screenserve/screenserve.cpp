@@ -34,7 +34,7 @@ bool sendChunk(IPSocket& s, BufferChunk& bc)
 {
 	// Get a stream on the chunk
 	BinStream chunkStream(bc.data(), bc.size());
-	static const int idealSize = 48 * 1024;
+	static const int idealSize = 32 * 1024;
 
 	//printf("sendChunk: (%d)\n", bc.size());
 	int packetCount = 0;
@@ -66,12 +66,8 @@ bool sendChunk(IPSocket& s, BufferChunk& bc)
 	}
 
 	// Send one more packet of size 0
-	char packet[1600];
-	BinStream packetStream(packet, 1600);
-
-	packetStream.seek(0);
-	packetStream.writeUInt32(0);
-	int sentCode = s.send(packet, 4);
+	int finalSize = 0;
+	int sentCode = s.send((char *)&finalSize, 4);
 	//printf("sent chunk\n");
 
 	return true;

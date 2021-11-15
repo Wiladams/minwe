@@ -3,16 +3,11 @@
 #include "apphost.h"
 #include "draw2d.h"
 
-//#include "gui.h"
-#include "rendercontext.h"
-#include "screensnapshot.h"
 #include "rlecodec.h"
 #include "binstream.h"
 #include "tcpclient.h"
 
 #include <memory>
-
-std::shared_ptr<RenderContext> ctx = nullptr;
 
 
 static const int captureWidth = 1024;
@@ -97,7 +92,8 @@ void onLoop()
 	}
 
 	// Display it
-	ctx->rectangle(0, 0, captureWidth, captureHeight, clientMap);
+	blit(*gAppSurface, 0, 0, clientMap);
+
 
 	refreshScreen();
 }
@@ -108,7 +104,9 @@ void onLoad()
 {
 	printf("onload\n");
 
-	host = IPHost::create("192.168.1.9", "8081");
+	//host = IPHost::create("192.168.1.9", "8081");
+	host = IPHost::create("localhost", "8081");
+
 	if (host != nullptr)
 	{
 		IPAddress* addr = host->getAddress(0);
@@ -122,8 +120,4 @@ void onLoad()
 	}
 
 	setCanvasSize(captureWidth, captureHeight);
-
-	// A rendering context for convenience
-	ctx = std::make_shared<RenderContext>(gAppSurface);
-
 }
