@@ -112,8 +112,8 @@ class ConvolutionPixelMap : public PixelMap
     float kernelContrib = 0;
 
     //float kernel[3][3]={ {-4.0f, -16.0f, -4.0f}, {-16.0f, 0.0f, -16.0f}, {-4.0f,-16.0f, -4.0f} }; // Blur
-    float kernel[3][3] = { {1.0f, 2.0f, 1.0f}, {2.0f, 4.0f, 2.0f}, {1.0f, 2.0f, 1.0f} };         // Gaussian blur
-    //float kernel[3][3] = { {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, -1.0f} };     // Emboss
+    //float kernel[3][3] = { {1.0f, 2.0f, 1.0f}, {2.0f, 4.0f, 2.0f}, {1.0f, 2.0f, 1.0f} };         // Gaussian blur
+    float kernel[3][3] = { {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, -1.0f} };     // Emboss
     //float kernel[3][3] = { {1.0f, 1.0f, 1.0f}, {1.0f, 8.0f, 1.0f}, {1.0f, 1.0f, 1.0f} };     // Edge detect
     //float kernel[3][3] = { {1.0f, 2.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {-1.0f, -2.0f, -1.0f} };   // Sobell
     //float kernel[3][3] = { {-1.0f, -1.0f, -1.0f}, {-1.0f, 16.0f, -1.0f}, {-1.0f, -1.0f, -1.0f} };   // tester
@@ -164,18 +164,21 @@ public:
 
 
         // Unroll the loop, save on the fWrapped.getPixel() call
+        int WWidth = fWrapped.width();
         PixelRGBA * p5 = fWrapped.getPixelPointer(x, y);
         PixelRGBA* p4 = p5 - 1;
         PixelRGBA* p6 = p5 + 1;
-        PixelRGBA* p7 = p4 + fWrapped.width();
-        PixelRGBA* p8 = p5 + fWrapped.width();
-        PixelRGBA* p9 = p6 + fWrapped.width();
-        PixelRGBA* p1 = p4 - fWrapped.width();
-        PixelRGBA* p2 = p5 - fWrapped.width();
-        PixelRGBA* p3 = p6 - fWrapped.width();
+        PixelRGBA* p7 = p4 + WWidth;
+        PixelRGBA* p8 = p5 + WWidth;
+        PixelRGBA* p9 = p6 + WWidth;
+        PixelRGBA* p1 = p4 - WWidth;
+        PixelRGBA* p2 = p5 - WWidth;
+        PixelRGBA* p3 = p6 - WWidth;
 
         // calculate the sum of things
         double sum = 0;
+
+        
         sum += (double)fLuminance.toLuminance(*p1) * kernel[0][0];
         sum += (double)fLuminance.toLuminance(*p2) * kernel[0][1];
         sum += (double)fLuminance.toLuminance(*p3) * kernel[0][2];
@@ -187,6 +190,20 @@ public:
         sum += (double)fLuminance.toLuminance(*p7) * kernel[2][0];
         sum += (double)fLuminance.toLuminance(*p8) * kernel[2][1];
         sum += (double)fLuminance.toLuminance(*p9) * kernel[2][2];
+        
+        /*
+        sum += (double)fLuminance.toLuminance(*p1) * kernel[0][0];
+        sum += (double)fLuminance.toLuminance(*p2) * kernel[1][0];
+        sum += (double)fLuminance.toLuminance(*p3) * kernel[2][0];
+
+        sum += (double)fLuminance.toLuminance(*p4) * kernel[0][1];
+        sum += (double)fLuminance.toLuminance(*p5) * kernel[1][1];
+        sum += (double)fLuminance.toLuminance(*p6) * kernel[2][1];
+
+        sum += (double)fLuminance.toLuminance(*p7) * kernel[0][2];
+        sum += (double)fLuminance.toLuminance(*p8) * kernel[1][2];
+        sum += (double)fLuminance.toLuminance(*p9) * kernel[2][2];
+        */
 
         /*
         for (int i = -1; i <= 1; i++) // iterating rows
