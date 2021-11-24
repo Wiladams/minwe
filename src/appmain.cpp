@@ -985,7 +985,8 @@ void run()
             res = ::TranslateMessage(&msg);
             res = ::DispatchMessageA(&msg);
         }
-        else {
+        //else 
+		{
             // call onLoop() if it exists
             if (gOnLoopHandler != nullptr) {
                 gOnLoopHandler();

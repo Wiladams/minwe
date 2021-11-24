@@ -10,8 +10,8 @@
 #include <memory>
 
 
-static const int captureWidth = 1024;
-static const int captureHeight = 768;
+static const int captureWidth = 320;
+static const int captureHeight = 240;
 
 // This is the buffer that will be used to encode images
 static const size_t bigbuffSize = captureWidth * captureHeight * 4;
@@ -104,8 +104,8 @@ void onLoad()
 {
 	printf("onload\n");
 
-	//host = IPHost::create("192.168.1.9", "8081");
-	host = IPHost::create("localhost", "8081");
+	host = IPHost::create("192.168.1.9", "8081");
+	//host = IPHost::create("localhost", "8081");
 
 	if (host != nullptr)
 	{
@@ -120,4 +120,5 @@ void onLoad()
 	}
 
 	setCanvasSize(captureWidth, captureHeight);
+	//layered();
 }
