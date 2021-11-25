@@ -104,6 +104,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\..\src</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,6 +145,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\glsl.h" />
     <ClInclude Include="..\..\src\network.h" />
+    <ClInclude Include="..\..\src\qoi.h" />
     <ClInclude Include="..\..\src\sampler.h" />
     <ClInclude Include="..\..\src\tcpserver.h" />
     <ClInclude Include="rlecodec.h" />

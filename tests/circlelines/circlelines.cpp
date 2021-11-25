@@ -32,5 +32,5 @@ void setup()
 {
 	layered();
 	setCanvasSize(800, 800);
-	setFrameRate(30);
+	setFrameRate(15);
 }
