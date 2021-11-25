@@ -8,6 +8,7 @@
 
 #include "screensnapshot.h"
 #include "rlecodec.h"
+#include "qoi.h"
 #include "binstream.h"
 #include "tcpserver.h"
 
@@ -15,8 +16,8 @@
 
 
 
-static const int captureWidth = 1024;
-static const int captureHeight = 768;
+static const int captureWidth = 320;
+static const int captureHeight = 240;
 
 // This is the buffer that will be used to encode images
 static const size_t bigbuffSize = captureWidth * captureHeight * 4;
@@ -24,7 +25,7 @@ byte bigbuff[bigbuffSize];
 BinStream bs(bigbuff, bigbuffSize);
 
 // Make the screen snapshot thing
-ScreenSnapshot snapper(0,0,captureWidth, captureHeight);
+ScreenSnapshot snapper(400,400,captureWidth, captureHeight);
 
 LuminanceRLE rle;
 
@@ -68,6 +69,7 @@ bool sendChunk(IPSocket& s, BufferChunk& bc)
 	// Send one more packet of size 0
 	int finalSize = 0;
 	int sentCode = s.send((char *)&finalSize, 4);
+	
 	//printf("sent chunk\n");
 
 	return true;
@@ -85,44 +87,48 @@ void onLoad()
 		return;
 	}
 
-	// Accept a single client
-	IPSocket clientSock = srvr.accept(); // wait for a connection
-
-	if (!clientSock.isValid()) {
-		printf("clientSock, not valid: %d\n", srvr.getLastError());
-		halt();
-		return;
-	}
-
-	// while connected
-	uint64_t commandCount = 0;
 	while (true) {
-		// Client sends us a command, so read that
-		memset(bigbuff, 0, 512);
-		int inLen = clientSock.receive((char *)bigbuff, 512);
-		commandCount = commandCount + 1;
+		// Accept a single client
+		IPSocket clientSock = srvr.accept(); // wait for a connection
 
-		if (inLen < 0) {
-			printf("TCPReceived ERROR: %d\n", WSAGetLastError());
+		if (!clientSock.isValid()) {
+			printf("clientSock, not valid: %d\n", srvr.getLastError());
 			halt();
-			break;
-		}
-		else {
-			bigbuff[inLen] = 0;
-			//printf("COMMAND[%Id]: (%d) %s\n", commandCount, inLen, (char*)bigbuff);
+			return;
 		}
 
-		// take a snapshot
-		snapper.next();
+		// while connected
+		uint64_t commandCount = 0;
+		while (true) {
+			// Client sends us a command, so read that
+			memset(bigbuff, 0, 512);
+			int inLen = clientSock.receive((char*)bigbuff, 512);
+			commandCount = commandCount + 1;
 
-		bs.seek(0);
-		rle.Encode(snapper, bs);
-		size_t outLength = bs.tell();
+			if (inLen < 0) {
+				printf("TCPReceived ERROR: %d\n", WSAGetLastError());
+				//halt();
+				break;
+			}
+			else {
+				bigbuff[inLen] = 0;
+				//printf("COMMAND[%Id]: (%d) %s\n", commandCount, inLen, (char*)bigbuff);
+			}
+
+			// take a snapshot
+			snapper.next();
+
+			bs.seek(0);
+			//rle.Encode(snapper, bs);
+			QIOCodec::write(bs, snapper);
+
+			size_t outLength = bs.tell();
 
 
-		// Send data chunked
-		// create binstream on outbuff
-		BufferChunk bc(bigbuff, outLength);
-		sendChunk(clientSock, bc);
+			// Send data chunked
+			// create binstream on outbuff
+			BufferChunk bc(bigbuff, outLength);
+			sendChunk(clientSock, bc);
+		}
 	}
 }

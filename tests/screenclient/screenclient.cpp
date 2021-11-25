@@ -4,6 +4,7 @@
 #include "draw2d.h"
 
 #include "rlecodec.h"
+#include "qoi.h"
 #include "binstream.h"
 #include "tcpclient.h"
 
@@ -87,7 +88,8 @@ void onLoop()
 		{
 			// Decode the image
 			bs.seek(0);
-			rle.Decode(bs, clientMap);
+			//rle.Decode(bs, clientMap);
+			QIOCodec::read(bs, clientMap);
 		}
 	}
 
