@@ -13,10 +13,6 @@
 
 #include "apphost.h"
 
-#include "LayeredWindow.hpp"
-#include "joystick.h"
-#include "network.h"
-
 #include <shellapi.h>   // for drag-drop support
 
 #include <hidsdi.h>     // USB HID, raw usage definitions
@@ -26,6 +22,12 @@
 #include <array>
 #include <iostream>
 #include <memory>
+
+
+
+#include "LayeredWindow.hpp"
+#include "joystick.h"
+#include "network.h"
 
 // Some function signatures
 // WinMSGObserver - Function signature for Win32 message handler

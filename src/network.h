@@ -24,7 +24,9 @@ https://www.winsocketdotnetworkprogramming.com/winsock2programming/winsock2advan
 /*
     This should live somewhere else, higher in the stack
 */
-struct BufferChunk {
+struct BufferChunk 
+{
+public:
     void* fData;
     bool fIOwnData;
     size_t fSize;

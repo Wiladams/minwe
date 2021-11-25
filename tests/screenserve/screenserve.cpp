@@ -7,29 +7,22 @@
 #include "apphost.h"
 
 #include "screensnapshot.h"
-#include "rlecodec.h"
 #include "qoi.h"
 #include "binstream.h"
 #include "tcpserver.h"
 
 #include <memory>
 
-
-
-static const int captureWidth = 320;
-static const int captureHeight = 240;
+static const int captureWidth = 1024;
+static const int captureHeight = 768;
 
 // This is the buffer that will be used to encode images
-static const size_t bigbuffSize = captureWidth * captureHeight * 4;
+static const size_t bigbuffSize = (captureWidth * captureHeight * 4)+40;
 byte bigbuff[bigbuffSize];
 BinStream bs(bigbuff, bigbuffSize);
 
 // Make the screen snapshot thing
-ScreenSnapshot snapper(400,400,captureWidth, captureHeight);
-
-LuminanceRLE rle;
-
-
+ScreenSnapshot snapper(0,0,captureWidth, captureHeight);
 
 bool sendChunk(IPSocket& s, BufferChunk& bc)
 {
@@ -79,7 +72,6 @@ void onLoad()
 {
 	TcpServer srvr(8081);
 
-
 	if (!srvr.isValid()) {
 		// Could not create socket
 		printf("Could not create server: %d\n", srvr.getLastError());
@@ -120,10 +112,9 @@ void onLoad()
 
 			bs.seek(0);
 			//rle.Encode(snapper, bs);
-			QIOCodec::write(bs, snapper);
+			QIOCodec::encode(bs, snapper);
 
 			size_t outLength = bs.tell();
-
 
 			// Send data chunked
 			// create binstream on outbuff

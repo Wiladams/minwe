@@ -3,7 +3,6 @@
 #include "apphost.h"
 #include "draw2d.h"
 
-#include "rlecodec.h"
 #include "qoi.h"
 #include "binstream.h"
 #include "tcpclient.h"
@@ -11,17 +10,17 @@
 #include <memory>
 
 
-static const int captureWidth = 320;
-static const int captureHeight = 240;
+static const int captureWidth = 1024;
+static const int captureHeight = 768;
 
 // This is the buffer that will be used to encode images
-static const size_t bigbuffSize = captureWidth * captureHeight * 4;
+static const size_t bigbuffSize = (captureWidth * captureHeight * 4)+40;
 byte bigbuff[bigbuffSize];
 BinStream bs(bigbuff, bigbuffSize);
 
 // Recipient PixelMap
 User32PixelMap clientMap(captureWidth, captureHeight);
-LuminanceRLE rle;
+
 
 IPHost* host = nullptr;
 TcpClient* client = nullptr;
@@ -89,7 +88,7 @@ void onLoop()
 			// Decode the image
 			bs.seek(0);
 			//rle.Decode(bs, clientMap);
-			QIOCodec::read(bs, clientMap);
+			QIOCodec::decode(bs, clientMap);
 		}
 	}
 

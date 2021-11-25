@@ -23,7 +23,7 @@ extern "C" {
 	APP_EXPORT void setup();
 	APP_EXPORT void onFrame();
 
-	APP_EXPORT void fullscreen();
+	APP_EXPORT void fullscreen() noexcept;
 	APP_EXPORT void background(PixelRGBA c);
 
 	// keyboard event processing
