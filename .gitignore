@@ -33,3 +33,10 @@
 *.tlog
 *.tlog
 *.ipch
+*.exp
+*.ilk
+*.log
+*.pdb
+*.db
+*.db
+*.db
