@@ -40,3 +40,5 @@
 *.db
 *.db
 *.db
+*.idb
+*.iobj
