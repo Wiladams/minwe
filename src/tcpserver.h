@@ -62,6 +62,23 @@ public:
         return s;
     }
 
+    bool bindToPort(const short aPort, const int family=AF_INET) 
+    {
+        sockaddr_in addr;
+        addr.sin_family = family;
+        addr.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
+        addr.sin_port = htons(aPort);
+
+        int result = fSocket.bindTo((struct sockaddr*)&fServerAddress, fServerAddressLen);
+
+        if (result != 0) {
+            fLastError = WSAGetLastError();
+            return false;
+        }
+
+        return true;
+    }
+
     bool bind()
     {
         int result = fSocket.bindTo((struct sockaddr *)&fServerAddress, fServerAddressLen);
