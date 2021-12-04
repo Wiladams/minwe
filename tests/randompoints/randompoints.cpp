@@ -41,7 +41,7 @@ void onLoop()
 
 	drawRandomPoints();
 	
-	screenRefresh();
+	refreshScreen();
 }
 
 void onLoad()

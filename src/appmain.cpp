@@ -63,6 +63,8 @@ std::shared_ptr<User32PixelMap>  gAppSurface = nullptr;
 
 bool gIsLayered = false;
 
+int loopCount = 0;
+
 // Some globals friendly to the p5 environment
 // Display Globals
 int canvasWidth = 0;
@@ -96,9 +98,24 @@ void refreshScreen ()
     }
 
     if (!gIsLayered) {
-        // if we're not layered, then do a regular
-        // sort of WM_PAINT based drawing
-        InvalidateRect(gAppWindow->getHandle(), NULL, 1);
+
+        // if we're not layered, then we'll use RedrawWindow
+        // to get a WM_PAINT called synchronously.
+        // We want to do it this way rather than relying on 
+        // WM_ERASEBKGND because then regular WM_PAINT messages
+        // can also be responded to, without extra effort
+        // We do NOT use InvalidateRect(), because then we have
+        // no idea when the system gets around to actually issuing
+        // a WM_PAINT
+        // This does cause concern for threading though, so that must
+        // be thought about.  The painting should occur from the same
+        // thread that created the window in the first place
+        //InvalidateRect(gAppWindow->getHandle(), NULL, 1);
+        //printf("refreshScreen\n");
+        //BOOL res = RedrawWindow(gAppWindow->getHandle(), nullptr, nullptr, RDW_ERASE| RDW_INVALIDATE| RDW_ERASENOW);
+        
+        // This one uses the WM_PAINT message
+        BOOL res = RedrawWindow(gAppWindow->getHandle(), nullptr, nullptr, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW);
     }
     else {
         LayeredWindowInfo lw(canvasWidth, canvasHeight);
@@ -639,9 +656,6 @@ LRESULT HandlePaintMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     int SrcHeight = canvasHeight;
 
     BITMAPINFO info = gAppSurface->getBitmapInfo();
-    
-    // Make sure we sync all current drawing
-    //gAppSurface->sync();
 
     int pResult = StretchDIBits(hdc,
         xDest,yDest,
@@ -891,23 +905,22 @@ LRESULT CALLBACK MsgHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     //    HandlePointerMessage(hWnd, msg, wParam, lParam);
     //}
     else if (msg == WM_ERASEBKGND) {
-        //printf("WM_ERASEBKGND\n");
-        if (gPaintHandler != nullptr) {
-            gPaintHandler(hWnd, msg, wParam, lParam);
-        }
+        //loopCount = loopCount + 1;
+        //printf("WM_ERASEBKGND: %d\n", loopCount);
+        //if (gPaintHandler != nullptr) {
+        //    gPaintHandler(hWnd, msg, wParam, lParam);
+        //}
 
         // return non-zero indicating we dealt with erasing the background
         res = 1;
     }
     else if (msg == WM_PAINT) {
-        //printf("WM_PAINT\n");
+        //loopCount = loopCount + 1;
+        //printf("WM_PAINT: %d\n", loopCount);
         if (gPaintHandler != nullptr) {
-            // painting is actually handled in ERASEBKGND
-            //gPaintHandler(hWnd, msg, wParam, lParam);
-        }
-        else
-        {
-            res = ::DefWindowProcA(hWnd, msg, wParam, lParam);
+            if (gPaintHandler != nullptr) {
+                gPaintHandler(hWnd, msg, wParam, lParam);
+            }
         }
     }
     else if (msg == WM_DROPFILES) {

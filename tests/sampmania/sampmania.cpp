@@ -31,7 +31,7 @@ void setup()
 	screenSamp = std::make_shared<ScreenSnapshot>(100, 400, displayWidth / 4, displayHeight / 4);
 
 	setCanvasSize(1920, 1080);
-	setFrameRate(30);
+	setFrameRate(15);
 
 	// some 1D sampled horizontal lines
 	for (int counter = 1; counter <= 300; counter++) {

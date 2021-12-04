@@ -1,7 +1,5 @@
 
-
-#include "apphost.h"
-#include "draw2d.h"
+#include "gui.h"
 
 #include "qoi.h"
 #include "binstream.h"
@@ -9,18 +7,18 @@
 
 #include <memory>
 
-
-static const int captureWidth = 1024;
-static const int captureHeight = 768;
+static const int captureWidth = 1920;
+static const int captureHeight = 1080;
+static const int channels = 4;
 
 // This is the buffer that will be used to encode images
-static const size_t bigbuffSize = (captureWidth * captureHeight * 4)+40;
+constexpr size_t bigbuffSize = captureWidth * captureHeight * (channels + 1) + sizeof(qoi_header_t) + 4;
+
 byte bigbuff[bigbuffSize];
 BinStream bs(bigbuff, bigbuffSize);
 
 // Recipient PixelMap
 User32PixelMap clientMap(captureWidth, captureHeight);
-
 
 IPHost* host = nullptr;
 TcpClient* client = nullptr;
@@ -32,44 +30,39 @@ bool receiveChunk(TcpClient* s, BinStream& pixs)
 {
 	int packetCount = 0;
 
+	// First step is to receive back a 32-bit uint32
+	// this indicates the size of the payload
+	int payloadSize;
+	int recvLen = s->receive((char*)&payloadSize, 4);
+	int remaining = payloadSize;
+	
+	// if we had an error in receiving, then we return immediately
+	// indicating we did not read anything
+	if (recvLen < 0) {
+		return false;
+	}
+
 	// make sure we don't run off the end
 	// of the chunk buffer
-	while (!pixs.isEOF()) {
+	while ((remaining>0) && !pixs.isEOF()) 
+	{
 		packetCount = packetCount + 1;
-
-		// First step is to receive back a 32-bit uint32
-		// this indicates the size of the payload
-		int payloadSize;
-		int recvLen = s->receive((char*)&payloadSize, 4);
-		//printf("Message Received: (%d) [%d]  Payload Size: %d\n", packetCount, recvLen, payloadSize);
-
-		// if we had an error in receiving, then we return immediately
-		// indicating we did not read anything
-		if (recvLen < 0) {
-			return false;
-		}
-
-
-		if (payloadSize == 0) {
-			// We've reached a zero sized payload
-			// we're at the end of message
-			// so break out of the loop
-			//printf("== EOM ==");
-			break;
-		}
 
 		// Now read the rest of the payload into the 
 		// pixs stream
-		recvLen = s->receive((char*)pixs.getPositionPointer(), payloadSize);
+		recvLen = s->receive((char*)pixs.getPositionPointer(), remaining);
+
+		if (recvLen == SOCKET_ERROR)
+			break;
+
 		pixs.skip(recvLen);
-		//printf("  Payload: (%d) [%d]  Payload Size: %d\n", packetCount, recvLen, payloadSize);
+		remaining -= recvLen;
 	}
 
 	return true;
 }
 
-
-void onLoop()
+void onFrame()
 {
 	// each time through
 	// check to see if there's content from the server
@@ -80,30 +73,27 @@ void onLoop()
 	{
 		// send the server a command
 		auto err = client->send("get frame", 9);
-		//printf("send command: %d\n", err);
 
 		bs.seek(0);
 		if (receiveChunk(client, bs))
 		{
 			// Decode the image
 			bs.seek(0);
-			//rle.Decode(bs, clientMap);
-			QIOCodec::decode(bs, clientMap);
+			QOICodec::decode(bs, clientMap);
 		}
 	}
 
 	// Display it
 	blit(*gAppSurface, 0, 0, clientMap);
-
+	//sampleRectangle(*gAppSurface, 0, 0, captureWidth / 2, captureHeight / 2, clientMap);
+	//sampleRectangle(*gAppSurface, captureWidth / 2, captureHeight / 2, captureWidth / 2, captureHeight / 2, clientMap);
 
 	refreshScreen();
 }
 
-
-
-void onLoad()
+void setup()
 {
-	printf("onload\n");
+	printf("setup\n");
 
 	host = IPHost::create("192.168.1.9", "8081");
 	//host = IPHost::create("localhost", "8081");
@@ -120,6 +110,6 @@ void onLoad()
 		halt();
 	}
 
+	setFrameRate(10);
 	setCanvasSize(captureWidth, captureHeight);
-	//layered();
 }

@@ -182,13 +182,9 @@ struct qoi_header_t
 
 const static qoi_magic_t qoi_magic = { .chars = {'q','o','i','f'} };
 
-//static inline unsigned int QOI_COLOR_HASH(qoi_rgba_t C) {
-//	return (C.rgba.r ^ C.rgba.g ^ C.rgba.b ^ C.rgba.a);
-//}
-
 #define QOI_COLOR_HASH(C) (C.rgba.r ^ C.rgba.g ^ C.rgba.b ^ C.rgba.a)
 
-class QIOCodec
+class QOICodec
 {
 public:
 	// return the maximum number of bytes needed to encode the image

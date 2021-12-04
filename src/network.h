@@ -301,32 +301,44 @@ public:
         return ::recvfrom(fSocket, buff, bufflen, 0, addrFrom, addrFromLen);
     }
 
-    // Send a chunk of memory
-    // return the number of octets sent
-    int send(const char * buff, int len, int flags=0)
+    int send(const char* buff, int len, int flags = 0)
     {
-        return ::send(fSocket, buff, len, flags);
+        int res = ::send(fSocket, buff, len, flags);
+        return res;
     }
-
-
 
     // receive a chunk of memmory
     // return number of octets received
-    int receive(char *buff, int len, int flags=0)
+    int receive(char* buff, int len, int flags = 0)
     {
         return ::recv(fSocket, buff, len, flags);
     }
 
-    int sendChunk(BufferChunk& chunk, int flags = 0)
+    // Send a chunk of memory
+    // return the number of octets sent
+    // This will call socket send multiple times until
+    // all the bytes have been sent, or there is an error
+    int sendWhole(const char * buff, int len, int flags=0)
     {
-        return this->send((char*)chunk.fData, chunk.fSize, flags);
+        int buffoffset = 0;
+        int res = 0;
+
+        while (buffoffset < len) {
+            res = ::send(fSocket, buff+buffoffset, len, flags);
+
+            // If there's an error, break out of loop
+            if (res == SOCKET_ERROR)
+                break;
+
+            buffoffset += res;
+        }
+
+        if (res == SOCKET_ERROR)
+            return res;
+
+        return buffoffset;
     }
 
-    int receiveChunk(BufferChunk &chunk, int flags = 0)
-    {
-        int retCode = ::recv(fSocket, (char *)chunk.fData, chunk.fSize, flags);
-        return retCode;
-    }
 };
 
 

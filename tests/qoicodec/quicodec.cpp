@@ -21,11 +21,11 @@ void onFrame()
 
 	// encode it
 	bs.seek(0);
-	QIOCodec::encode(bs, snapper);
+	QOICodec::encode(bs, snapper);
 
 	// decode into copyMap
 	bs.seek(0);
-	QIOCodec::decode(bs, copyMap);
+	QOICodec::decode(bs, copyMap);
 
 	// Display it
 	blit(*gAppSurface, 0, 0, copyMap);
@@ -35,4 +35,5 @@ void onFrame()
 void setup()
 {
 	setCanvasSize(captureWidth, captureHeight);
+	setFrameRate(30);
 }

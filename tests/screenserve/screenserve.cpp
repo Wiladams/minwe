@@ -1,5 +1,6 @@
 //
-// graysampler
+// screenserve
+//
 // Demonstrate the usage of the grayscale 2D sampler.
 // This sampler wraps any other source sampler, and converts
 // the color values to grayscale values.
@@ -13,11 +14,13 @@
 
 #include <memory>
 
-static const int captureWidth = 1024;
-static const int captureHeight = 768;
+static const int captureWidth = 1920;
+static const int captureHeight = 1080;
+static const int channels = 4;
 
 // This is the buffer that will be used to encode images
-static const size_t bigbuffSize = (captureWidth * captureHeight * 4)+40;
+constexpr size_t bigbuffSize = captureWidth * captureHeight * (channels + 1) + sizeof(qoi_header_t) + 4;
+
 byte bigbuff[bigbuffSize];
 BinStream bs(bigbuff, bigbuffSize);
 
@@ -26,46 +29,35 @@ ScreenSnapshot snapper(0,0,captureWidth, captureHeight);
 
 bool sendChunk(IPSocket& s, BufferChunk& bc)
 {
+	// The ideal size of chunk to send should
+	// match the send buffer size of the underlying
+	// socket
+	static const int idealSize = 16 * 1024;
+
 	// Get a stream on the chunk
 	BinStream chunkStream(bc.data(), bc.size());
-	static const int idealSize = 32 * 1024;
 
-	//printf("sendChunk: (%d)\n", bc.size());
-	int packetCount = 0;
-	int overallSize = bc.size();
+	uint32_t overallSize = bc.size();
+
+	// write out the overall size to be sent
+	int sentCode = s.send((const char*)&overallSize, 4);
 
 	while (!chunkStream.isEOF()) {
-		packetCount = packetCount + 1;
-
-		// we'll write 32K bytes at a time
+		// we'll write idealSize bytes at a time
 		// start by writing the number of bytes
 		// into the packet header
 		int remains = chunkStream.remaining();
 		int payloadSize = (int)maths::Min((double)idealSize, (double)remains);
-
-
-		// Write payload size into packet header
-		int sentCode = s.send((const char*)&payloadSize, 4);
-		//printf("1.0 sentCode: payloadSize: %d\n", payloadSize);
 
 		// Write the payload out and advance
 		int bytesSent = s.send((char*)chunkStream.getPositionPointer(), payloadSize);
 		overallSize -= bytesSent;
 
 		chunkStream.skip(bytesSent);
-
-		//printf("2.0 actual: (%d) overall: %d remaining: %d\n", 
-		//	bytesSent, overallSize, chunkStream.remaining());
-
 	}
 
-	// Send one more packet of size 0
-	int finalSize = 0;
-	int sentCode = s.send((char *)&finalSize, 4);
-	
-	//printf("sent chunk\n");
-
 	return true;
+	
 }
 
 void onLoad()
@@ -104,19 +96,17 @@ void onLoad()
 			}
 			else {
 				bigbuff[inLen] = 0;
-				//printf("COMMAND[%Id]: (%d) %s\n", commandCount, inLen, (char*)bigbuff);
 			}
 
 			// take a snapshot
 			snapper.next();
 
 			bs.seek(0);
-			//rle.Encode(snapper, bs);
-			QIOCodec::encode(bs, snapper);
+
+			QOICodec::encode(bs, snapper);
 
 			size_t outLength = bs.tell();
 
-			// Send data chunked
 			// create binstream on outbuff
 			BufferChunk bc(bigbuff, outLength);
 			sendChunk(clientSock, bc);

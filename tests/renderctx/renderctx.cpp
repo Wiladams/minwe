@@ -23,7 +23,7 @@ void keyReleased(const KeyboardEvent &e)
 void drawPoints(std::shared_ptr<RenderContext> ctx)
 {
 	// Draw some random sampled points
-	for (int i = 0; i < 200000; i++)
+	for (int i = 0; i < 100000; i++)
 	{
 		int x = maths::random(canvasWidth);
 		int y = maths::random(canvasHeight);
@@ -32,6 +32,7 @@ void drawPoints(std::shared_ptr<RenderContext> ctx)
 
 		//ctx->point(x, y, *screenSamp);
 		ctx->set(x, y, screenSamp->getValue(u, v, {x,y})  );
+		//ctx->circle(x, y, 2, *screenSamp);
 	}
 }
 

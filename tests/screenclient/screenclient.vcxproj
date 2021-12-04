@@ -145,10 +145,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\appmain.cpp" />
+    <ClCompile Include="..\..\src\gui.cpp" />
     <ClCompile Include="screenclient.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\gui.h" />
+    <ClInclude Include="..\..\src\LayeredWindow.hpp" />
     <ClInclude Include="..\..\src\network.h" />
+    <ClInclude Include="..\..\src\qoi.h" />
     <ClInclude Include="..\..\src\rlecodec.h" />
     <ClInclude Include="..\..\src\tcpclient.h" />
   </ItemGroup>
