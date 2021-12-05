@@ -21,7 +21,7 @@
     <ClCompile Include="..\..\src\gui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="quicodec.cpp">
+    <ClCompile Include="qoicodec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

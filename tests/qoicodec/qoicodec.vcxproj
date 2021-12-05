@@ -92,7 +92,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -145,7 +145,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\appmain.cpp" />
     <ClCompile Include="..\..\src\gui.cpp" />
-    <ClCompile Include="quicodec.cpp" />
+    <ClCompile Include="qoicodec.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\gui.h" />

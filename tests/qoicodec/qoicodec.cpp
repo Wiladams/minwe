@@ -4,8 +4,8 @@
 #include "screensnapshot.h"
 #include "draw2d.h"
 
-static const int captureWidth=1920;
-static const int captureHeight=1080;
+static const int captureWidth=1280;
+static const int captureHeight=1024;
 
 // This is the buffer that will be used to encode images
 static const size_t bigbuffSize = captureWidth * captureHeight * 4;
@@ -22,6 +22,8 @@ void onFrame()
 	// encode it
 	bs.seek(0);
 	QOICodec::encode(bs, snapper);
+	auto size = bs.tell();
+
 
 	// decode into copyMap
 	bs.seek(0);
@@ -35,5 +37,5 @@ void onFrame()
 void setup()
 {
 	setCanvasSize(captureWidth, captureHeight);
-	setFrameRate(30);
+	setFrameRate(15);
 }

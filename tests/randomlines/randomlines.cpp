@@ -30,7 +30,8 @@ void draw()
 	float strokeWeight = 1.0;
 	PixelRGBA stroke(0xff000000);
 	PixelRGBA fill(0xffffffff);
-	PixelRGBA background(0xffdccccc);
+	//PixelRGBA background(0xffdccccc);
+	PixelRGBA background(0x0);
 
 	// fill background with background color
 	gAppSurface->setAllPixels(background);
@@ -70,5 +71,7 @@ void onLoop()
 void onLoad()
 {
 	setCanvasSize(1024, 768);
+	//setCanvasSize(displayWidth, displayHeight);
+	setWindowPosition(0, 0);
 	layered();
 }
