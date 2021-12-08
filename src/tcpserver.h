@@ -4,16 +4,16 @@
 
 class TcpServer {
 private:
-    IPSocket fSocket;   // socket used to listen
+    ASocket fSocket;   // socket used to listen
     
-    struct sockaddr_in fServerAddress;
-    int fServerAddressLen;
+    IPV4Address fServerAddress;
     bool fIsValid;
     int fLastError;
 
 public:
     TcpServer(int porto, const char * interface = "localhost")
-        :fSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+        :fSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, false),
+        fServerAddress(porto)
     {
         if (!fSocket.isValid()) {
             // didn't get a valid socket, so we're
@@ -22,14 +22,6 @@ public:
 
             return ;
         }
-
-        // Create a server address we can listen on
-        // IPV4 wildcard address, so we accept from any interface
-        fServerAddressLen = sizeof(fServerAddress);
-        memset(&fServerAddress, 0, fServerAddressLen);
-        fServerAddress.sin_family = AF_INET;
-        fServerAddress.sin_addr.S_un.S_addr = 0;// we don't care about address
-        fServerAddress.sin_port = htons(porto);
 
         if (!bind()) {
             return;
@@ -44,16 +36,17 @@ public:
         fIsValid = true;
     }
 
-    virtual ~TcpServer() {
-        //delete fHost;
+    virtual ~TcpServer() 
+    {
+
     }
 
     bool isValid() const {return fIsValid;}
     int getLastError() const {return fLastError;}
 
-    IPSocket accept()
+    ASocket accept()
     {
-        IPSocket s = fSocket.accept();
+        ASocket s = fSocket.accept();
         printf("TcpServer.accept(): %Id %d\n", s.fSocket, s.getLastError());
         if (!s.isValid()) {
             fLastError = fSocket.getLastError();
@@ -64,12 +57,9 @@ public:
 
     bool bindToPort(const short aPort, const int family=AF_INET) 
     {
-        sockaddr_in addr;
-        addr.sin_family = family;
-        addr.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
-        addr.sin_port = htons(aPort);
+        IPV4Address addr(aPort);
 
-        int result = fSocket.bindTo((struct sockaddr*)&fServerAddress, fServerAddressLen);
+        int result = fSocket.bindTo(addr);
 
         if (result != 0) {
             fLastError = WSAGetLastError();
@@ -81,7 +71,8 @@ public:
 
     bool bind()
     {
-        int result = fSocket.bindTo((struct sockaddr *)&fServerAddress, fServerAddressLen);
+        int result = fSocket.bindTo(fServerAddress);
+
         if (result != 0) {
             fLastError = WSAGetLastError();
             return false;
@@ -108,15 +99,13 @@ public:
         return success;
     }
 
-    int receive(char *buff, int buffLen)
+    std::tuple<int,int> receive(char *buff, int buffLen)
     {
-        int result = fSocket.receive(buff, buffLen, 0);
-        return result;
+        return fSocket.recv(buff, buffLen, 0);
     }
 
-    int send(const char *buff, int buffLen)
+    std::tuple<int, int> send(const char *buff, int buffLen)
     {
-        int result = fSocket.send(buff, buffLen);
-        return result;
+        return fSocket.send(buff, buffLen);
     }
 };

@@ -9,6 +9,8 @@
 
     This file deals with user input (mouse, keyboard, pointer, joystick, touch)
     initiating a pub/sub system for applications to subscribe to.
+
+    http://www.itimdp4.com/winbugs.html
 */
 
 #include "apphost.h"
@@ -915,12 +917,15 @@ LRESULT CALLBACK MsgHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         res = 1;
     }
     else if (msg == WM_PAINT) {
-        //loopCount = loopCount + 1;
-        //printf("WM_PAINT: %d\n", loopCount);
-        if (gPaintHandler != nullptr) {
-            if (gPaintHandler != nullptr) {
+        if (gPaintHandler != nullptr) 
+        {
                 gPaintHandler(hWnd, msg, wParam, lParam);
-            }
+        }
+    }
+    else if (msg == WM_WINDOWPOSCHANGING) {
+        if (gPaintHandler != nullptr) 
+        {
+            gPaintHandler(hWnd, msg, wParam, lParam);
         }
     }
     else if (msg == WM_DROPFILES) {

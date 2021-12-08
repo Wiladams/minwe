@@ -15,6 +15,8 @@
 //
 //    References:
 //    https://www.codeproject.com/articles/5051/various-methods-for-capturing-the-screen
+//    https://stackoverflow.com/questions/5069104/fastest-method-of-screen-capturing-on-windows
+//  https://github.com/bmharper/WindowsDesktopDuplicationSample
 //
 
 #include "User32PixelMap.h"
@@ -36,8 +38,9 @@ public:
         fOriginY(y)
     {
         // create a device context for the display
-        fScreenDC = CreateDCA("DISPLAY", nullptr, nullptr, nullptr);
-        
+        //fScreenDC = CreateDCA("DISPLAY", nullptr, nullptr, nullptr);
+        fScreenDC = GetDC(nullptr);
+
         // take at least one snapshot
         next();
     }

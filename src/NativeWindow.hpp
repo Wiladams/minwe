@@ -1,17 +1,20 @@
 #pragma once
-#pragma comment(lib, "user32.lib")
+
 
 /*
-    This file, and the Window class represent the connection to the Win32 
-    User32 interface library.  The idea is, if you include this single header
-    in your application .cpp file, you have everything you need to create 
-    a window of a given size, do drawing, keyboard and mouse handling.
+    This filej contains a fairly minimal representation of a window
+    class.  It allows for the creation of Native windows without
+    much fuss.
+
+
 
     Notes:
     https://devblogs.microsoft.com/oldnewthing/20031013-00/?p=42193
+        http://www.itimdp4.com/winbugs.html
 */
 
 
+#pragma comment(lib, "user32.lib")
 
 #include <windows.h>
 
@@ -201,8 +204,9 @@ public:
 
         // The user might want to change any of these as they are not passed
         // into the constructor.
+        //fWndClass.hbrBackground = (HBRUSH)GetStockObject(TRANSPARENT);
         fWndClass.hbrBackground = nullptr;
-        fWndClass.hCursor = nullptr;        // LoadCursorA(nullptr, IDC_ARROW);
+        fWndClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
         fWndClass.lpszMenuName = nullptr;
         fWndClass.hIcon = nullptr;          // LoadIcon(nullptr, IDI_APPLICATION);
         fWndClass.hIconSm = nullptr;

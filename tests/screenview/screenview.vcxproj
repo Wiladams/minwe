@@ -147,6 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\gui.h" />
+    <ClInclude Include="..\..\src\NativeWindow.hpp" />
     <ClInclude Include="..\..\src\pixelmap.h" />
     <ClInclude Include="..\..\src\sampledraw2d.h" />
     <ClInclude Include="..\..\src\sampler.h" />

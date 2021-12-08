@@ -148,6 +148,7 @@
     <ClInclude Include="..\..\src\network.h" />
     <ClInclude Include="..\..\src\qoi.h" />
     <ClInclude Include="..\..\src\sampler.h" />
+    <ClInclude Include="..\..\src\tcpclient.h" />
     <ClInclude Include="..\..\src\tcpserver.h" />
     <ClInclude Include="rlecodec.h" />
   </ItemGroup>

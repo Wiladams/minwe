@@ -35,7 +35,19 @@ inline void sampleRectangle(PixelMap& pmap,
     const int w, const int h,
     ISample2D<PixelRGBA>& src)
 {
-    PixelRect bounds(pmap.x(), pmap.y(), pmap.width(), pmap.height());
+    for (int row = y; row < y+h; row++)
+    {
+        for (int col = x; col < x+w; col++)
+        {
+            double u = maths::Map(col, x, (double)x + w - 1, 0, 1);
+            double v = maths::Map(row, y, (double)y + h - 1, 0, 1);
+            auto c = src.getValue(u, v, { col,row });
+            pmap.set(col, row, c);
+        }
+
+    }
+/*
+PixelRect bounds(pmap.x(), pmap.y(), pmap.width(), pmap.height());
     PixelRect dstFrame(x, y, w, h);
 
     // find the intersection between the source rectangle
@@ -62,6 +74,7 @@ inline void sampleRectangle(PixelMap& pmap,
         }
 
     }
+    */
 }
 
 // 

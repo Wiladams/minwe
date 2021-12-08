@@ -7,8 +7,8 @@
 
 #include <memory>
 
-static const int captureWidth = 1920;
-static const int captureHeight = 1080;
+static const int captureWidth = 1280;
+static const int captureHeight = 1024;
 static const int channels = 4;
 
 // This is the buffer that will be used to encode images
@@ -17,28 +17,24 @@ constexpr size_t bigbuffSize = captureWidth * captureHeight * (channels + 1) + s
 byte bigbuff[bigbuffSize];
 BinStream bs(bigbuff, bigbuffSize);
 
-// Recipient PixelMap
-User32PixelMap clientMap(captureWidth, captureHeight);
-
-IPHost* host = nullptr;
 TcpClient* client = nullptr;
 
 // Receive a chunk of stuff back from the server
 // Do this in a loop until the chunk size is 0
 // or we've exhausted space in the binstream
-bool receiveChunk(TcpClient* s, BinStream& pixs)
+bool receiveChunk(TcpClient& s, BinStream& pixs)
 {
 	int packetCount = 0;
 
 	// First step is to receive back a 32-bit uint32
 	// this indicates the size of the payload
 	int payloadSize;
-	int recvLen = s->receive((char*)&payloadSize, 4);
+	auto [error, recvLen] = s.receive((char*)&payloadSize, 4);
 	int remaining = payloadSize;
 	
 	// if we had an error in receiving, then we return immediately
 	// indicating we did not read anything
-	if (recvLen < 0) {
+	if ((error!=0) || (recvLen <= 0)) {
 		return false;
 	}
 
@@ -50,7 +46,7 @@ bool receiveChunk(TcpClient* s, BinStream& pixs)
 
 		// Now read the rest of the payload into the 
 		// pixs stream
-		recvLen = s->receive((char*)pixs.getPositionPointer(), remaining);
+		auto [error, recvLen] = s.receive((char*)pixs.getPositionPointer(), remaining);
 
 		if (recvLen == SOCKET_ERROR)
 			break;
@@ -75,33 +71,41 @@ void onFrame()
 		auto err = client->send("get frame", 9);
 
 		bs.seek(0);
-		if (receiveChunk(client, bs))
+		if (receiveChunk(*client, bs))
 		{
 			// Decode the image
 			bs.seek(0);
-			QOICodec::decode(bs, clientMap);
+
+			QOICodec::decode(bs, *gAppSurface);
 		}
 	}
-
+	
 	// Display it
-	blit(*gAppSurface, 0, 0, clientMap);
-	//sampleRectangle(*gAppSurface, 0, 0, captureWidth / 2, captureHeight / 2, clientMap);
-	//sampleRectangle(*gAppSurface, captureWidth / 2, captureHeight / 2, captureWidth / 2, captureHeight / 2, clientMap);
+	// Since we've decoded directly into the application surface
+	// we don't need to do any additional blit
+}
 
-	refreshScreen();
+void onUnload()
+{
+	if (client != nullptr)
+		client->close();
 }
 
 void setup()
 {
 	printf("setup\n");
 
-	host = IPHost::create("192.168.1.9", "8081");
-	//host = IPHost::create("localhost", "8081");
+	IPHost host("192.168.1.9", "8081");
+	//IPHost host = IPHost::create("localhost", "8081");
 
-	if (host != nullptr)
+	if (host.isValid())
 	{
-		IPAddress* addr = host->getAddress(0);
+		IPAddress addr = host.getAddress(0);
 		client = new TcpClient(addr);
+	}
+	else {
+		printf("Could not connect to host\n");
+		halt();
 	}
 
 	if (!client->isValid())
@@ -110,6 +114,6 @@ void setup()
 		halt();
 	}
 
-	setFrameRate(10);
+	//setFrameRate(10);
 	setCanvasSize(captureWidth, captureHeight);
 }

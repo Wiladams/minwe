@@ -14,8 +14,8 @@
 
 #include <memory>
 
-static const int captureWidth = 1920;
-static const int captureHeight = 1080;
+static const int captureWidth = 1280;
+static const int captureHeight = 1024;
 static const int channels = 4;
 
 // This is the buffer that will be used to encode images
@@ -27,21 +27,27 @@ BinStream bs(bigbuff, bigbuffSize);
 // Make the screen snapshot thing
 ScreenSnapshot snapper(0,0,captureWidth, captureHeight);
 
-bool sendChunk(IPSocket& s, BufferChunk& bc)
+bool sendChunk(ASocket& s, char * buff, int buffLen)
 {
 	// The ideal size of chunk to send should
 	// match the send buffer size of the underlying
 	// socket
-	static const int idealSize = 16 * 1024;
+	//static const int idealSize = 16 * 1024;
+	int idealSize = s.getSendBufferSize();
 
 	// Get a stream on the chunk
-	BinStream chunkStream(bc.data(), bc.size());
+	BinStream chunkStream(buff, buffLen);
 
-	uint32_t overallSize = bc.size();
+	uint32_t overallSize = buffLen;
 
 	// write out the overall size to be sent
-	int sentCode = s.send((const char*)&overallSize, 4);
+	// if we fail on this return false
+	auto [error, bytesSent] = s.send((const char*)&overallSize, 4);
+	if (error != 0)
+		return false;
 
+	// While there's still stuff to be sent
+	// send it out
 	while (!chunkStream.isEOF()) {
 		// we'll write idealSize bytes at a time
 		// start by writing the number of bytes
@@ -50,7 +56,14 @@ bool sendChunk(IPSocket& s, BufferChunk& bc)
 		int payloadSize = (int)maths::Min((double)idealSize, (double)remains);
 
 		// Write the payload out and advance
-		int bytesSent = s.send((char*)chunkStream.getPositionPointer(), payloadSize);
+		auto [error, bytesSent] = s.send((char*)chunkStream.getPositionPointer(), payloadSize);
+
+		// If there was an error
+		// return false
+		if (error != 0)
+			return false;
+
+
 		overallSize -= bytesSent;
 
 		chunkStream.skip(bytesSent);
@@ -63,6 +76,7 @@ bool sendChunk(IPSocket& s, BufferChunk& bc)
 void onLoad()
 {
 	TcpServer srvr(8081);
+	ASocket clientSock;
 
 	if (!srvr.isValid()) {
 		// Could not create socket
@@ -73,7 +87,7 @@ void onLoad()
 
 	while (true) {
 		// Accept a single client
-		IPSocket clientSock = srvr.accept(); // wait for a connection
+		clientSock = srvr.accept(); // wait for a connection
 
 		if (!clientSock.isValid()) {
 			printf("clientSock, not valid: %d\n", srvr.getLastError());
@@ -85,16 +99,20 @@ void onLoad()
 		uint64_t commandCount = 0;
 		while (true) {
 			// Client sends us a command, so read that
+			// command should be 'send frame'
 			memset(bigbuff, 0, 512);
-			int inLen = clientSock.receive((char*)bigbuff, 512);
+			auto [error, inLen] = clientSock.recv((char*)bigbuff, 512);
 			commandCount = commandCount + 1;
 
-			if (inLen < 0) {
+			if (inLen < 0 || (error != 0)) {
 				printf("TCPReceived ERROR: %d\n", WSAGetLastError());
-				//halt();
+
 				break;
 			}
 			else {
+				// we got a command
+				// we'll assume it's for 
+				// taking a snapshot and sending it
 				bigbuff[inLen] = 0;
 			}
 
@@ -108,8 +126,9 @@ void onLoad()
 			size_t outLength = bs.tell();
 
 			// create binstream on outbuff
-			BufferChunk bc(bigbuff, outLength);
-			sendChunk(clientSock, bc);
+			sendChunk(clientSock, (char *)bigbuff, outLength);
 		}
+
+		printf("client left\n");
 	}
 }

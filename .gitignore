@@ -50,3 +50,7 @@
 *.ipdb
 *.iobj
 *.ipdb
+*.recipe
+*.db-shm
+*.db-wal
+*.db

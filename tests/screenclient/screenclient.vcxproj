@@ -89,6 +89,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\..\src</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -149,11 +150,11 @@
     <ClCompile Include="screenclient.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\apphost.h" />
     <ClInclude Include="..\..\src\gui.h" />
     <ClInclude Include="..\..\src\LayeredWindow.hpp" />
     <ClInclude Include="..\..\src\network.h" />
     <ClInclude Include="..\..\src\qoi.h" />
-    <ClInclude Include="..\..\src\rlecodec.h" />
     <ClInclude Include="..\..\src\tcpclient.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

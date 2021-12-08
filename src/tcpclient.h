@@ -5,15 +5,15 @@
 
 class TcpClient {
 private:
-    IPSocket fSocket=0;
+    ASocket fSocket;
     IPHost  * fHost=nullptr;
-    IPAddress *fAddress=nullptr;
+    IPAddress fAddress;
     bool    fIsValid=false;
     int fLastError=0;
 
 public:
-    TcpClient(IPAddress *address)
-        :fSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+    TcpClient(IPAddress &address)
+        :fSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, false)
         , fAddress(address)
         , fLastError(0)
     {
@@ -32,7 +32,7 @@ public:
     }
 
     TcpClient(const char *hostname, const char * portname, bool hostNumeric=false)
-        : fSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+        : fSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, false)
         , fIsValid(false)
     {
         // check if the socket was created
@@ -42,17 +42,14 @@ public:
         }
 
         // Get address to host
-        fHost = IPHost::create(hostname, portname, AF_INET, SOCK_STREAM, hostNumeric);
-        if (fHost == nullptr)
+        IPHost aHost(hostname, portname, AF_INET, SOCK_STREAM, hostNumeric);
+        if (!fHost->isValid())
         {
             printf("could not find host: %s\n", hostname);
             return ;
         }
 
         fAddress = fHost->getAddress();
-        if (fAddress == nullptr) {
-            return ;
-        }
         
         // Try to connect, if failure
         // return immediately
@@ -68,7 +65,7 @@ public:
 
     bool close()
     {
-        if (!fSocket.close()) {
+        if (!fSocket.shutdown(SD_BOTH)) {
             fLastError = fSocket.getLastError();
             return false;
         } 
@@ -77,7 +74,7 @@ public:
 
     bool connect()
     {
-        int retCode = ::connect(fSocket.fSocket, fAddress->fAddress, fAddress->fAddressLength);
+        int retCode = ::connect(fSocket.fSocket, &fAddress.fAddress, fAddress.fAddressLength);
 
         if (retCode != 0) {
             fLastError = WSAGetLastError();
@@ -88,19 +85,21 @@ public:
         return true;
     }
 
-    int send(const char *buff, const int buffLen, int flags = 0)
+    // This client should send the whole chunk
+    std::tuple<int,int> send(const char *buff, const int buffLen, int flags = 0)
     {
-        int result = fSocket.send(buff, buffLen, flags);
-        if (result == SOCKET_ERROR) {
+        auto [error, result] = fSocket.send(buff, buffLen, flags);
+        if (error != 0) {
             fLastError = WSAGetLastError();
+            return { error, result };
         }
 
-        return result;
+        return { 0, result };
     }
 
-    int receive(char *buff, int buffLen, int flags=0)
+    std::tuple<int,int> receive(char *buff, int buffLen, int flags=0)
     {
-        return fSocket.receive(buff, buffLen, flags);
+        return fSocket.recv(buff, buffLen, flags);
     }
 };
 

@@ -2,7 +2,6 @@
 
 #include "qoi.h"
 #include "screensnapshot.h"
-#include "draw2d.h"
 
 static const int captureWidth=1280;
 static const int captureHeight=1024;
@@ -13,7 +12,6 @@ byte bigbuff[bigbuffSize];
 BinStream bs(bigbuff, bigbuffSize);
 
 ScreenSnapshot snapper(0,0,captureWidth, captureHeight);
-User32PixelMap copyMap(captureWidth, captureHeight);
 
 void onFrame()
 {
@@ -27,15 +25,11 @@ void onFrame()
 
 	// decode into copyMap
 	bs.seek(0);
-	QOICodec::decode(bs, copyMap);
-
-	// Display it
-	blit(*gAppSurface, 0, 0, copyMap);
-
+	QOICodec::decode(bs, *gAppSurface);
 }
 
 void setup()
 {
 	setCanvasSize(captureWidth, captureHeight);
-	setFrameRate(15);
+	setFrameRate(20);
 }
