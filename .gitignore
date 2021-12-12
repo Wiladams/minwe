@@ -54,3 +54,6 @@
 *.db-shm
 *.db-wal
 *.db
+*.db
+tests/udpscreenserve/Release/udpscreenserve.vcxproj.FileListAbsolute.txt
+tests/udpscreenview/Release/udpscreenview.vcxproj.FileListAbsolute.txt

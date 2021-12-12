@@ -56,7 +56,7 @@ void onFrame()
 void setup()
 {
 	setCanvasSize(captureWidth, captureHeight);
-    setFrameRate(30);
+    setFrameRate(15);
 
     // A rendering context for convenience
     ctx = std::make_shared<RenderContext>(gAppSurface);

@@ -35,37 +35,21 @@ inline void sampleRectangle(PixelMap& pmap,
     const int w, const int h,
     ISample2D<PixelRGBA>& src)
 {
-    for (int row = y; row < y+h; row++)
-    {
-        for (int col = x; col < x+w; col++)
-        {
-            double u = maths::Map(col, x, (double)x + w - 1, 0, 1);
-            double v = maths::Map(row, y, (double)y + h - 1, 0, 1);
-            auto c = src.getValue(u, v, { col,row });
-            pmap.set(col, row, c);
-        }
-
-    }
-/*
-PixelRect bounds(pmap.x(), pmap.y(), pmap.width(), pmap.height());
+    PixelRect bounds(pmap.x(), pmap.y(), pmap.width(), pmap.height());
     PixelRect dstFrame(x, y, w, h);
 
     // find the intersection between the source rectangle
     // and the frame
     PixelRect dstisect = bounds.intersection(dstFrame);
 
+    // if the intersection is empty, we have
+    // nothing to draw, so return
     if (dstisect.isEmpty())
         return;
 
-    int dstX = dstisect.x;
-    int dstY = dstisect.y;
-
-    int srcX = dstX - x;
-    int srcY = dstY - y;
-
-    for (int row = srcY; row < srcY + dstisect.height; row++)
+    for (int row = dstisect.y; row < dstisect.y +dstisect.height; row++)
     {
-        for (int col = srcX; col < srcX + dstisect.width; col++)
+        for (int col = dstisect.x; col < dstisect.x+dstisect.width; col++)
         {
             double u = maths::Map(col, x, (double)x + w - 1, 0, 1);
             double v = maths::Map(row, y, (double)y + h - 1, 0, 1);
@@ -74,7 +58,7 @@ PixelRect bounds(pmap.x(), pmap.y(), pmap.width(), pmap.height());
         }
 
     }
-    */
+
 }
 
 // 

@@ -28,18 +28,25 @@ public:
     struct sockaddr fAddress;
     int fAddressLength;
 
+
+
     IPAddress()
         :fAddress{ 0 },
         fAddressLength(0)
-    {}
+    {
+        reset();
+    }
 
     // Copy constructor
     IPAddress(const IPAddress& other)
         :fAddressLength(0)
     {
         ZeroMemory(&fAddress, sizeof(fAddress));
+        
+        if (other.fAddressLength > sizeof(fAddress))
+            return;
 
-        memcpy(&fAddress, &other.fAddress, sizeof(fAddress));
+        memcpy(&fAddress, &other.fAddress, other.fAddressLength);
         fAddressLength = other.fAddressLength;
     }
 
@@ -54,6 +61,12 @@ public:
 
         memcpy(&fAddress, addr, addrLen);
         fAddressLength = addrLen;
+    }
+
+    void reset()
+    {
+        ZeroMemory(&fAddress, sizeof(fAddress));
+        fAddressLength = sizeof(fAddress);
     }
 
     ~IPAddress()
@@ -225,6 +238,14 @@ public:
 
 //
 class ASocket {
+private:
+    bool fIsValid;
+    int fLastError;
+    bool fAutoClose; // for a value type, need to not close on destructor
+
+public:
+    SOCKET fSocket;
+
 protected:
 
     // Retrieve a pointer to an extension function
@@ -323,13 +344,9 @@ protected:
         return res;
     }
 
-private:
-    bool fIsValid;
-    int fLastError;
-    bool fAutoClose; // for a value type, need to not close on destructor
 
-public:
-    SOCKET fSocket;
+
+
 
 public:
     // Default constructor will initially be invalid
@@ -351,11 +368,12 @@ public:
 
     // Construct a particular kind of socket
     ASocket(int family, int socktype, int protocol, const bool autoclose)
-        : fIsValid(false),
+        :fSocket(INVALID_SOCKET),
+        fIsValid(false),
         fAutoClose(autoclose)
     {
-        fSocket = WSASocketA(family, socktype, protocol, nullptr, 0, 0);
-        init(fSocket);
+        //printf("ASocket::constructor\n");
+        init(WSASocketA(family, socktype, protocol, nullptr, 0, 0), autoclose);
     }
 
     // There should be a flag to autoclose
@@ -367,13 +385,33 @@ public:
         }
     }
 
+    bool init(int family, int socktype, int protocol, const bool autoclose)
+    {
+        fSocket = WSASocketA(family, socktype, protocol, nullptr, 0, 0);
+        fAutoClose = autoclose;
+
+        if (INVALID_SOCKET == fSocket) {
+            fIsValid = false;
+            fLastError = WSAGetLastError();
+            return false;
+        }
+        
+        fIsValid = true;
+
+        return true;
+    }
+
     void init(SOCKET sock, bool autoclose=false)
     {
         fIsValid = false;
         fSocket = sock;
 
-        if (fSocket == INVALID_SOCKET) {
+        if (INVALID_SOCKET == fSocket) 
+        {
+
             fLastError = WSAGetLastError();
+            printf("ASocket.init error: %d\n", fLastError);
+
             return;
         }
 
@@ -623,14 +661,21 @@ public:
     // Send to a specific address
     // The address was specified when we 
     // created the socket
-    int sendTo(const struct sockaddr *addrTo, int addrToLen, const char *buff, const int bufflen)
+    int sendTo(IPAddress &addrTo, const char *buff, const int bufflen)
     {
-        return ::sendto(fSocket, buff, bufflen, 0, addrTo, addrToLen);
+        int res = ::sendto(fSocket, buff, bufflen, 0, &addrTo.fAddress, addrTo.fAddressLength);
+        
+        printf("ASocket::sendTo: %d\n", res);
+
+        return res;
     }
 
-    int receiveFrom(struct sockaddr *addrFrom, int *addrFromLen, char *buff, int bufflen)
+    int receiveFrom(IPAddress &addrFrom, char* buff, int bufflen)
     {
-        return ::recvfrom(fSocket, buff, bufflen, 0, addrFrom, addrFromLen);
+        int res = ::recvfrom(fSocket, buff, bufflen, 0, &addrFrom.fAddress, &addrFrom.fAddressLength);
+        printf("ASocket::receiveFrom: %d\n", res);
+        
+        return res;
     }
 
 
