@@ -160,13 +160,13 @@ QOI_COLOR {
 
 
 
-typedef union qoi_rgba_t 
+union qoi_rgba_t 
 {
 	struct { unsigned char r, g, b, a; } rgba;
 	unsigned int v;
 } ;
 
-typedef union qoi_magic_t 
+union qoi_magic_t 
 {
 	char chars[4];
 	unsigned int v;
@@ -206,7 +206,7 @@ public:
 		int w = pmap.width();
 		int h = pmap.height();
 		int channels = 4;
-		int size;
+
 
 		// Quick reject if parameters are not correct
 		if (

@@ -89,7 +89,7 @@ bool sendChunk(ASocket& s, IPAddress &addrTo, char* buff, int buffLen)
 
 void sendCurrentScreen(ASocket &clientsock, IPAddress &clientAddr)
 {
-	// take a snapshot
+	// take a snapshot of screen
 	snapper.next();
 
 	bs.seek(0);
@@ -98,13 +98,14 @@ void sendCurrentScreen(ASocket &clientsock, IPAddress &clientAddr)
 
 	size_t outLength = bs.tell();
 
-	// create binstream on outbuff
 	sendChunk(clientsock, clientAddr, (char*)bigbuff, outLength);
 }
 
-void onLoad()
+void onUnload()
 {
 	ASocket srvrsock(AF_INET, SOCK_DGRAM, IPPROTO_IP, false);
+	srvrsock.setReuseAddress();
+
 	ASocket clientsock(AF_INET, SOCK_DGRAM, IPPROTO_IP, false);
 
 	if (!srvrsock.isValid()) {
@@ -114,34 +115,40 @@ void onLoad()
 		return;
 	}
 
-	IPV4Address srvraddress(8081, INADDR_ANY, AF_INET);
-
-	// This will only work with a single client connection
+	// Setup the address we'll be waiting to receive
+	// datagrams on
+	IPV4Address srvraddress(8081);
 	auto bindRes = srvrsock.bindTo(srvraddress);
 
-	uint64_t commandCount = 0;
-	IPAddress clientAddr;
+	uint64_t commandCount = 0;	// just to keep track of commands coming in
+	IPAddress clientAddr;		// the address of the client we received a datagram from
+	char clientbuff[512];
 
 	while (true) 
 	{
 		clientAddr.reset();
 		memset(bigbuff, 0, 512);
+		clientbuff[0] = 0;
 
 		// Client sends us a command, so read that
 		// command should be 'get frame'
-
 		printf("waiting for client command:\n");
 
-		int bytesTransferred = srvrsock.receiveFrom(clientAddr, (char*)bigbuff, 512);
+		int bytesTransferred = srvrsock.receiveFrom(clientAddr, bigbuff, 512);
 
 		commandCount = commandCount + 1;
 			
-		//printf("server.receiveFrom: %d\n", bytesTransferred);
+		clientAddr.toString(clientbuff,511);
+
+		printf("server.receiveFrom: (%d) client: %s\n", bytesTransferred, clientbuff);
 
 
 		if (SOCKET_ERROR == bytesTransferred) 
 		{
 			printf("receiveFrom ERROR: %d\n", srvrsock.getLastError());
+			fflush(stdout);
+
+			halt();
 
 			break;
 		} else if (bytesTransferred == 0) {

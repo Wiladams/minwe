@@ -101,11 +101,11 @@ struct IPV4Address : public IPAddress
 {
     IPV4Address(uint16_t portnum,  unsigned long ipaddr = INADDR_ANY, int family = AF_INET)
     {
-        sockaddr_in * addr = (sockaddr_in*)(&fAddress);
+        struct sockaddr_in * addr = (struct sockaddr_in*)(&fAddress);
         addr->sin_family = family;
         addr->sin_addr.S_un.S_addr = htonl(ipaddr);
         addr->sin_port = htons(portnum);
-        fAddressLength = sizeof(sockaddr_in);
+        fAddressLength = sizeof(struct sockaddr_in);
     }
 };
 
@@ -246,113 +246,16 @@ private:
 public:
     SOCKET fSocket;
 
-protected:
-
-    // Retrieve a pointer to an extension function
-    // These functions are implementation specific
-    // so there's no other way to gain access to them without
-    // going through ws2_32
-    static void* getExtensionFunctionPointer(GUID &funcguid)
-    {
-        ASocket s;
-        int cbInBuffer = sizeof(GUID);
-        void* lpvOutBuffer = nullptr;
-        int cbOutBuffer=sizeof(lpvOutBuffer);
-        DWORD lpcbBytesReturned = 0;
-        LPWSAOVERLAPPED lpOverlapped = nullptr;
-        LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine  = nullptr;
-
-        int res = WSAIoctl(s.fSocket, SIO_GET_EXTENSION_FUNCTION_POINTER,
-            (void *)&funcguid, cbInBuffer, 
-            lpvOutBuffer, cbOutBuffer,
-            &lpcbBytesReturned,
-            lpOverlapped,
-            lpCompletionRoutine);
-
-        if (res != 0)
-            return nullptr;
-
-        return lpvOutBuffer;
-    }
-
-    // Extended Accept
-    static int AcceptEx(ASocket listenSocket, ASocket acceptedSocket)
-    {
-        static LPFN_ACCEPTEX CAcceptEx = nullptr;
-
-        if (nullptr == CAcceptEx)
-        {
-            GUID g = WSAID_ACCEPTEX;
-            CAcceptEx = (LPFN_ACCEPTEX)getExtensionFunctionPointer(g);
-        }
-
-        // Call extension function
-        //lpOutputBuffer
-        DWORD    lpBytesReceived = 0;
-        void *lpOutputBuffer= nullptr;
-        DWORD dwReceiveDataLength=0;
-        DWORD dwLocalAddressLength=0;
-        DWORD dwRemoteAddressLength=0;
-        DWORD lpdwBytesReceived;
-        LPOVERLAPPED lpOverlapped=nullptr;
-
-        int res = CAcceptEx(listenSocket.fSocket, acceptedSocket.fSocket,
-            lpOutputBuffer, dwReceiveDataLength, dwLocalAddressLength,
-            dwRemoteAddressLength, &lpdwBytesReceived,
-            lpOverlapped);
-
-        return res;
-    }
-    
-    static int ConnectEx(ASocket s, IPAddress address)
-    {
-        LPFN_CONNECTEX CConnectEx = nullptr;
-
-        if (CConnectEx == nullptr) {
-            GUID g = WSAID_CONNECTEX;
-            CConnectEx = (LPFN_CONNECTEX)getExtensionFunctionPointer(g);
-        }
-
-        if (nullptr == CConnectEx)
-            return -1;
-
-        void* lpSendBuffer = nullptr;
-        DWORD dwSendDataLength = 0;
-        DWORD lpdwBytesSent = 0;
-        LPOVERLAPPED lpOverlapped = nullptr;
-
-        CConnectEx(s.fSocket, &address.fAddress, address.fAddressLength,
-            lpSendBuffer, dwSendDataLength,
-            &lpdwBytesSent, lpOverlapped);
-    }
-
-    static int DisconnectEx(ASocket s)
-    {
-        static LPFN_DISCONNECTEX CDisconnectEx = nullptr;
-
-        if (nullptr == DisconnectEx)
-        {
-            GUID g = WSAID_DISCONNECTEX;
-            CDisconnectEx = (LPFN_DISCONNECTEX)getExtensionFunctionPointer(g);
-        }
-
-        LPOVERLAPPED lpOverlapped = nullptr;
-        DWORD dwFlags = 0;
-        DWORD dwReserved = 0;
-        int res = CDisconnectEx(s.fSocket, lpOverlapped, dwFlags, dwReserved);
-
-        return res;
-    }
-
-
-
-
-
 public:
     // Default constructor will initially be invalid
+    // You can default construct a socket,
+    // the use init() to initialize it
     ASocket()
         : ASocket(INVALID_SOCKET, false)
     {
+        fSocket = INVALID_SOCKET;
+        fAutoClose = false;
+        fIsValid = false;
     }
 
     // Construct with an existing native socket
@@ -408,7 +311,6 @@ public:
 
         if (INVALID_SOCKET == fSocket) 
         {
-
             fLastError = WSAGetLastError();
             printf("ASocket.init error: %d\n", fLastError);
 
@@ -499,8 +401,6 @@ public:
 
         return 0;
     }
-
-
 
     bool setExclusiveAddress()
     {
@@ -670,9 +570,9 @@ public:
         return res;
     }
 
-    int receiveFrom(IPAddress &addrFrom, char* buff, int bufflen)
+    int receiveFrom(IPAddress &addrFrom, void* buff, int bufflen)
     {
-        int res = ::recvfrom(fSocket, buff, bufflen, 0, &addrFrom.fAddress, &addrFrom.fAddressLength);
+        int res = ::recvfrom(fSocket, (char*)buff, bufflen, 0, &addrFrom.fAddress, &addrFrom.fAddressLength);
         printf("ASocket::receiveFrom: %d\n", res);
         
         return res;
@@ -680,7 +580,103 @@ public:
 
 
 
+protected:
 
+        // Retrieve a pointer to an extension function
+        // These functions are implementation specific
+        // so there's no other way to gain access to them without
+        // going through ws2_32
+        static void* getExtensionFunctionPointer(GUID& funcguid)
+        {
+            ASocket s;
+            int cbInBuffer = sizeof(GUID);
+            void* lpvOutBuffer = nullptr;
+            int cbOutBuffer = sizeof(lpvOutBuffer);
+            DWORD lpcbBytesReturned = 0;
+            LPWSAOVERLAPPED lpOverlapped = nullptr;
+            LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine = nullptr;
+
+            int res = WSAIoctl(s.fSocket, SIO_GET_EXTENSION_FUNCTION_POINTER,
+                (void*)&funcguid, cbInBuffer,
+                lpvOutBuffer, cbOutBuffer,
+                &lpcbBytesReturned,
+                lpOverlapped,
+                lpCompletionRoutine);
+
+            if (res != 0)
+                return nullptr;
+
+            return lpvOutBuffer;
+        }
+
+        // Extended Accept
+        static int AcceptEx(ASocket listenSocket, ASocket acceptedSocket)
+        {
+            static LPFN_ACCEPTEX CAcceptEx = nullptr;
+
+            if (nullptr == CAcceptEx)
+            {
+                GUID g = WSAID_ACCEPTEX;
+                CAcceptEx = (LPFN_ACCEPTEX)getExtensionFunctionPointer(g);
+            }
+
+            // Call extension function
+            //lpOutputBuffer
+            DWORD    lpBytesReceived = 0;
+            void* lpOutputBuffer = nullptr;
+            DWORD dwReceiveDataLength = 0;
+            DWORD dwLocalAddressLength = 0;
+            DWORD dwRemoteAddressLength = 0;
+            DWORD lpdwBytesReceived;
+            LPOVERLAPPED lpOverlapped = nullptr;
+
+            int res = CAcceptEx(listenSocket.fSocket, acceptedSocket.fSocket,
+                lpOutputBuffer, dwReceiveDataLength, dwLocalAddressLength,
+                dwRemoteAddressLength, &lpdwBytesReceived,
+                lpOverlapped);
+
+            return res;
+        }
+
+        static int ConnectEx(ASocket s, IPAddress address)
+        {
+            LPFN_CONNECTEX CConnectEx = nullptr;
+
+            if (CConnectEx == nullptr) {
+                GUID g = WSAID_CONNECTEX;
+                CConnectEx = (LPFN_CONNECTEX)getExtensionFunctionPointer(g);
+            }
+
+            if (nullptr == CConnectEx)
+                return -1;
+
+            void* lpSendBuffer = nullptr;
+            DWORD dwSendDataLength = 0;
+            DWORD lpdwBytesSent = 0;
+            LPOVERLAPPED lpOverlapped = nullptr;
+
+            CConnectEx(s.fSocket, &address.fAddress, address.fAddressLength,
+                lpSendBuffer, dwSendDataLength,
+                &lpdwBytesSent, lpOverlapped);
+        }
+
+        static int DisconnectEx(ASocket s)
+        {
+            static LPFN_DISCONNECTEX CDisconnectEx = nullptr;
+
+            if (nullptr == DisconnectEx)
+            {
+                GUID g = WSAID_DISCONNECTEX;
+                CDisconnectEx = (LPFN_DISCONNECTEX)getExtensionFunctionPointer(g);
+            }
+
+            LPOVERLAPPED lpOverlapped = nullptr;
+            DWORD dwFlags = 0;
+            DWORD dwReserved = 0;
+            int res = CDisconnectEx(s.fSocket, lpOverlapped, dwFlags, dwReserved);
+
+            return res;
+        }
 };
 
 

@@ -64,13 +64,13 @@ namespace timing {
 		return 0;
 	}
 
-	static inline void sleep(static unsigned long millis)
+	static inline void sleep(unsigned long millis)
 	{
 		Event e;
 		e.wait(millis);
 	}
 
-	std::shared_ptr<Thread> delay(static unsigned long millis, TimedFunc func)
+	static inline std::shared_ptr<Thread> delay(unsigned long millis, TimedFunc func)
 	{
 		TimedRoutine* task = new TimedRoutine(millis, func, 1);
 		auto t = std::make_shared<Thread>(runPeriodicRoutine, task);
@@ -79,7 +79,7 @@ namespace timing {
 		return t;
 	}
 
-	std::shared_ptr<Thread> periodic(static unsigned long millis, TimedFunc func)
+	static inline std::shared_ptr<Thread> periodic(unsigned long millis, TimedFunc func)
 	{
 		TimedRoutine* task = new TimedRoutine(millis, func,0);
 		auto t = std::make_shared<Thread>(runPeriodicRoutine, task);

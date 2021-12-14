@@ -57,3 +57,5 @@
 *.db
 tests/udpscreenserve/Release/udpscreenserve.vcxproj.FileListAbsolute.txt
 tests/udpscreenview/Release/udpscreenview.vcxproj.FileListAbsolute.txt
+*.iobj
+*.ipdb

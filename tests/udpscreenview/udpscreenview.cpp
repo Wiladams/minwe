@@ -21,7 +21,7 @@ constexpr size_t bigbuffSize = captureWidth * captureHeight * (channels + 1) + s
 byte bigbuff[bigbuffSize];
 BinStream bs(bigbuff, bigbuffSize);
 
-ASocket client;
+//ASocket client;
 
 
 IPAddress srvrAddress;
@@ -75,39 +75,50 @@ bool receiveChunk(ASocket& s, IPAddress &addr, BinStream& pixs)
 
 void onFrame()
 {
+	printf("onFrame() - BEGIN\n");
+
+	ASocket client(AF_INET, SOCK_DGRAM, IPPROTO_IP, true);
+
+	if (!client.isValid())
+	{
+		printf("client socket not valid");
+		return;
+	}
+
 	// each time through
 	// check to see if there's content from the server
 	// if there is, then read the image in
 	// it would be best to do this in its own thread
 	// or have a callback mechanism
-	const char * commandBuff = "get frame";
+	const char* commandBuff = "get frame";
 	int commandSize = strlen(commandBuff);
 
-	if (client.isValid())
+	//char srvrbuff[512];
+	//srvrAddress.toString(srvrbuff, 511);
+	//printf("onFrame.server address: %s\n", srvrbuff);
+
+	// send the server a command
+	int res = client.sendTo(srvrAddress, commandBuff, commandSize);
+	//printf("onFrame.sendTo: %d\n", res);
+
+	bs.seek(0);
+	if (receiveChunk(client, srvrAddress, bs))
 	{
-		// send the server a command
-		int res = client.sendTo(srvrAddress, commandBuff, commandSize);
-		//printf("onFrame.sendTo: %d\n", res);
-
+		// Decode the image
 		bs.seek(0);
-		if (receiveChunk(client, srvrAddress, bs))
-		{
-			// Decode the image
-			bs.seek(0);
 
-			QOICodec::decode(bs, *gAppSurface);
-		}
-		else {
-			printf("error receiving chunk\n");
-			halt();
-		}
-		printf("onFrame(), FINISHED one frame\n");
+		QOICodec::decode(bs, *gAppSurface);
 	}
-}
+	else {
+		printf("error receiving chunk\n");
+		halt();
+	}
 
-void onUnload()
-{
 
+	
+	client.forceClose();
+
+	printf("onFrame() - END\n");
 }
 
 void setup()
@@ -126,11 +137,11 @@ void setup()
 		halt();
 	}
 
-	if (!client.init(AF_INET, SOCK_DGRAM, IPPROTO_IP, false))
-	{
-		printf("socket client not valid: %d\n", client.getLastError());
-		halt();
-	}
+	//if (!client.init(AF_INET, SOCK_DGRAM, IPPROTO_IP, false))
+	//{
+	//	printf("socket client not valid: %d\n", client.getLastError());
+	//	halt();
+	//}
 
 	setFrameRate(1);
 	setCanvasSize(captureWidth, captureHeight);
