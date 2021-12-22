@@ -251,11 +251,11 @@ public:
     // You can default construct a socket,
     // the use init() to initialize it
     ASocket()
-        : ASocket(INVALID_SOCKET, false)
+        : fSocket(INVALID_SOCKET)
+        , fAutoClose(false)
+        , fIsValid(false)
+        , fLastError(0)
     {
-        fSocket = INVALID_SOCKET;
-        fAutoClose = false;
-        fIsValid = false;
     }
 
     // Construct with an existing native socket
@@ -565,7 +565,7 @@ public:
     {
         int res = ::sendto(fSocket, buff, bufflen, 0, &addrTo.fAddress, addrTo.fAddressLength);
         
-        printf("ASocket::sendTo: %d\n", res);
+        //printf("ASocket::sendTo: %d\n", res);
 
         return res;
     }
@@ -573,7 +573,7 @@ public:
     int receiveFrom(IPAddress &addrFrom, void* buff, int bufflen)
     {
         int res = ::recvfrom(fSocket, (char*)buff, bufflen, 0, &addrFrom.fAddress, &addrFrom.fAddressLength);
-        printf("ASocket::receiveFrom: %d\n", res);
+        //printf("ASocket::receiveFrom: %d\n", res);
         
         return res;
     }

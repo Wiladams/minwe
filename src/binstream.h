@@ -336,7 +336,7 @@ size_t readLine(char* buff, const size_t bufflen)
             }
         } else {
             while  (i < n) {
-                v = (v | (readOctet() << 8*i));
+                v = (v | (readOctet() << (8*i)));
                 i = i + 1;
             }
         }
@@ -385,6 +385,7 @@ size_t readLine(char* buff, const size_t bufflen)
         Writing to a binary stream
     */
     // Write a single octet to the stream
+    /*
     bool writeOctet(const uint8_t octet)
     {
         // if we're already at capacity, then fail
@@ -392,6 +393,14 @@ size_t readLine(char* buff, const size_t bufflen)
             return false;
         }
 
+        fdata[fcursor] = octet;
+        fcursor = fcursor + 1;
+
+        return true;
+    }
+    */
+    inline bool writeOctet(const uint8_t octet)
+    {
         fdata[fcursor] = octet;
         fcursor = fcursor + 1;
 
@@ -433,27 +442,29 @@ size_t readLine(char* buff, const size_t bufflen)
         return success;
     }
 
-    size_t writeInt(const uint64_t value, const size_t n)
+    int writeInt(const uint64_t value, const size_t n)
     {
         if (remaining() < n) {
             // BUGBUG - throw exception
+            return 0;
         }
 
-        size_t i = n-1;
+        int i = n-1;
         if (fbigend) {
             while  (i >= 0) {
-                writeOctet(((value >> i*8) & 0xff));
+                uint8_t v = ((value >> (i * 8)) & 0xff);
+                writeOctet(v);
                 i = i - 1;
             }
         } else {
-            size_t cnt = 0;
+            int cnt = 0;
             while  (cnt < n) {
-                writeOctet((value >> cnt*8) & 0xff);
+                writeOctet((value >> (cnt*8)) & 0xff);
                 cnt = cnt + 1;
             }
         }
 
-        return (size_t)i+1;
+        return n;
     }
 
     size_t writeInt8(const int8_t n){return writeInt(n, 1);}

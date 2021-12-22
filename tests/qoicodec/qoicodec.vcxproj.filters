@@ -29,5 +29,11 @@
     <ClInclude Include="..\..\src\gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\qoi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="documentation.txt" />
   </ItemGroup>
 </Project>

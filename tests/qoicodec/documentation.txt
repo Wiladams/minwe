@@ -1,0 +1,85 @@
+-- Synopsis
+Just include qoi.h in your program.  
+This is meant for usage in C++.
+
+
+
+-- Documentation
+
+See the function declaration below for the signature and more information.
+
+
+-- Data Format
+
+A QOI file has the following header, followed by any number of data "chunks".
+
+struct qoi_header_t {
+	char [4];              // magic bytes "qoif"
+	unsigned short width;  // image width in pixels
+	unsigned short height; // image height in pixels
+	unsigned int size;     // number of data bytes following this header
+};
+
+The decoder and encoder start with {r: 0, g: 0, b: 0, a: 255} as the previous
+pixel value. Pixels are either encoded as
+ - a run of the previous pixel
+ - an index into a previously seen pixel
+ - a difference to the previous pixel value in r,g,b,a
+ - full r,g,b,a values
+
+A running array[64] of previously seen pixel values is maintained by the encoder
+and decoder. Each pixel that is seen by the encoder and decoder is put into this
+array at the position (r^g^b^a) % 64. In the encoder, if the pixel value at this
+index matches the current pixel, this index position is written to the stream.
+
+Each chunk starts with a 2, 3 or 4 bit tag, followed by a number of data bits.
+The bit length of chunks is divisible by 8 - i.e. all chunks are byte aligned.
+
+QOI_INDEX {
+	u8 tag  :  2;   // b00
+	u8 idx  :  6;   // 6-bit index into the color index array: 0..63
+}
+
+QOI_RUN_8 {
+	u8 tag  :  3;   // b010
+	u8 run  :  5;   // 5-bit run-length repeating the previous pixel: 1..32
+}
+
+QOI_RUN16 {
+	u8 tag  :  3;   // b011
+	u16 run : 13;   // 13-bit run-length repeating the previous pixel: 33..8224
+}
+
+QOI_DIFF8 {
+	u8 tag  :  2;   // b10
+	u8 dr   :  2;   // 2-bit   red channel difference: -1..2
+	u8 dg   :  2;   // 2-bit green channel difference: -1..2
+	u8 db   :  2;   // 2-bit  blue channel difference: -1..2
+}
+
+QOI_DIFF16 {
+	u8 tag  :  3;   // b110
+	u8 dr   :  5;   // 5-bit   red channel difference: -15..16
+	u8 dg   :  4;   // 4-bit green channel difference:  -7.. 8
+	u8 db   :  4;   // 4-bit  blue channel difference:  -7.. 8
+}
+
+QOI_DIFF24 {
+	u8 tag  :  4;   // b1110
+	u8 dr   :  5;   // 5-bit   red channel difference: -15..16
+	u8 dg   :  5;   // 5-bit green channel difference: -15..16
+	u8 db   :  5;   // 5-bit  blue channel difference: -15..16
+	u8 da   :  5;   // 5-bit alpha channel difference: -15..16
+}
+
+QOI_COLOR {
+	u8 tag  :  4;   // b1111
+	u8 has_r:  1;   //   red byte follows
+	u8 has_g:  1;   // green byte follows
+	u8 has_b:  1;   //  blue byte follows
+	u8 has_a:  1;   // alpha byte follows
+	u8 r;           //   red value if has_r == 1: 0..255
+	u8 g;           // green value if has_g == 1: 0..255
+	u8 b;           //  blue value if has_b == 1: 0..255
+	u8 a;           // alpha value if has_a == 1: 0..255
+}

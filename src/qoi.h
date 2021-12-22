@@ -38,92 +38,6 @@ images are typically 20% smaller than PNGs written with stbi_image but 10%
 larger than with libpng. Encoding is 25-50x faster and decoding is 3-4x faster
 than stbi_image or libpng.
 
-
--- Synopsis
-Just include qoi.h in your program.  This is meant for usage in C++.
-
-
-
--- Documentation
-
-See the function declaration below for the signature and more information.
-
-
--- Data Format
-
-A QOI file has the following header, followed by any number of data "chunks".
-
-struct qoi_header_t {
-	char [4];              // magic bytes "qoif"
-	unsigned short width;  // image width in pixels
-	unsigned short height; // image height in pixels
-	unsigned int size;     // number of data bytes following this header
-};
-
-The decoder and encoder start with {r: 0, g: 0, b: 0, a: 255} as the previous
-pixel value. Pixels are either encoded as
- - a run of the previous pixel
- - an index into a previously seen pixel
- - a difference to the previous pixel value in r,g,b,a
- - full r,g,b,a values
-
-A running array[64] of previously seen pixel values is maintained by the encoder
-and decoder. Each pixel that is seen by the encoder and decoder is put into this
-array at the position (r^g^b^a) % 64. In the encoder, if the pixel value at this
-index matches the current pixel, this index position is written to the stream.
-
-Each chunk starts with a 2, 3 or 4 bit tag, followed by a number of data bits.
-The bit length of chunks is divisible by 8 - i.e. all chunks are byte aligned.
-
-QOI_INDEX {
-	u8 tag  :  2;   // b00
-	u8 idx  :  6;   // 6-bit index into the color index array: 0..63
-}
-
-QOI_RUN_8 {
-	u8 tag  :  3;   // b010
-	u8 run  :  5;   // 5-bit run-length repeating the previous pixel: 1..32
-}
-
-QOI_RUN16 {
-	u8 tag  :  3;   // b011
-	u16 run : 13;   // 13-bit run-length repeating the previous pixel: 33..8224
-}
-
-QOI_DIFF8 {
-	u8 tag  :  2;   // b10
-	u8 dr   :  2;   // 2-bit   red channel difference: -1..2
-	u8 dg   :  2;   // 2-bit green channel difference: -1..2
-	u8 db   :  2;   // 2-bit  blue channel difference: -1..2
-}
-
-QOI_DIFF16 {
-	u8 tag  :  3;   // b110
-	u8 dr   :  5;   // 5-bit   red channel difference: -15..16
-	u8 dg   :  4;   // 4-bit green channel difference:  -7.. 8
-	u8 db   :  4;   // 4-bit  blue channel difference:  -7.. 8
-}
-
-QOI_DIFF24 {
-	u8 tag  :  4;   // b1110
-	u8 dr   :  5;   // 5-bit   red channel difference: -15..16
-	u8 dg   :  5;   // 5-bit green channel difference: -15..16
-	u8 db   :  5;   // 5-bit  blue channel difference: -15..16
-	u8 da   :  5;   // 5-bit alpha channel difference: -15..16
-}
-
-QOI_COLOR {
-	u8 tag  :  4;   // b1111
-	u8 has_r:  1;   //   red byte follows
-	u8 has_g:  1;   // green byte follows
-	u8 has_b:  1;   //  blue byte follows
-	u8 has_a:  1;   // alpha byte follows
-	u8 r;           //   red value if has_r == 1: 0..255
-	u8 g;           // green value if has_g == 1: 0..255
-	u8 b;           //  blue value if has_b == 1: 0..255
-	u8 a;           // alpha value if has_a == 1: 0..255
-}
-
 */
 
 /*
@@ -131,7 +45,7 @@ QOI_COLOR {
 	The original functions assumed writing to a file.  I want to work with 
 	streams instead, so binstream is used.
 
-	Also, a chunk is allocated for every frame encoded.  I want to change
+	Also, a chunk was allocated for every frame encoded.  I want to change
 	this to using a pre-allocated chunk (the stream) so we save on 
 	alloc/free for every frame.
 */
@@ -139,13 +53,10 @@ QOI_COLOR {
 // Header - Public functions
 
 #include "binstream.h"
-#include "pixelmap.h"
 
-#ifndef QOI_MALLOC
-#define QOI_MALLOC(sz) malloc(sz)
-#define QOI_FREE(p)    free(p)
-#endif
 
+namespace QOICodec
+{
 #define QOI_INDEX   0x00 // 00xxxxxx
 #define QOI_RUN_8   0x40 // 010xxxxx
 #define QOI_RUN_16  0x60 // 011xxxxx
@@ -175,18 +86,17 @@ union qoi_magic_t
 struct qoi_header_t 
 {
 	qoi_magic_t magic;
-	unsigned short width;
-	unsigned short height;
-	unsigned int size;
+	uint32_t width;
+	uint32_t height;
+	uint8_t channels;
+	uint8_t colorspace;
 } ;
 
 const static qoi_magic_t qoi_magic = { .chars = {'q','o','i','f'} };
 
 #define QOI_COLOR_HASH(C) (C.rgba.r ^ C.rgba.g ^ C.rgba.b ^ C.rgba.a)
 
-class QOICodec
-{
-public:
+
 	// return the maximum number of bytes needed to encode the image
 	// this can be used to allocate a buffer to encode into
 	static int maxBufferSize(const int w, const int h, const int channels) {
@@ -200,14 +110,9 @@ public:
 	//
 	// WAA - Assume the stream is already capable of handling maxBufferSize() amount
 	// of data
-	static bool encode(BinStream& bs, PixelMap &pmap)
+	//static bool encode(BinStream& bs, PixelMap &pmap)
+	static bool encode(BinStream& bs, void *data, int w, int h, int channels, int colorspace=0) 
 	{
-		void* data = pmap.getPixelPointer(0, 0);
-		int w = pmap.width();
-		int h = pmap.height();
-		int channels = 4;
-
-
 		// Quick reject if parameters are not correct
 		if (
 			data == NULL  ||
@@ -220,11 +125,15 @@ public:
 
 		// Write the header
 		bs.writeBytes(qoi_magic.chars, 4);
-		bs.writeUInt16(w);
-		bs.writeUInt16(h);
+		bs.writeUInt32(w);
+		bs.writeUInt32(h);
+		bs.writeOctet((uint8_t)channels);
+		bs.writeOctet((uint8_t)colorspace);
+
 		// Where is the size field?
-		int sizeStart = bs.tell();
-		bs.writeUInt32(0);	// come back to this later, take sentinel now
+		// come back to this later, take sentinel now
+		//int sizeStart = bs.tell();
+		//bs.writeUInt32(0);	
 
 		int dataStart = bs.tell();
 
@@ -321,28 +230,25 @@ public:
 		}
 
 		// Figure out the size of the data written
-		int dataEnd = bs.tell();
-		int dataSize = dataEnd - dataStart;
+		//int dataEnd = bs.tell();
+		//uint32_t dataSize = dataEnd - dataStart;
 
 		// go back and write that size into the stream
-		bs.seek(sizeStart);
-		bs.writeUInt32(dataSize);
+		//bs.seek(sizeStart);
+		//bs.writeUInt32(dataSize);
 
 		// Reset the stream to where we stopped
 		// writing data
-		bs.seek(dataEnd);
+		//bs.seek(dataEnd);
 
 		return true;
 	}
 
 	// Decode a QOI image from memory into either raw RGB (channels=3) or RGBA 
 	// (channels=4) pixel data.
-	// The function either returns NULL on failure (invalid parameters or malloc 
-	// failed) or a pointer to the decoded pixels. On success out_w and out_h will
-	// be set to the width and height of the decoded image.
-	// The returned pixel data should be free()d after use.
-
-	static bool decode(BinStream& bs, PixelMap& pmap)
+	// The function either returns false on failure (invalid parameters) 
+	// or true. 
+	static bool decode(BinStream& bs, void* data, int w, int h, int channels)
 	{
 		if (bs.remaining() < sizeof(qoi_header_t))
 		{
@@ -352,15 +258,15 @@ public:
 		// Read in the header
 		qoi_header_t header;
 		bs.readBytes((uint8_t*)header.magic.chars, 4);
-		header.width = bs.readUInt16();
-		header.height = bs.readUInt16();
-		header.size = bs.readUInt32();
-		int channels = 4;
+		header.width = bs.readUInt32();
+		header.height = bs.readUInt32();
+		header.channels = bs.readOctet();
+		header.colorspace = bs.readOctet();
 
-		if ((channels < 3) ||
-			(channels > 4) ||
-			(header.width != pmap.width()) ||
-			(header.height != pmap.height()) ||
+		if ((header.channels < 3) ||
+			(header.channels > 4) ||
+			(header.width != w) ||
+			(header.height != h) ||
 			(header.magic.v != qoi_magic.v)
 			)
 		{
@@ -368,19 +274,19 @@ public:
 		}
 
 		// how many bytes are needed to hold pixel data
-		int px_len = header.width * header.height * channels;
+		int px_len = header.width * header.height * header.channels;
 
 
 		// We're going to decode directly into the pixel pointer
 		// of the destination PixelMap
-		unsigned char* pixels = (unsigned char*)pmap.getPixelPointer(0, 0);
+		unsigned char* pixels = (unsigned char*)data;
 
-		int data_len = header.size;
+		//int data_len = header.size;
 		qoi_rgba_t px{0,0,0,255};
 		qoi_rgba_t index[64] = { 0 };
 
 		int run = 0;
-		for (int px_pos = 0; px_pos < px_len && bs.remaining() > 0; px_pos += channels)
+		for (int px_pos = 0; px_pos < px_len && bs.remaining() > 0; px_pos += header.channels)
 		{
 			if (run > 0) {
 				run--;
@@ -427,7 +333,7 @@ public:
 				index[QOI_COLOR_HASH(px) % 64] = px;
 			}
 
-			if (channels == 4) {
+			if (header.channels == 4) {
 				*(qoi_rgba_t*)(pixels + px_pos) = px;
 			}
 			else {

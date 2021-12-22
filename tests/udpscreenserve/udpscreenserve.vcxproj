@@ -147,6 +147,7 @@
     <ClCompile Include="udpscreenserve.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\apphost.h" />
     <ClInclude Include="..\..\src\network.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

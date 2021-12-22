@@ -11,6 +11,7 @@
 #include "qoi.h"
 #include "binstream.h"
 #include "network.h"
+#include "timing.h"
 
 #include <memory>
 
@@ -36,7 +37,11 @@ bool sendChunk(ASocket& s, IPAddress &addrTo, char* buff, int buffLen)
 	// match the send buffer size of the underlying
 	// socket
 	int32_t overallSize = buffLen;
-	int32_t idealSize = s.getSendBufferSize()/4;
+	
+	//int32_t idealSize = s.getSendBufferSize();
+	int32_t idealSize = s.getSendBufferSize()/2;
+	//int32_t idealSize = s.getSendBufferSize()/4;
+	//int32_t idealSize = 1400;
 
 	//printf("udpscreenserve, overallsize: %d\n", overallSize);
 	//printf("udpscreenserve, ideal chunk size: %d\n", idealSize);
@@ -74,20 +79,19 @@ bool sendChunk(ASocket& s, IPAddress &addrTo, char* buff, int buffLen)
 			return false;
 		}
 
-
-
 		overallSize -= res;
 
 		chunkStream.skip(res);
 		//printf("overallSize: %d\n", overallSize);
+		timing::sleep(4);
 	}
 
-	printf("Server FINISHED one frame\n");
+	//printf("Server FINISHED one frame\n");
 	return true;
 
 }
 
-void sendCurrentScreen(ASocket &clientsock, IPAddress &clientAddr)
+void sendCurrentScreen(ASocket &sendersock, IPAddress &clientAddr)
 {
 	// take a snapshot of screen
 	snapper.next();
@@ -98,27 +102,23 @@ void sendCurrentScreen(ASocket &clientsock, IPAddress &clientAddr)
 
 	size_t outLength = bs.tell();
 
-	sendChunk(clientsock, clientAddr, (char*)bigbuff, outLength);
+	sendChunk(sendersock, clientAddr, (char*)bigbuff, outLength);
 }
 
-void onUnload()
+void onLoad()
 {
-	ASocket srvrsock(AF_INET, SOCK_DGRAM, IPPROTO_IP, false);
-	srvrsock.setReuseAddress();
+	// Setup our receiving port
+	IPV4Address srvraddress(9991);
+	ASocket serversock(AF_INET, SOCK_DGRAM, IPPROTO_UDP, false);
+	//serversock.setReuseAddress();
+	auto bindRes = serversock.bindTo(srvraddress);
 
-	ASocket clientsock(AF_INET, SOCK_DGRAM, IPPROTO_IP, false);
-
-	if (!srvrsock.isValid()) {
+	if (!serversock.isValid()) {
 		// Could not create socket
-		printf("Could not create server: %d\n", srvrsock.getLastError());
+		printf("Could not create server: %d\n", serversock.getLastError());
 		halt();
 		return;
 	}
-
-	// Setup the address we'll be waiting to receive
-	// datagrams on
-	IPV4Address srvraddress(8081);
-	auto bindRes = srvrsock.bindTo(srvraddress);
 
 	uint64_t commandCount = 0;	// just to keep track of commands coming in
 	IPAddress clientAddr;		// the address of the client we received a datagram from
@@ -132,20 +132,19 @@ void onUnload()
 
 		// Client sends us a command, so read that
 		// command should be 'get frame'
-		printf("waiting for client command:\n");
+		//printf("waiting for client command:\n");
 
-		int bytesTransferred = srvrsock.receiveFrom(clientAddr, bigbuff, 512);
+		int bytesTransferred = serversock.receiveFrom(clientAddr, bigbuff, 512);
 
 		commandCount = commandCount + 1;
 			
 		clientAddr.toString(clientbuff,511);
-
-		printf("server.receiveFrom: (%d) client: %s\n", bytesTransferred, clientbuff);
+		//printf("server.receiveFrom: (%d) client: %s\n", bytesTransferred, clientbuff);
 
 
 		if (SOCKET_ERROR == bytesTransferred) 
 		{
-			printf("receiveFrom ERROR: %d\n", srvrsock.getLastError());
+			printf("receiveFrom ERROR: %d\n", serversock.getLastError());
 			fflush(stdout);
 
 			halt();
@@ -160,9 +159,9 @@ void onUnload()
 			// we'll assume it's for 
 			// taking a snapshot and sending it
 			bigbuff[bytesTransferred] = 0;
-			printf("Command: %s\n", bigbuff);
+			//printf("Command: %s\n", bigbuff);
 
-			sendCurrentScreen(clientsock, clientAddr);
+			sendCurrentScreen(serversock, clientAddr);
 		}
 	}
 

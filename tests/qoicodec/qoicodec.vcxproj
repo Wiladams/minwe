@@ -149,6 +149,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\gui.h" />
+    <ClInclude Include="..\..\src\qoi.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="documentation.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

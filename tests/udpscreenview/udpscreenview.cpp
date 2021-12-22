@@ -21,10 +21,9 @@ constexpr size_t bigbuffSize = captureWidth * captureHeight * (channels + 1) + s
 byte bigbuff[bigbuffSize];
 BinStream bs(bigbuff, bigbuffSize);
 
-//ASocket client;
-
 
 IPAddress srvrAddress;
+ASocket udpSender;
 
 // Receive a chunk of stuff back from the server
 // Do this in a loop until the chunk size is 0
@@ -42,8 +41,8 @@ bool receiveChunk(ASocket& s, IPAddress &addr, BinStream& pixs)
 	res = s.receiveFrom(addr, (char*)&chunkSize, 4);
 
 	//printf("receiveChunk: %d\n", res);
-	printf("overallSize: %d\n", overallSize);
-	printf("chunkSize: %d\n", chunkSize);
+	//printf("overallSize: %d\n", overallSize);
+	//printf("chunkSize: %d\n", chunkSize);
 
 	// if we had an error in receiving, then we return immediately
 	// indicating we did not read anything
@@ -75,11 +74,9 @@ bool receiveChunk(ASocket& s, IPAddress &addr, BinStream& pixs)
 
 void onFrame()
 {
-	printf("onFrame() - BEGIN\n");
+	//printf("onFrame() - BEGIN\n");
 
-	ASocket client(AF_INET, SOCK_DGRAM, IPPROTO_IP, true);
-
-	if (!client.isValid())
+	if (!udpSender.isValid())
 	{
 		printf("client socket not valid");
 		return;
@@ -98,11 +95,11 @@ void onFrame()
 	//printf("onFrame.server address: %s\n", srvrbuff);
 
 	// send the server a command
-	int res = client.sendTo(srvrAddress, commandBuff, commandSize);
+	int res = udpSender.sendTo(srvrAddress, commandBuff, commandSize);
 	//printf("onFrame.sendTo: %d\n", res);
 
 	bs.seek(0);
-	if (receiveChunk(client, srvrAddress, bs))
+	if (receiveChunk(udpSender, srvrAddress, bs))
 	{
 		// Decode the image
 		bs.seek(0);
@@ -114,19 +111,19 @@ void onFrame()
 		halt();
 	}
 
-
-	
-	client.forceClose();
-
-	printf("onFrame() - END\n");
+	//printf("onFrame() - END\n");
 }
 
 void setup()
 {
 	printf("setup\n");
 
-	IPHost host("192.168.1.9", "8081", SOCK_DGRAM);
-	//IPHost host = IPHost::create("localhost", "8081", , SOCK_DGRAM);
+	// initialize the sending socket
+	udpSender.init(AF_INET, SOCK_DGRAM, IPPROTO_UDP, false);
+
+	// Get the host address we'll capturing from
+	IPHost host("192.168.1.9", "9991", SOCK_DGRAM);
+	//IPHost host = IPHost::create("localhost", "9991", , SOCK_DGRAM);
 
 	if (host.isValid())
 	{
@@ -143,6 +140,6 @@ void setup()
 	//	halt();
 	//}
 
-	setFrameRate(1);
+	setFrameRate(10);
 	setCanvasSize(captureWidth, captureHeight);
 }
