@@ -23,16 +23,19 @@ void keyReleased(const KeyboardEvent &e)
 void drawPoints(std::shared_ptr<RenderContext> ctx)
 {
 	// Draw some random sampled points
-	for (int i = 0; i < 100000; i++)
+	for (int i = 0; i < 25000; i++)
 	{
-		int x = maths::random(canvasWidth);
-		int y = maths::random(canvasHeight);
-		double u = maths::Map(x, 0, canvasWidth, 0, 1);
-		double v = maths::Map(y, 0, canvasHeight, 0, 1);
+		int x = maths::random(canvasWidth-1);
+		int y = maths::random(canvasHeight-1);
+		double u = maths::Map(x, 0, canvasWidth-1, 0, 1);
+		double v = maths::Map(y, 0, canvasHeight-1, 0, 1);
 
+		auto c = screenSamp->getValue(u, v, { x,y });
 		//ctx->point(x, y, *screenSamp);
-		ctx->set(x, y, screenSamp->getValue(u, v, {x,y})  );
 		//ctx->circle(x, y, 2, *screenSamp);
+		fillCircle(*gAppSurface, x, y, 6, c);
+		//gAppSurface->setPixel(x, y, c);
+
 	}
 }
 
@@ -46,7 +49,7 @@ void onFrame()
 	drawPoints(ctx);
 
 	// Draw a rectangle or two
-	ctx->rectangle(100, 100, 400, 300, *screenSamp);
+	//ctx->rectangle(100, 100, 400, 300, *screenSamp);
 	//ctx->rectangle(300, 400, 640, 480, *screenSamp);
 
 	reco->saveFrame();
@@ -54,7 +57,7 @@ void onFrame()
 
 void setup()
 {
-	//setFrameRate(30);
+	setFrameRate(30);
 	setCanvasSize(800, 600);
 
 	screenSamp = std::make_shared<ScreenSnapshot>(100, 400, canvasWidth, canvasHeight);

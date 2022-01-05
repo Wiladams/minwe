@@ -147,7 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\coloring.h" />
-    <ClInclude Include="..\..\src\glsl.h" />
+    <ClInclude Include="..\..\src\pixeltypes.h" />
     <ClInclude Include="..\..\src\pixelmap.h" />
     <ClInclude Include="..\..\src\sampler.h" />
     <ClInclude Include="..\..\src\User32PixelMap.h" />

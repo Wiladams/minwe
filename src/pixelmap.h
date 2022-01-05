@@ -1,6 +1,6 @@
 #pragma once
 
-#include "glsl.h"
+#include "pixeltypes.h"
 
 /*
     A PixelMap is essentially a 2D array of pixels.  Pixels
@@ -212,7 +212,7 @@ public:
     {
         // reject pixel if out of boundary
         if (!fBounds.containsPoint(x, y))
-            return 0;
+            return PixelRGBA(0);
 
         return getPixel(x, y);
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "glsl.h"
+#include "pixeltypes.h"
 #include "coloring.h"
 
 #include <array>
@@ -45,12 +45,9 @@ public:
 
         // convert to grayscale, preserving alpha
         uint8_t g = fLuminance.toLuminance(c);
-        c.red = g;
-        c.green = g;
-        c.blue = g;
 
         // return it
-        return c;
+        return PixelRGBA(g,g,g,c.a());
     }
 };
 
@@ -73,7 +70,7 @@ public:
     {
         double wl = maths::Map(u, 0, 1, 380, 780);
         auto c = ColorRGBAFromWavelength(wl, fGamma);
-        return (PixelRGBA)c;
+        return c;
     }
 };
 

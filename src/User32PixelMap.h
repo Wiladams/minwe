@@ -137,7 +137,7 @@ public:
         // do line clipping
         // copy actual pixel data
         uint32_t* pixelPtr = (uint32_t*)getPixelPointer(x, y);
-        __stosd((unsigned long*)pixelPtr, src.intValue, width);
+        __stosd((unsigned long*)pixelPtr, src.value, width);
     }
 
     // Set every pixel to a specified value
@@ -146,7 +146,7 @@ public:
     virtual void setAllPixels(const PixelRGBA c)
     {
         size_t nPixels = fBounds.width * fBounds.height;
-        __stosd((unsigned long*)fData, c.intValue, nPixels);
+        __stosd((unsigned long*)fData, c.value, nPixels);
     }
 
 

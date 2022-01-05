@@ -38,9 +38,9 @@ pulseCircle pc1(0.50);
 
 
 
-inline PixelRGBA randomColor(int alpha = 255)
+inline PixelRGBA randomColor(uint32_t alpha = 255)
 {
-    return { (int)maths::random(255), (int)maths::random(255), (int)maths::random(255), alpha };
+    return { (uint32_t)maths::random(255), (uint32_t)maths::random(255), (uint32_t)maths::random(255), alpha };
 }
 
 void drawLines()
@@ -65,7 +65,7 @@ void setup()
 
 void onFrame()
 {
-    background(0xff7f7f7f);
+    background(PixelRGBA(0xff7f7f7f));
 
     drawLines();
     pc1.draw();

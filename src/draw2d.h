@@ -148,7 +148,7 @@ inline bool clipLine(const PixelRect bounds, int& x0, int& y0, int& x1, int& y1)
 inline void setSpan(PixelMap& pmap, const int x, const int y, const int width, const PixelRGBA src)
 {
     PixelRGBA* pixelPtr = (PixelRGBA*)pmap.getPixelPointer(x, y);
-    __stosd((unsigned long*)pixelPtr, src.intValue, width);
+    __stosd((unsigned long*)pixelPtr, src.value, width);
 }
 
 inline void verticalLine(PixelMap& pmap, const int x, const int y, const int height, const PixelRGBA src)

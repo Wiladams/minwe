@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cmath>
-#include "glsl.h"
+#include "pixeltypes.h"
 
 // Some routines in here to deal with colors in various
 // ways.
@@ -10,7 +10,7 @@
 // an RGB color value
 // 380 <= wl <= 780 nanometers
 // gamma typically 1.0
-static inline ColorRgba  ColorRGBAFromWavelength(double wl, double gamma = 1.0)
+static inline PixelRGBA  ColorRGBAFromWavelength(double wl, double gamma = 1.0)
 {
     ColorRgba t = { 0,0,0,1 };
 
@@ -50,5 +50,5 @@ static inline ColorRgba  ColorRGBAFromWavelength(double wl, double gamma = 1.0)
     t.green = (float)pow(t.green * s, gamma);
     t.blue = (float)pow(t.blue * s, gamma);
 
-    return t;
+    return PixelRGBA(t.red*255,t.green*255,t.blue*255,255);
 }

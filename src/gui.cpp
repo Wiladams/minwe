@@ -27,8 +27,8 @@ double fNextMillis = 0;
 uint64_t fDroppedFrames = 0;
 uint64_t frameCount;
 
-int width;
-int height;
+//int width;
+//int height;
 
 
 PixelRGBA* pixels = nullptr;
@@ -169,30 +169,42 @@ void setFrameRate(const int rate)
     fNextMillis = fsw.millis() + fInterval;
 }
 
-// we get called every time through the main app loop, so 
-// we want to deal with frame timing here.
+// Called by the app framework
+// This will be called every time through the main app loop, 
+// after the app framework has done whatever processing it 
+// needs to do.
+//
+// We deal with frame timing here because it's the only place
+// we have absolute control of what happens in the user's app
+//
 // if we're just past the frame time, then call the 'draw()'
 // function if there is one.
 // Otherwise, just let the loop continue
 // 
-// Might also be interesting to check keyboard, mouse, and joystick 
-// positions here?
-//
+
 void onLoop()
 {
     // We'll wait here until it's time to 
     // signal the frame
     if (fsw.millis() > fNextMillis)
     {
+        // WAA - Might also be interesting to get absolute keyboard, mouse, 
+        // and joystick positions here.
+        //
+
         frameCount += 1;
         if (gDrawHandler != nullptr) {
             gDrawHandler();
-
         }
         
+        // Since we're on the clock, we will refresh
+        // the screen.
         refreshScreen();
         
         // catch up to next frame interval
+        // this will possibly result in dropped
+        // frames, but it will ensure we keep up
+        // to speed with the wall clock
         while (fNextMillis <= fsw.millis())
         {
             fNextMillis += fInterval;
@@ -201,6 +213,10 @@ void onLoop()
 
 }
 
+// Called by the app framework as the first thing
+// that happens after the app framework has set itself
+// up.  We want to do whatever registrations are required
+// for the user's app to run inside here.
 void onLoad()
 {
     HMODULE hInst = ::GetModuleHandleA(NULL);
@@ -230,13 +246,15 @@ void onLoad()
 
     // Start with a default background before setup
     // does something.
-    background(0xffffffff);
+    background(PixelRGBA(0xffffffff));
 
     // Call a setup routine if the user specified one
     if (gSetupHandler != nullptr) {
         gSetupHandler();
     }
 
+    // If there was any drawing done during setup
+    // display that at least once.
     refreshScreen();
 }
 

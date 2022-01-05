@@ -130,11 +130,6 @@ const static qoi_magic_t qoi_magic = { .chars = {'q','o','i','f'} };
 		bs.writeOctet((uint8_t)channels);
 		bs.writeOctet((uint8_t)colorspace);
 
-		// Where is the size field?
-		// come back to this later, take sentinel now
-		//int sizeStart = bs.tell();
-		//bs.writeUInt32(0);	
-
 		int dataStart = bs.tell();
 
 		const unsigned char* pixels = (const unsigned char*)data;

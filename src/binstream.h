@@ -385,20 +385,6 @@ size_t readLine(char* buff, const size_t bufflen)
         Writing to a binary stream
     */
     // Write a single octet to the stream
-    /*
-    bool writeOctet(const uint8_t octet)
-    {
-        // if we're already at capacity, then fail
-        if (fcursor >= fsize) {
-            return false;
-        }
-
-        fdata[fcursor] = octet;
-        fcursor = fcursor + 1;
-
-        return true;
-    }
-    */
     inline bool writeOctet(const uint8_t octet)
     {
         fdata[fcursor] = octet;

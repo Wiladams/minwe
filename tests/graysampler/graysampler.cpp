@@ -14,12 +14,8 @@ std::shared_ptr<RenderContext> ctx = nullptr;
 std::shared_ptr<ScreenSnapshot> screenSamp = nullptr;
 std::shared_ptr<GraySampler> gSamp = nullptr;
 
-
-
 void onFrame()
 {
-	//background(0xffffff00);
-	// update screen snapshot
 	screenSamp->next();
 
 	double colWidth = canvasWidth / 3;
