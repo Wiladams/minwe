@@ -16,7 +16,7 @@ double random(const float rndMax)
 
 PixelRGBA randomColor()
 {
-	return { (int)random(255),(int)random(255), (int)random(255) };
+	return { (uint32_t)random(255),(uint32_t)random(255), (uint32_t)random(255) };
 }
 
 void background(PixelRGBA c)
@@ -47,7 +47,7 @@ void drawRandomTriangles(PixelRect bounds)
 
 void onLoop()
 {
-	background(0xffcccccc);
+	background(PixelRGBA(0xffcccccc));
 	drawRandomTriangles({0,0,canvasWidth,canvasHeight});
 	refreshScreen();
 }

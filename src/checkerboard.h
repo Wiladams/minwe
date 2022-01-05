@@ -41,7 +41,7 @@ class CheckerPattern : public ISample2D<PixelRGBA>
     // if the value 'u' is below the threshold, then the low
     // value is returned, otherwise the high value is returned
     // pretty simple ternary operation
-    static inline double step(double u, double threshold, double low, double high)
+    static double step(double u, double threshold, double low, double high)
     {
         return u < threshold ? low : high;
     }

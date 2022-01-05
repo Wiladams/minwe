@@ -1,14 +1,13 @@
 #include "gui.h"
-
-#include "qoi.h"
 #include "screensnapshot.h"
+#include "qoi.h"
 
 static const int captureWidth=1280;
 static const int captureHeight=1024;
 
 // This is the buffer that will be used to encode images
 static const size_t bigbuffSize = captureWidth * captureHeight * 4;
-byte bigbuff[bigbuffSize];
+uint8_t bigbuff[bigbuffSize];
 BinStream bs(bigbuff, bigbuffSize,0,false);
 
 ScreenSnapshot snapper(0,0,captureWidth, captureHeight);
@@ -31,9 +30,6 @@ void onFrame()
 	bs.seek(0);
 	encodeFrame(bs, snapper);
 
-	auto size = bs.tell();
-
-
 	// decode into copyMap
 	bs.seek(0);
 
@@ -43,5 +39,5 @@ void onFrame()
 void setup()
 {
 	setCanvasSize(captureWidth, captureHeight);
-	setFrameRate(20);
+	setFrameRate(30);
 }

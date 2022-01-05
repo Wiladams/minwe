@@ -19,9 +19,9 @@ double random(const float rndMax)
 
 PixelRGBA randomColor()
 {
-	int r = random(255);
-	int g = random(255);
-	int b = random(255);
+	uint32_t r = random(255);
+	uint32_t g = random(255);
+	uint32_t b = random(255);
 
 	return { r,g,b,255 };
 }
@@ -59,7 +59,7 @@ void onFrame()
 		else
 		{
 			fill = c;
-			fill.alpha = 127;
+			fill.setA(127);
 			fillRectangle(*gAppSurface, x1, y1, lwidth, lheight, fill);
 		}
 	}

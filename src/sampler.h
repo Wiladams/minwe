@@ -13,7 +13,8 @@ class SolidColorSampler : public ISampleRGBA<PixelRGBA>
     PixelRGBA fColor;
 
 public:
-    SolidColorSampler(PixelRGBA c) :fColor(c) {}
+    SolidColorSampler(uint32_t c) :fColor(c) {}
+    SolidColorSampler(const PixelRGBA& c) :fColor(c){}
 
     virtual PixelRGBA getValue(double u, const PixelCoord& p) const { return fColor; }
     virtual PixelRGBA getValue(double u, double v, const PixelCoord& p) const { return fColor; }

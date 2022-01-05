@@ -18,9 +18,9 @@ double random(const float rndMax)
 
 PixelRGBA randomColor()
 {
-	int r = int(random(255));
-	int g = int(random(255));
-	int b = int(random(255));
+	uint32_t r = uint32_t(random(255));
+	uint32_t g = uint32_t(random(255));
+	uint32_t b = uint32_t(random(255));
 
 	return { r,g,b,255 };
 }

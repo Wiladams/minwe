@@ -145,6 +145,12 @@ inline bool clipLine(const PixelRect bounds, int& x0, int& y0, int& x1, int& y1)
 
 // Replicate the single pixel value across a horizontal line
 // This assumes coordinates have already been clipped
+inline void setSpan(PixelMap& pmap, const int x, const int y, const int width, uint32_t value)
+{
+    PixelRGBA* pixelPtr = (PixelRGBA*)pmap.getPixelPointer(x, y);
+    __stosd((unsigned long*)pixelPtr, value, width);
+}
+
 inline void setSpan(PixelMap& pmap, const int x, const int y, const int width, const PixelRGBA src)
 {
     PixelRGBA* pixelPtr = (PixelRGBA*)pmap.getPixelPointer(x, y);

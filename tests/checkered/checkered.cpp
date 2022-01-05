@@ -20,7 +20,7 @@ auto red1 = std::make_shared< SolidColorSampler>(0xffff0000);
 
 void onFrame()
 {
-    background(0);
+    background(PixelRGBA(0));
 
     // Generic background gray checkerboard
     Checkerboard bkgnd({0,0,canvasWidth,canvasHeight}, PixelRGBA(0xffCCCCCC), PixelRGBA(0xff0f0f0f), 8);

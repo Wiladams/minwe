@@ -149,7 +149,11 @@ public:
         __stosd((unsigned long*)fData, c.value, nPixels);
     }
 
-
+    virtual void setAllPixels(const uint32_t value)
+    {
+        size_t nPixels = fBounds.width * fBounds.height;
+        __stosd((unsigned long*)fData, value, nPixels);
+    }
 
 
  };

@@ -49,8 +49,7 @@ than stbi_image or libpng.
 	this to using a pre-allocated chunk (the stream) so we save on 
 	alloc/free for every frame.
 */
-// -----------------------------------------------------------------------------
-// Header - Public functions
+
 
 #include "binstream.h"
 
@@ -110,7 +109,6 @@ const static qoi_magic_t qoi_magic = { .chars = {'q','o','i','f'} };
 	//
 	// WAA - Assume the stream is already capable of handling maxBufferSize() amount
 	// of data
-	//static bool encode(BinStream& bs, PixelMap &pmap)
 	static bool encode(BinStream& bs, void *data, int w, int h, int channels, int colorspace=0) 
 	{
 		// Quick reject if parameters are not correct
@@ -223,18 +221,6 @@ const static qoi_magic_t qoi_magic = { .chars = {'q','o','i','f'} };
 		for (int i = 0; i < 4; i++) {
 			bs.writeOctet(0);
 		}
-
-		// Figure out the size of the data written
-		//int dataEnd = bs.tell();
-		//uint32_t dataSize = dataEnd - dataStart;
-
-		// go back and write that size into the stream
-		//bs.seek(sizeStart);
-		//bs.writeUInt32(dataSize);
-
-		// Reset the stream to where we stopped
-		// writing data
-		//bs.seek(dataEnd);
 
 		return true;
 	}

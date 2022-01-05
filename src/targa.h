@@ -162,17 +162,11 @@ namespace targa {
 
         if ((imtype == TrueColor) || (imtype == TrueColorCompressed)) {
             if (pixelDepth == 24) {
-                pix.red = databuff[2];
-                pix.green = databuff[1];
-                pix.blue = databuff[0];
-                pix.alpha = 255;
+                pix = PixelRGBA(databuff[2], databuff[1], databuff[0], 255);
                 return true;
             }
             else if (pixelDepth == 32) {
-                pix.red = databuff[2];
-                pix.green = databuff[1];
-                pix.blue = databuff[0];
-                pix.alpha = databuff[3];
+                pix = PixelRGBA(databuff[2], databuff[1], databuff[0], databuff[3]);
 
                 // some images use alpha as transparency
                 // some images do not
@@ -186,22 +180,25 @@ namespace targa {
             }
             else if (pixelDepth == 16) {
                 uint16_t src16 = ((databuff[1] << 8) | databuff[0]);
-                pix.blue = (winme::BITSVALUE(src16, 0, 4) << 3);
-                pix.green = (winme::BITSVALUE(src16, 5, 9) << 3);
-                pix.red = (winme::BITSVALUE(src16, 10, 14) << 3);
-                pix.alpha = 255;
+
+                uint32_t blue = (winme::BITSVALUE(src16, 0, 4) << 3);
+                uint32_t green = (winme::BITSVALUE(src16, 5, 9) << 3);
+                uint32_t red = (winme::BITSVALUE(src16, 10, 14) << 3);
+                uint32_t alpha = 255;
                 if (winme::BITSVALUE(src16, 15, 15) >= 1) {
-                    pix.alpha = 0;  // 255
+                    alpha = 0;  // 255
                 }
+                pix = PixelRGBA(red, green, blue, alpha);
             }
 
             return true;
         }
         else if ((imtype == Monochrome) || (imtype == MonochromeCompressed)) {
-            pix.red = databuff[0];
-            pix.green = databuff[0];
-            pix.blue = databuff[0];
-            pix.alpha = 255;
+            uint32_t red = databuff[0];
+            uint32_t green = databuff[0];
+            uint32_t blue = databuff[0];
+            uint32_t alpha = 255;
+            pix = PixelRGBA(red, green, blue, alpha);
 
             return true;
         }

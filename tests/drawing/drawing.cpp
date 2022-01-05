@@ -14,12 +14,12 @@ void onLoad()
 	// clear screen to white
 	gAppSurface->setAllPixels(white);
 
-	fillRectangle(*gAppSurface, 5, 5, 205, 205, yellow);
-	strokeRectangle(*gAppSurface, 5, 5, 205, 205, black);
+	fillRectangle(*gAppSurface, 5, 5, 205, 205, PixelRGBA(yellow));
+	strokeRectangle(*gAppSurface, 5, 5, 205, 205, PixelRGBA(black));
 
-	line(*gAppSurface, 10, 10, 210, 10, red);
+	line(*gAppSurface, 10, 10, 210, 10, PixelRGBA(red));
 
-	line(*gAppSurface, 10, 10, 210, 200, blue);
+	line(*gAppSurface, 10, 10, 210, 200, PixelRGBA(blue));
 
-	line(*gAppSurface, 10, 200, 210, 200, green);
+	line(*gAppSurface, 10, 200, 210, 200, PixelRGBA(green));
 }

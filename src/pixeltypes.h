@@ -11,7 +11,7 @@
 #include <array>
 #include <cstdint>
 
-//using byte = uint8_t;
+#define INLINE inline
 
 /*
 
@@ -56,31 +56,35 @@ struct ColorRgba {
     }
 };
 
-typedef union PixelRGBA {
+struct PixelRGBA 
+{
     uint32_t value;
-/*
-uint8_t data[4];
-    struct {
-        uint32_t blue : 8;
-        uint32_t green : 8;
-        uint32_t red : 8;
-        uint32_t alpha : 8;
-    };
-*/
+
     // default constructor, transparent
-    PixelRGBA() noexcept = default;
-    constexpr PixelRGBA(const PixelRGBA& rhs) noexcept = default;
-    constexpr explicit PixelRGBA(uint32_t val) noexcept : value(val) {}
-    PixelRGBA(uint32_t r, uint32_t g, uint32_t b, uint32_t a = 0xFFu) noexcept : value((r << 16) | (g << 8) | b | (a << 24)) {}
+    INLINE PixelRGBA() noexcept = default;
+    INLINE constexpr PixelRGBA(const PixelRGBA& rhs) noexcept = default;
+    INLINE constexpr explicit PixelRGBA(uint32_t val) noexcept : value(val) {}
+    INLINE PixelRGBA(uint32_t r, uint32_t g, uint32_t b, uint32_t a = 0xFFu) noexcept : value((r << 16) | (g << 8) | b | (a << 24)) {}
     
-
-    constexpr uint32_t r() const noexcept { return (value >> 16) & 0xffu; }
-    constexpr uint32_t g() const noexcept { return (value >> 8) & 0xffu; }
-    constexpr uint32_t b() const noexcept { return (value >> 0) & 0xffu; }
-    constexpr uint32_t a() const noexcept { return (value >> 24) & 0xffu; }
-
     // bool operator for fast comparison to fully transparent
-    explicit operator bool() const noexcept { return value != 0; }
+    INLINE explicit operator bool() const noexcept { return value != 0; }
+    INLINE PixelRGBA& operator=(const PixelRGBA& other) noexcept = default;
+    INLINE constexpr bool operator==(const PixelRGBA& other) const noexcept { return equals(other); }
+
+    INLINE constexpr bool equals(const PixelRGBA& other) const noexcept { return value == other.value; }
+
+    INLINE constexpr uint32_t r() const noexcept { return (value >> 16) & 0xffu; }
+    INLINE constexpr uint32_t g() const noexcept { return (value >> 8) & 0xffu; }
+    INLINE constexpr uint32_t b() const noexcept { return (value >> 0) & 0xffu; }
+    INLINE constexpr uint32_t a() const noexcept { return (value >> 24) & 0xffu; }
+
+    INLINE void setR(uint32_t r) noexcept { value = (value & 0xff00ffffu) | (r << 16); }
+    INLINE void setG(uint32_t g) noexcept { value = (value & 0xffff00ffu) | (g << 8); }
+    INLINE void setB(uint32_t b) noexcept { value = (value & 0xffffff00u) | (b << 0); }
+    INLINE void setA(uint32_t a) noexcept { value = (value & 0x00ffffffu) | (a << 24); }
+
+    INLINE constexpr bool isOpaque() const noexcept { return value >= 0xff000000u; }
+    INLINE constexpr bool isTransparent() const noexcept { return value <= 0x00ffffff; }
 
     // When you need a COLORREF to be compatible with 
     // some Windows GDI routines
@@ -93,14 +97,15 @@ uint8_t data[4];
     // Return a simple grayscale
     //uint8_t lum() { return static_cast<uint8_t>((float)red * 0.2225f + (float)green * 0.7154f + (float)blue * 0.0721f); }
 
-} PixelRGBA;
+};
 
 struct PixelCoord {
     int x;
     int y;
 
-    PixelCoord() : x(0), y(0) {}
-    PixelCoord(const int x, const int y) :x(x), y(y) {}
+    PixelCoord() noexcept = default;
+    constexpr PixelCoord(const PixelCoord& other) noexcept = default;
+    PixelCoord(const int x, const int y) noexcept :x(x), y(y) {}
 
 };
 
@@ -147,7 +152,7 @@ template <typename T>
 struct ISample3D
 {
     virtual T getValue(double u, double v, double w, const PixelCoord& p) const = 0;
-    virtual T operator()(double u, double v, double w, const PixelCoord& p) const
+    virtual  T operator()(double u, double v, double w, const PixelCoord& p) const
     {
         return getValue(u, v, w, p);
     }
