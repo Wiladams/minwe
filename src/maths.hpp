@@ -22,6 +22,7 @@
 #include <intrin.h>
 
 #include "bitbang.h"
+#include "apidefs.h"
 
 #pragma intrinsic(__stosd)
 
@@ -93,25 +94,25 @@ namespace maths {
 */
 
     template <typename T>
-    inline T Abs(const T v)
+    INLINE T Abs(const T v)
     {
         return v < 0 ? -v : v;
     }
 
     template <typename T>
-    inline T Add(const T& a, const T& b)
+    INLINE T Add(const T& a, const T& b)
     {
         return a + b;
     }
 
     template <typename T>
-    inline T Ceil(const T a)
+    INLINE T Ceil(const T a)
     {
         return (T)std::ceil(a);
     }
 
     template <typename T, typename U, typename V>
-    inline T Clamp(T val, U low, V high)
+    INLINE T Clamp(T val, U low, V high)
     {
         if (val < low)
             return low;
@@ -122,31 +123,31 @@ namespace maths {
     }
 
 
-    inline double Cos(const double a)
+    INLINE double Cos(const double a)
     {
         return std::cos(a);
     }
 
     template <typename T>
-    inline T Floor(T val)
+    INLINE T Floor(T val)
     {
         return std::floor(val);
     }
 
     template <typename T>
-    inline T Round(T val)
+    INLINE T Round(T val)
     {
         return Floor(val + 0.5);
     }
 
     // isNaN only applies to floating point (float, double)
     template <typename T>
-    inline bool isNaN(const T x) {
+    INLINE bool isNaN(const T x) {
         return std::isnan(x);
     }
 
     template <>
-    inline bool isNaN(const int x) {
+    INLINE bool isNaN(const int x) {
         return false;
     }
 
@@ -156,13 +157,13 @@ namespace maths {
     // The input 't' MUST be between 0.0 >= t <= 1
     //template <typename U, typename T>
     template <typename T>
-    inline T Lerp(const double t, T v1, T v2)
+    INLINE T Lerp(const double t, T v1, T v2)
     {
         return (T)((1 - t) * v1 + t * v2);
     }
 
     template<>
-    inline double Lerp(const double t, double v1, double v2)
+    INLINE double Lerp(const double t, double v1, double v2)
     {
         return (1 - t) * v1 + t * v2;
     }
@@ -185,20 +186,20 @@ namespace maths {
     // it to the same relative position in another range
     // The input number 'x' can fall outside the origin range, and will 
     // map outside the result range
-    inline double Map(double x, double olow, double ohigh, double rlow, double rhigh)
+    INLINE double Map(double x, double olow, double ohigh, double rlow, double rhigh)
     {
         return rlow + (x - olow) * ((rhigh - rlow) / (ohigh - olow));
     }
 
     // Minimum between two values
     template <typename T>
-    inline T Min(T a, T b) {
+    INLINE T Min(T a, T b) {
         return a < b ? a : b;
     }
 
     // Greater if two values
     template <typename T>
-    inline T Max(T a, T b) {
+    INLINE T Max(T a, T b) {
         return a > b ? a : b;
     }
 
@@ -210,24 +211,24 @@ namespace maths {
     // this will only work in cases where 0 represents false
     // and 1 represents true
     template <typename T>
-    inline int Sign(T val) { return ((0 < val) - (val < 0)); }
+    INLINE int Sign(T val) { return ((0 < val) - (val < 0)); }
 
     // Input radians, return degrees
     template <typename T>
-    inline T Degrees(T a) { return a * 57.29577951308232; }
+    INLINE T Degrees(T a) { return a * 57.29577951308232; }
 
     template<>
-    inline double Degrees(double x) { return x * 57.29577951308232; }
+    INLINE double Degrees(double x) { return x * 57.29577951308232; }
     
     // Input degrees, return radians
     template <typename T>
-    inline T Radians(T x) { return x * 0.017453292519943295; }
+    INLINE T Radians(T x) { return x * 0.017453292519943295; }
 
     template<>
-    inline double Radians(double x) { return x * 0.017453292519943295; }
+    INLINE double Radians(double x) { return x * 0.017453292519943295; }
 
     
-    inline double Sin(double x) { return std::sin(x); }
+    INLINE double Sin(double x) { return std::sin(x); }
 
 
 /*
@@ -281,25 +282,25 @@ namespace maths {
 */
 
     template <typename T>
-    inline T Subtract(const T a, const T b)
+    INLINE T Subtract(const T a, const T b)
     {
         return a - b;
     }
 
     template <typename T>
-    inline T Tan(const T a)
+    INLINE T Tan(const T a)
     {
         return (T)std::tan(a);
     }
 
     template <typename T>
-    inline T Tanh(const T a)
+    INLINE T Tanh(const T a)
     {
         return (T)std::tanh(a);
     }
     
 
-    inline double randomRange(const float low, const float high)
+    INLINE double randomRange(const double low, const double high)
     {
         double frac = (double)rand() / RAND_MAX;
         double ret = low + frac * (high - low);
@@ -307,7 +308,7 @@ namespace maths {
         return ret;
     }
 
-    inline double random(const float rndMax)
+    INLINE double random(const double rndMax)
     {
         return randomRange(0, rndMax);
     }

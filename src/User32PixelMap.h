@@ -124,10 +124,37 @@ public:
 
     // Set a single pixel value
     // Assume range checking has already occured
-    virtual void setPixel(const int x, const int y, const PixelRGBA c)
+    // Perform SRCCOPY operation on a pixel
+    virtual void copyPixel(const int x, const int y, const PixelRGBA c)
     {
         size_t offset = (size_t)(y * fBounds.width) + (size_t)x;
         ((PixelRGBA*)fData)[offset] = c;
+    }
+
+    // Perform SRCOVER operation on a pixel
+    virtual void blendPixel(const int x, const int y, const PixelRGBA c)
+    {
+        size_t offset = (size_t)(y * fBounds.width) + (size_t)x;
+        
+        ((PixelRGBA*)fData)[offset] = blend_pixel(((PixelRGBA*)fData)[offset],c);
+    }
+
+    virtual void set(const int x, const int y, const PixelRGBA c) {
+        if (!fBounds.containsPoint(x, y))
+            return;
+
+        if (c.isTransparent())
+            return;
+
+        if (c.isOpaque()) {
+            size_t offset = (size_t)(y * fBounds.width) + (size_t)x;
+            ((PixelRGBA*)fData)[offset] = c;
+        }
+        else {
+            size_t offset = (size_t)(y * fBounds.width) + (size_t)x;
+
+            ((PixelRGBA*)fData)[offset] = blend_pixel(((PixelRGBA*)fData)[offset], c);
+        }
     }
 
     // set consecutive pixels in a row 

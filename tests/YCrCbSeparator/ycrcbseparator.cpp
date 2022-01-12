@@ -33,9 +33,9 @@ class YCrCbSeparator
 				auto c = src.getValue(u, v, { col,row });
 
 				// dot(color, graycoefficients)
-				float Y = (0.299 * c.red) + (0.587 * c.green) + (0.114 * c.blue);
-				float Cr = (0.500 * c.red) - (0.419 * c.green) - (0.081 * c.blue);
-				float Cb = (-0.169 * c.red) - (0.331 * c.green) + (0.500 * c.blue);
+				float Y = (0.299 * c.r()) + (0.587 * c.g()) + (0.114 * c.b());
+				float Cr = (0.500 * c.r()) - (0.419 * c.g()) - (0.081 * c.b());
+				float Cb = (-0.169 * c.r()) - (0.331 * c.g()) + (0.500 * c.b());
 			}
 		}
 	}

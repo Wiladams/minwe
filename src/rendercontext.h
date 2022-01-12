@@ -7,7 +7,7 @@
 #include "sampler.h"
 
 struct CoordD { double x; double y; };
-struct ExtentD { double left; double top; double right; double bottom; };
+
 struct RectD { 
 	double x; double y; 
 	double width; double height; 
@@ -18,7 +18,7 @@ struct RectD {
 	RectD(const PixelRect& r) :x(r.x), y(r.y), width(r.width), height(r.height) {}
 
 	// type conversion
-	operator PixelRect () const { return {(int)x,(int)y,(int)width, (int)height}; }
+	operator PixelRect () const { return {(int)Round(x),(int)Round(y),(int)Round(width), (int)Round(height)}; }
 };
 
 class RenderContext
@@ -44,7 +44,7 @@ public:
 	// point is cool because it allows you to easily map a style
 	// across the face of a pixel map
 	//
-	inline void set(int x, int y, PixelRGBA c)
+	inline void set(int x, int y, const PixelRGBA &c)
 	{
 		fPixelMap->set(x, y, c);
 	}
@@ -101,7 +101,7 @@ public:
 		ISample2D<PixelRGBA>& style)
 	{}
 
-	virtual void rect(const RectD &dstRect, ISample2D<PixelRGBA>& style, const ExtentD& srcExt)
+	virtual void rect(const RectD &dstRect, const TexelRect& srcExt, ISample2D<PixelRGBA>& style)
 	{
 		// find the intersection between the source rectangle
 		// and the frame.  This intersection is the only portion
@@ -113,16 +113,27 @@ public:
 		if (dstisect.isEmpty())
 			return;
 
+		double u = srcExt.left;
+		double uadv = (srcExt.right - srcExt.left)/(dstisect.width);
+
+		double v = srcExt.top;
+		double vadv = (srcExt.bottom - srcExt.top)/(dstisect.height);
+
+
 		for (int row = dstisect.y; row < dstisect.y + dstisect.height; row++)
 		{
 			for (int col = dstisect.x; col < dstisect.x + dstisect.width; col++)
 			{
-				double u = maths::Map(col, dstRect.x, dstRect.x + dstRect.width - 1, srcExt.left, srcExt.right);
-				double v = maths::Map(row, dstRect.y, dstRect.y + dstRect.height - 1, srcExt.top, srcExt.bottom);
+				//double u = maths::Map(col, dstRect.x, dstRect.x + dstRect.width - 1, srcExt.left, srcExt.right);
+				//double v = maths::Map(row, dstRect.y, dstRect.y + dstRect.height - 1, srcExt.top, srcExt.bottom);
 				auto c = style.getValue(u, v, { col,row });
-				fPixelMap->setPixel(col, row, c);
-			}
+				fPixelMap->set(col, row, c);
 
+				u += uadv;
+
+			}
+			u = srcExt.left;
+			v += vadv;
 		}
 	}
 
@@ -150,7 +161,7 @@ public:
 				double u = maths::Map(col, x, (double)x + w - 1, 0, 1);
 				double v = maths::Map(row, y, (double)y + h - 1, 0, 1);
 				auto c = style.getValue(u, v, { col,row });
-				fPixelMap->setPixel(col, row, c);
+				fPixelMap->set(col, row, c);
 			}
 
 		}

@@ -14,6 +14,7 @@ std::shared_ptr<ImageSampler> isamp1 = nullptr;
 std::shared_ptr<ImageSampler> isamp2 = nullptr;
 std::shared_ptr<ScreenSnapshot> screenSamp = nullptr;
 
+auto transSampler = std::make_shared< SolidColorSampler>(0x0);
 auto s1 = std::make_shared< SolidColorSampler>(0xff555555);
 auto s2 = std::make_shared< SolidColorSampler>(0xffdddddd);
 auto red1 = std::make_shared< SolidColorSampler>(0xffff0000);
@@ -24,16 +25,15 @@ void onFrame()
 
     // Generic background gray checkerboard
     Checkerboard bkgnd({0,0,canvasWidth,canvasHeight}, PixelRGBA(0xffCCCCCC), PixelRGBA(0xff0f0f0f), 8);
-    bkgnd.draw(gAppSurface);
+    //bkgnd.draw(gAppSurface);
 
     // smaller board with larger squares
     screenSamp->next();
-    Checkerboard chkfg({ (canvasWidth / 2) - (canvasWidth / 4),
-        (canvasHeight / 2) - (canvasHeight / 4),canvasWidth / 2,canvasHeight / 2 },
-        s1,
+    Checkerboard chkfg({ 0,0,canvasWidth,canvasHeight },
+        transSampler,
         screenSamp,
-        64);
-    //chkfg.draw(gAppSurface);
+        16);
+    chkfg.draw(gAppSurface);
 }
 
 void setup()

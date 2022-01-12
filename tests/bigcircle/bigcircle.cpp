@@ -24,6 +24,8 @@ void hline(PixelMap& pmap, int cx, int y, int w, const PixelRGBA& c)
 		pmap.set(x, y, c);
 }
 
+// fillin a circle given 8-fold symmetry
+// using midpoint as start
 void plot8(PixelMap& pmap, int cx, int cy, int x, int y, const PixelRGBA &c) 
 {
 	int dx = 2 * x;
@@ -75,7 +77,7 @@ void originCircle(PixelMap& pmap, int cx, int cy, int radius, const PixelRGBA& c
 // We could create an instance of the checker pattern 
 // globally, and not recreate it from scratch on each
 // frame, but it's a fairly light weigth object
-CheckerPattern circlePattern(0xff0000000, 0xffffffff, 8);
+CheckerPattern circlePattern(PixelRGBA(0xff0000000), PixelRGBA(0xffffffff), 8);
 
 std::shared_ptr<ScreenSnapshot> screenSamp = nullptr;
 
@@ -119,13 +121,13 @@ void keyPressed(const KeyboardEvent& e)
 // will show on the screen without a window
 void onFrame()
 {
-	background(0);
+	background(PixelRGBA(0));
 
 	screenSamp->next();
 
 	//sampleCircle(*gAppSurface, canvasWidth / 2, canvasHeight / 2, Radius, circlePattern);
 	//sampleCircle(*gAppSurface, canvasWidth / 2, canvasHeight / 2, Radius, *screenSamp);
-	originCircle(*gAppSurface, canvasWidth / 2, canvasHeight / 2, Radius, PixelRGBA(255, 0, 0, 255));
+	originCircle(*gAppSurface, canvasWidth / 2, canvasHeight / 2, Radius, PixelRGBA(255, 0, 0, 127));
 }
 
 void setup()

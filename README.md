@@ -78,6 +78,8 @@ void onLoad()
 onUnload
 void onUnload()
 
+Messaging
+---------
 Windows is a message driven system.  Everything that occurs from mouse
 movement, to keyboard interaction and drawing, is associated with some
 form of message.  A message is simply a chunk of data containing the
@@ -206,7 +208,7 @@ Functions
 void showAppWindow();
 void halt();
 
-void screenRefresh();
+void refreshScreen();
 
 void layered();
 void noLayered();
@@ -218,7 +220,7 @@ void noRawInput();
 void joystick();
 void noJoystick();
 
-// Touch routines apps can implement
+// Turn on/off touch input
 bool touch();
 bool noTouch();
 bool isTouch();
@@ -227,11 +229,11 @@ bool isTouch();
 bool dropFiles();
 bool noDropFiles();
 
-// Turn visual cursor on and off
+// Turn on/off visual cursor
 void cursor();
 void noCursor();
 
-// show and hide the window
+// show and hide the application window
 void show();
 void hide();
 

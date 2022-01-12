@@ -20,18 +20,20 @@ void onFrame()
 
 	double colWidth = canvasWidth / 3;
 
+	ctx->rect({ 0, 0, (double)canvasWidth, (double)canvasHeight }, *gSamp, { 0,0,1,1 });
+	
 	// Draw a rectangle using grayscale sampler
-	ctx->rect({ 0, 0, colWidth, (double)canvasHeight }, *gSamp, { 0,0,0.45,1 });
-	ctx->rect({ colWidth, 0, colWidth, (double)canvasHeight }, *gSamp, { 0.45,0,0.55,1 });
-	ctx->rect({ colWidth*2, 0, colWidth, (double)canvasHeight }, *gSamp, { 0.55,0,1,1 });
+	//ctx->rect({ 0, 0, colWidth, (double)canvasHeight }, *gSamp, { 0,0,0.45,1 });
+	//ctx->rect({ colWidth, 0, colWidth, (double)canvasHeight }, *gSamp, { 0.45,0,0.55,1 });
+	//ctx->rect({ colWidth*2, 0, colWidth, (double)canvasHeight }, *gSamp, { 0.55,0,1,1 });
 
-	ctx->rectangle(canvasWidth * .25, canvasHeight*0.25, canvasWidth * 0.5, canvasHeight*0.5, *screenSamp);
+	//ctx->rectangle(canvasWidth * .25, canvasHeight*0.25, canvasWidth * 0.5, canvasHeight*0.5, *screenSamp);
 }
 
 void setup()
 {
-	setCanvasSize(1290, 1024);
-	//setFrameRate(30);
+	setCanvasSize(1290, displayHeight);
+	setFrameRate(30);
 
 	// setup the snapshot
 	screenSamp = std::make_shared<ScreenSnapshot>(0, 0, canvasWidth, canvasHeight);

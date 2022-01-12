@@ -38,9 +38,9 @@ public:
 
 				// Assign to array to ensure the order is
 				// correct within the file
-				pixdata[0] = pix.red;
-				pixdata[1] = pix.green;
-				pixdata[2] = pix.blue;
+				pixdata[0] = pix.r();
+				pixdata[1] = pix.g();
+				pixdata[2] = pix.b();
 
 				fwrite(pixdata, 3, 1, fp);
 			}

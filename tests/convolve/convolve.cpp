@@ -146,7 +146,7 @@ public:
     virtual PixelRGBA* getPixelPointer(const int x, const int y) { return fWrapped.getPixelPointer(x, y); }
     virtual size_t bytesPerRow() const { return fWrapped.bytesPerRow(); }
 
-    void setPixel(const int x, const int y, const PixelRGBA c) { fWrapped.setPixel(x, y, c); }
+    void set(const int x, const int y, const PixelRGBA c) { fWrapped.setPixel(x, y, c); }
 
     void setAllPixels(const PixelRGBA c) { fWrapped.setAllPixels(c); }
 

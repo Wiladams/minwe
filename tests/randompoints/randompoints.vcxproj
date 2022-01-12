@@ -143,6 +143,9 @@
     <ClCompile Include="..\..\src\appmain.cpp" />
     <ClCompile Include="randompoints.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\User32PixelMap.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

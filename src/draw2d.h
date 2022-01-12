@@ -25,10 +25,10 @@
 
 #include <memory>
 
-
+using namespace maths;
 
 // Set a single pixel
-inline void point(PixelMap& pmap, const int x, const int y, const PixelRGBA src)
+INLINE void point(PixelMap& pmap, const int x, const int y, const PixelRGBA src)
 {
     pmap.set(x, y, src);
 }
@@ -39,17 +39,17 @@ inline void point(PixelMap& pmap, const int x, const int y, const PixelRGBA src)
 //
 typedef int OutCode;
 
-static const int LN_INSIDE = 0; // 0000
-static const int LN_LEFT = 1;   // 0001
-static const int LN_RIGHT = 2;  // 0010
-static const int LN_BOTTOM = 4; // 0100
-static const int LN_TOP = 8;    // 1000
+static const uint32_t LN_INSIDE = 0; // 0000
+static const uint32_t LN_LEFT = 1;   // 0001
+static const uint32_t LN_RIGHT = 2;  // 0010
+static const uint32_t LN_BOTTOM = 4; // 0100
+static const uint32_t LN_TOP = 8;    // 1000
 
 // Compute the bit code for a point (x, y) using the clip rectangle
 // bounded diagonally by (xmin, ymin), and (xmax, ymax)
-inline int computeOutCode(PixelRect rct, const int x, const int y)
+INLINE int computeOutCode(const PixelRect &rct, const int x, const int y)
 {
-    int code = LN_INSIDE;   // initialised as being inside of clip window
+    uint32_t code = LN_INSIDE;   // initialised as being inside of clip window
     int xmin = rct.x;
     int xmax = rct.x + rct.width - 1;
     int ymin = rct.y;
@@ -61,9 +61,9 @@ inline int computeOutCode(PixelRect rct, const int x, const int y)
     else if (x > xmax)      // to the right of clip window
         code |= LN_RIGHT;
     
-    if (y < ymin)           // below the clip window
+    if (y < ymin)           // above the clip window
         code |= LN_BOTTOM;
-    else if (y > ymax)      // above the clip window
+    else if (y > ymax)      // below the clip window
         code |= LN_TOP;
 
     return code;
@@ -78,7 +78,7 @@ inline int computeOutCode(PixelRect rct, const int x, const int y)
 // and the input coordinates are changed to those that will
 // fit within the clipping rectangle.
 //
-inline bool clipLine(const PixelRect bounds, int& x0, int& y0, int& x1, int& y1)
+inline bool clipLine(const PixelRect &bounds, int& x0, int& y0, int& x1, int& y1)
 {
     // compute outcodes for P0, P1, and whatever point lies outside the clip rectangle
     int outcode0 = computeOutCode(bounds, x0, y0);
@@ -145,19 +145,31 @@ inline bool clipLine(const PixelRect bounds, int& x0, int& y0, int& x1, int& y1)
 
 // Replicate the single pixel value across a horizontal line
 // This assumes coordinates have already been clipped
-inline void setSpan(PixelMap& pmap, const int x, const int y, const int width, uint32_t value)
+// so no range checking happens here
+INLINE void copySpan(PixelMap& pmap, const int x, const int y, const int width, const PixelRGBA& src)
 {
-    PixelRGBA* pixelPtr = (PixelRGBA*)pmap.getPixelPointer(x, y);
-    __stosd((unsigned long*)pixelPtr, value, width);
+    __stosd((unsigned long*)pmap.getPixelPointer(x, y), src.value, width);
 }
 
-inline void setSpan(PixelMap& pmap, const int x, const int y, const int width, const PixelRGBA src)
+INLINE void blendSpan(PixelMap& pmap, const int x, const int y, const int width, const PixelRGBA& src)
 {
     PixelRGBA* pixelPtr = (PixelRGBA*)pmap.getPixelPointer(x, y);
-    __stosd((unsigned long*)pixelPtr, src.value, width);
+    for (int offset = 0; offset < width; offset++)
+        pixelPtr[offset] = blend_pixel(pixelPtr[offset], src);
 }
 
-inline void verticalLine(PixelMap& pmap, const int x, const int y, const int height, const PixelRGBA src)
+INLINE void setSpan(PixelMap& pmap, const int x, const int y, const int width, const PixelRGBA &src)
+{
+    if (src.isTransparent())
+        return;     // fully transparent, nothing to do
+
+    if (src.isOpaque())
+        copySpan(pmap, x, y, width, src);
+    else
+        blendSpan(pmap, x, y, width, src);
+}
+
+INLINE void verticalLine(PixelMap& pmap, const int x, const int y, const int height, const PixelRGBA src)
 {
     for (int row = y; row < y + height - 1; row++)
         pmap.set(x, row, src);
@@ -167,7 +179,7 @@ inline void verticalLine(PixelMap& pmap, const int x, const int y, const int hei
 // Vertical line drawing
 // draw a vertical line from (x, y) to (x, y + height - 1)
 //
-inline void vline(PixelMap& pmap, const int x, const int y, const int height, const PixelRGBA src)
+INLINE void vline(PixelMap& pmap, const int x, const int y, const int height, const PixelRGBA src)
 {
     int vheight = height;
     int x1 = x;
@@ -192,7 +204,7 @@ horizontal and vertical line drawing routines when necessary
 BUGBUG - should sanity check line fits
 within bounds
 */
-inline void line(PixelMap& pmap, const int x1, const int y1, const int x2, const int y2, PixelRGBA c)
+INLINE void line(PixelMap& pmap, const int x1, const int y1, const int x2, const int y2, const PixelRGBA &c)
 {
     int sdx, sdy, dxabs, dyabs;
     unsigned int x, y, px, py;
@@ -214,8 +226,6 @@ inline void line(PixelMap& pmap, const int x1, const int y1, const int x2, const
     dyabs = maths::Abs(dy);
     sdx = maths::Sign(dx);
     sdy = maths::Sign(dy);
-
-
 
     if (dyabs == 0) {
         // optimize for horizontal line
@@ -267,9 +277,9 @@ inline void line(PixelMap& pmap, const int x1, const int y1, const int x2, const
     Bresenham ellipse drawing algorithm
     Only for the frame, not for filling
 */
-typedef void(*EllipseHandler)(PixelMap& pb, const int cx, const int cy, const int x, const int y, const PixelRGBA color);
+typedef void(*EllipseHandler)(PixelMap& pb, const int cx, const int cy, const int x, const int y, const PixelRGBA &color);
 
-inline void Plot4EllipsePoints(PixelMap& pb, const int cx, const int cy, const int x, const int y, const PixelRGBA color)
+INLINE void Plot4EllipsePoints(PixelMap& pb, const int cx, const int cy, const int x, const int y, const PixelRGBA &color)
 {
     int lowx = cx - x;
     int maxx = cx + x;
@@ -282,7 +292,7 @@ inline void Plot4EllipsePoints(PixelMap& pb, const int cx, const int cy, const i
     pb.set(cx + x, cy + y, color);
 }
 
-inline void fill2EllipseLines(PixelMap& pb, const int cx, const int cy, const int x, const int y, const PixelRGBA color)
+INLINE void fill2EllipseLines(PixelMap& pb, const int cx, const int cy, const int x, const int y, const PixelRGBA &color)
 {
     int x1 = cx - x;
     int y1 = cy + y;
@@ -300,7 +310,7 @@ inline void fill2EllipseLines(PixelMap& pb, const int cx, const int cy, const in
     }
 }
 
-inline void raster_ellipse(PixelMap& pb, const int cx, const int cy, const size_t xradius, size_t yradius, const PixelRGBA color, EllipseHandler handler)
+INLINE void raster_ellipse(PixelMap& pb, const int cx, const int cy, const size_t xradius, size_t yradius, const PixelRGBA &color, EllipseHandler handler)
 {
     int x = xradius;
     int y = 0;
@@ -353,7 +363,7 @@ inline void raster_ellipse(PixelMap& pb, const int cx, const int cy, const size_
     
 }
 
-inline void strokeEllipse(PixelMap& pb, const int cx, const int cy, const size_t xradius, size_t yradius, const PixelRGBA color)
+INLINE void strokeEllipse(PixelMap& pb, const int cx, const int cy, const size_t xradius, size_t yradius, const PixelRGBA &color)
 {
     raster_ellipse(pb, cx, cy, xradius, yradius, color, Plot4EllipsePoints);
 }
@@ -364,7 +374,7 @@ inline void strokeEllipse(PixelMap& pb, const int cx, const int cy, const size_t
 // Triangles
 //
 
-static int findTopmostVertex(PixelCoord* verts, const int numVerts)
+INLINE static int findTopmostVertex(PixelCoord* verts, const int numVerts)
 {
     int ymin= 65535;
     int vmin = 0;
@@ -418,7 +428,7 @@ struct APolyDda {
     }
 };
 
-inline void setConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, int vmin, PixelRGBA color, const PixelRect& clipRect)
+inline void setConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, int vmin, const PixelRGBA &color, const PixelRect& clipRect)
 {
     // set starting line
     APolyDda ldda, rdda;
@@ -490,14 +500,14 @@ inline void setConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, 
     }
 }
 
-inline void fillConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, int vmin, PixelRGBA color, const PixelRect& clipRect)
+inline void fillConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, int vmin, const PixelRGBA &color, const PixelRect& clipRect)
 {
     setConvexPolygon(pb, verts, nverts, vmin, color, clipRect);
 }
 
 inline void fillTriangle(PixelMap& pb, const int x1, const int y1,
     const int x2, const int y2,
-    const int x3, const int y3, PixelRGBA color, const PixelRect& clipRect)
+    const int x3, const int y3, const PixelRGBA &color, const PixelRect& clipRect)
 {
     // Create a triangle object
     PixelTriangle tri(x1, y1, x2, y2, x3, y3);
@@ -510,19 +520,19 @@ inline void fillTriangle(PixelMap& pb, const int x1, const int y1,
 }
 
 // Draw the outline of a rectangle
-inline void strokeRectangle(PixelMap& pmap, const int x, const int y, const int w, const int h, PixelRGBA c)
+INLINE void strokeRectangle(PixelMap& pmap, const int x, const int y, const int w, const int h, const PixelRGBA &c)
 {
     // draw top and bottom
-    setSpan(pmap, x, y, w, c);
-    setSpan(pmap, x, y + h - 1, w, c);
+    line(pmap, x, y, x + w - 1, y, c);
+    line(pmap, x, y + h - 1, x + w - 1, y + h - 1, c);
 
     // draw sides
-    verticalLine(pmap, x, y, h, c);
-    verticalLine(pmap, x + w - 1, y, h, c);
+    line(pmap, x, y, x, y + h - 1, c);
+    line(pmap, x + w - 1, y, x + w - 1, y + h - 1, c);
 }
 
 // fill the inside of a rectangle
-inline void fillRectangle(PixelMap& pmap, const int x, const int y, const int w, const int h, PixelRGBA c)
+INLINE void fillRectangle(PixelMap& pmap, const int x, const int y, const int w, const int h, PixelRGBA c)
 {
     // We calculate clip area up front
     // so we don't have to do clipLine for every single line
@@ -543,7 +553,7 @@ inline void fillRectangle(PixelMap& pmap, const int x, const int y, const int w,
 // A rather simple ellipse drawing routine
 // not the most performant, but uses the 
 // already available polygon filling routine
-inline void fillEllipse(PixelMap& pmap, int centerx, int centery, int xRadius, int yRadius, PixelRGBA c)
+INLINE void fillEllipse(PixelMap& pmap, int centerx, int centery, int xRadius, int yRadius, PixelRGBA c)
 {
     static const int nverts = 72;
     int steps = nverts;
@@ -553,11 +563,11 @@ inline void fillEllipse(PixelMap& pmap, int centerx, int centery, int xRadius, i
     int aheight = yRadius * 2;
 
     for (int i = 0; i < steps; i++) {
-        float u = (double)i / steps;
-        float angle = u * 2 * maths::Pi;
+        auto u = (double)i / steps;
+        auto angle = u * (2 * maths::Pi);
 
-        int x = awidth / 2 * cos(angle);
-        int y = aheight / 2 * sin(angle);
+        int x = (int)Floor((awidth / 2.0) * cos(angle));
+        int y = (int)Floor((aheight / 2.0) * sin(angle));
         verts[i] = PixelCoord(x + centerx, y + centery);
     }
     
@@ -567,7 +577,7 @@ inline void fillEllipse(PixelMap& pmap, int centerx, int centery, int xRadius, i
 
 // filling a circle with a fixed color
 //
-inline void fillCircle(PixelMap& pmap, int centerX, int centerY, int radius, PixelRGBA fillStyle) {
+INLINE void fillCircle(PixelMap& pmap, int centerX, int centerY, int radius, PixelRGBA fillStyle) {
     auto x1 = centerX - radius, y1 = centerY - radius;
     auto  x2 = centerX + radius, y2 = centerY + radius;
     for (int y = y1; y < y2; y++) {
@@ -586,41 +596,46 @@ inline void fillCircle(PixelMap& pmap, int centerX, int centerY, int radius, Pix
 // control points are P0, P1, P2, P3
 // This function calculates a single component (x, y, or whatever)
 // use another function to combine
-inline double bezier_cubic(const double u, double p1, double p2, double p3, double p4)
+// Cubic Bezier
+INLINE double bezier_cubic(const double u, double p1, double p2, double p3, double p4)
 {
     double oneminusu = 1 - u;
-    double BEZ03 = oneminusu * oneminusu * oneminusu;				// (1-u)^3
-    double BEZ13 = 3 * u * (oneminusu * oneminusu);	// 3u(1-u)^2
+    double BEZ03 = oneminusu * oneminusu * oneminusu;	// (1-u)^3
+    double BEZ13 = 3 * u * (oneminusu * oneminusu);	    // 3u(1-u)^2
     double BEZ23 = 3 * u * u * oneminusu;				// 3u^2(1-u)
     double BEZ33 = u * u * u;							// u^3
 
     return BEZ03 * p1 + BEZ13 * p2 + BEZ23 * p3 + BEZ33 * p4;
 }
 
-inline PixelCoord bezier_point(double u, const PixelCoord& p1, const PixelCoord& p2, const PixelCoord& p3, const PixelCoord& p4)
+INLINE PixelCoord bezier_point(double u, 
+    double x1, double y1,
+    double x2, double y2,
+    double x3, double y3,
+    double x4, double y4)
 {
-    double x = bezier_cubic(u, p1.x, p2.x, p3.x, p4.x);
-    double y = bezier_cubic(u, p1.y, p2.y, p3.y, p4.y);
+    int x = (int)Round(bezier_cubic(u, x1, x2, x3, x4));
+    int y = (int)Round(bezier_cubic(u, y1, y2, y3, y4));
 
-    return { (int)x,(int)y };
+    return { x,y };
 
 }
 
 
 
-inline void bezier(PixelMap& pmap, const int x1, const int y1, const int x2, const int y2,
+INLINE void bezier(PixelMap& pmap, const int x1, const int y1, const int x2, const int y2,
     const int x3, const int y3, const int x4, const int y4, int segments, PixelRGBA c)
 {
     PixelBezier bez(x1, y1, x2, y2, x3, y3, x4, y4);
     
     // Get starting point
-    PixelCoord lp = bezier_point(0, bez.p1, bez.p2, bez.p3, bez.p4);
+    PixelCoord lp = bezier_point(0, x1,y1,x2,y2,x3,y3,x4,y4);
 
     int i = 1;
     while (i <= segments) {
         double u = (double)i / segments;
 
-        PixelCoord p = bezier_point(u, bez.p1, bez.p2, bez.p3, bez.p4);
+        PixelCoord p = bezier_point(u, x1, y1, x2, y2, x3, y3, x4, y4);
 
         // draw line segment from last point to current point
         line(pmap, lp.x, lp.y, p.x, p.y, c);
@@ -644,7 +659,7 @@ inline void bezier(PixelMap& pmap, const int x1, const int y1, const int x2, con
 // no scaling, no alpha blending
 // it will deal with clipping so we don't
 // crash when going off the edges
-inline void blit(PixelMap & pb, const int x, const int y, PixelMap & src)
+INLINE void blit(PixelMap & pb, const int x, const int y, PixelMap & src)
 {
     PixelRect bounds(0, 0, pb.width(), pb.height());
     PixelRect dstFrame(x, y, src.width(), src.height());

@@ -1,17 +1,10 @@
 #pragma once
 
-
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable: 4201)  // nonstandard extension used : nameless struct/union
-#endif
-
+#include "apidefs.h"
 
 #include <array>
 #include <cstdint>
 
-#define INLINE inline
 
 /*
 
@@ -26,36 +19,6 @@ on a little endian system as follows :
 
 0xAARRGGBB
 */
-
-
-
-//
-// Color representation
-// Really this should be some CIE generic representation
-//
-struct ColorRgba {
-    double red=0.0f;
-    double green = 0.0f;
-    double blue = 0.0f;
-    double alpha = 0.0f;
-
-    ColorRgba() {}
-    ColorRgba(const uint8_t r, const uint8_t g, const uint8_t b) :red((double)r / 255.0), green((double)g / 255.0), blue((double)b / 255.0),alpha(1.0) {}
-    ColorRgba(double r, double g, double b, double a) :red(r), green(g), blue(b), alpha(a) {}
-    ColorRgba(double r, double g, double b) :red(r), green(g), blue(b), alpha(1.0) {}
-
-    ColorRgba operator * (double s) { return { red * s, green * s, blue * s, alpha }; }
-    ColorRgba operator / (double s) { return { red / s, green / s, blue / s, alpha }; }
-    ColorRgba operator + (const ColorRgba &rhs) { return { red + rhs.red, green +rhs.green, blue + rhs.blue, 1.0 }; }
-    ColorRgba& operator += (const ColorRgba& rhs) {
-        red += rhs.red;
-        green += rhs.green;
-        blue += rhs.blue;
-        alpha += 1;
-        return *this;  
-    }
-};
-
 struct PixelRGBA 
 {
     uint32_t value;
@@ -86,32 +49,149 @@ struct PixelRGBA
     INLINE constexpr bool isOpaque() const noexcept { return value >= 0xff000000u; }
     INLINE constexpr bool isTransparent() const noexcept { return value <= 0x00ffffff; }
 
-    // When you need a COLORREF to be compatible with 
-    // some Windows GDI routines
-    //uint32_t toCOLORREF() { return red | (green << 8) | (blue << 16); }
-    // Convenience constructors
-    //PixelRGBA(const ColorRgba& rhs) noexcept :red(rhs.red*255), blue(rhs.blue*255), green(rhs.green*255), alpha(rhs.alpha*255) {}
-    //operator ColorRgba () { return { (double)red/255.0,(double)green/255.0,(double)blue/255.0,(double)alpha/255.0 }; }
-
-
-    // Return a simple grayscale
-    //uint8_t lum() { return static_cast<uint8_t>((float)red * 0.2225f + (float)green * 0.7154f + (float)blue * 0.0721f); }
 
 };
+
+// When you need a COLORREF to be compatible with 
+// some Windows GDI routines
+//uint32_t toCOLORREF() { return red | (green << 8) | (blue << 16); }
+// Convenience constructors
+
+// Return a simple grayscale
+//uint8_t lum() { return static_cast<uint8_t>((float)red * 0.2225f + (float)green * 0.7154f + (float)blue * 0.0721f); }
+
 
 struct PixelCoord {
     int x;
     int y;
 
-    PixelCoord() noexcept = default;
-    constexpr PixelCoord(const PixelCoord& other) noexcept = default;
-    PixelCoord(const int x, const int y) noexcept :x(x), y(y) {}
+    INLINE PixelCoord() noexcept = default;
+    INLINE constexpr PixelCoord(const PixelCoord& other) noexcept = default;
+    INLINE PixelCoord(int x, int y) noexcept :x(x), y(y) {}
 
+    INLINE PixelCoord& operator=(const PixelCoord& other) noexcept = default;
+};
+
+struct PixelSize {
+    int w;
+    int h;
 };
 
 struct TextureCoord {
     double s;
     double t;
+};
+
+struct PixelSpan 
+{
+private:
+    int fx;
+    int fy;
+    int fw;
+
+public:
+    INLINE PixelSpan() noexcept = default;
+    INLINE constexpr PixelSpan(const PixelSpan& other) noexcept = default;
+    INLINE PixelSpan(int x, int y, int w) noexcept :fx(x), fy(y), fw(w) {}
+
+    INLINE PixelSpan& operator=(const PixelSpan& other) noexcept = default;
+
+    INLINE constexpr int x() noexcept { return fx; }
+    INLINE constexpr int y() noexcept { return fy; }
+    INLINE constexpr int w() noexcept { return fw; }
+};
+
+struct PixelRect {
+    int x;
+    int y;
+    int width;
+    int height;
+
+    PixelRect() : x(0), y(0), width(0), height(0) {}
+    PixelRect(const int x, const int y, const int w, const int h)
+        :x(x), y(y), width(w), height(h) {}
+
+    INLINE constexpr bool isEmpty() const
+    {
+        return ((width <= 0) || (height <= 0));
+    }
+
+    INLINE constexpr bool containsPoint(const int x1, const int y1) const
+    {
+        if ((x1 < this->x) || (y1 < this->y))
+            return false;
+
+        if ((x1 >= this->x + this->width) || (y1 >= this->y + this->height))
+            return false;
+
+        return true;
+    }
+
+    INLINE constexpr bool containsRect(const PixelRect& other) const
+    {
+        if (!containsPoint(other.x, other.y))
+        {
+            return false;
+        }
+
+        if (!containsPoint(other.x + other.width - 1, other.y + other.height - 1))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    // return the intersection of rectangles a and b
+// if there is no intersection, one or both of width and height
+// will be == zero
+    INLINE PixelRect intersection(const PixelRect& b) const
+    {
+        int x = this->x > b.x ? this->x : b.x;
+        int y = this->y > b.y ? this->y : b.y;
+        int right = ((this->x + this->width) < (b.x + b.width)) ? (this->x + this->width) : (b.x + b.width);
+        int bottom = ((this->y + this->height) < (b.y + b.height)) ? (this->y + this->height) : (b.y + b.height);
+
+        int width = ((right - x) > 0) ? (right - x) : 0;
+        int height = ((bottom - y) > 0) ? (bottom - y) : 0;
+
+        return{ x, y, width, height };
+    }
+
+};
+
+// Represents a rectangular area of a sampler
+struct TexelRect 
+{ 
+    double left; 
+    double top; 
+    double right; 
+    double bottom; 
+
+    TexelRect() noexcept :left(0), top(0), right(0), bottom(0) {}
+    INLINE constexpr TexelRect(const TexelRect& other) noexcept = default;
+    INLINE TexelRect(double l, double t, double r, double b) noexcept
+        :left(l), top(t), right(r), bottom(b) {}
+
+    INLINE TexelRect& operator=(const TexelRect& other) noexcept = default;
+
+    // This routine assumes the frame is within the constrained area
+    static TexelRect create(const PixelRect& isect, const PixelRect& constraint)
+    {
+        // If no intersection, there's no need to figure
+        // out texture coordinates
+        if (isect.isEmpty())
+            return TexelRect();
+
+        // Figure out texture coordinates based on the intersection
+        double left = maths::Map(isect.x, constraint.x, constraint.x + constraint.width - 1, 0, 1);
+        double top = maths::Map(isect.y, constraint.y, constraint.y + constraint.height - 1, 0, 1);
+        double right = maths::Map(isect.x + isect.width - 1, constraint.x, constraint.x + constraint.width - 1, 0, 1);
+        double bottom = maths::Map(isect.y + isect.height - 1, constraint.y, constraint.y + constraint.height - 1, 0, 1);
+
+        return  TexelRect(left, top, right, bottom);
+    }
+
 };
 
 // The ISample interface is meant to support a generic interface
@@ -129,8 +209,8 @@ struct TextureCoord {
 template <typename T>
 struct ISample1D
 {
-    virtual T getValue(double u, const PixelCoord& p) const = 0;
-    virtual T operator()(double u, const PixelCoord& p) const
+    virtual T getValue(double u, const PixelCoord& p) = 0;
+    T operator()(double u, const PixelCoord& p) 
     {
         return getValue(u, p);
     }
@@ -140,8 +220,8 @@ struct ISample1D
 template <typename T>
 struct ISample2D
 {
-    virtual T getValue(double u, double v, const PixelCoord& p) const = 0;
-    virtual T operator()(double u, double v, const PixelCoord& p) const
+    virtual T getValue(double u, double v, const PixelCoord& p) = 0;
+    T operator()(double u, double v, const PixelCoord& p) 
     {
         return getValue(u, v, p);
     }
@@ -151,8 +231,8 @@ struct ISample2D
 template <typename T>
 struct ISample3D
 {
-    virtual T getValue(double u, double v, double w, const PixelCoord& p) const = 0;
-    virtual  T operator()(double u, double v, double w, const PixelCoord& p) const
+    virtual T getValue(double u, double v, double w, const PixelCoord& p) = 0;
+    T operator()(double u, double v, double w, const PixelCoord& p)
     {
         return getValue(u, v, w, p);
     }
@@ -201,12 +281,12 @@ public:
         }
     }
 
-    uint32_t toLuminance(uint8_t r, uint8_t g, uint8_t b) const
+    INLINE constexpr uint32_t toLuminance(uint8_t r, uint8_t g, uint8_t b) const
     {
         return redfactor[r] + greenfactor[g] + bluefactor[b];
     }
 
-    uint32_t toLuminance(const PixelRGBA p) const
+    INLINE constexpr uint32_t toLuminance(const PixelRGBA p) const
     {
         return redfactor[p.r()] + greenfactor[p.g()] + bluefactor[p.b()];
     }
@@ -220,3 +300,17 @@ inline PixelRGBA texture2D(ISample2D<PixelRGBA> &tex0, const TextureCoord& st) n
 {
     return tex0.getValue(st.s, st.t, {});
 }
+
+// turn a division by 255 into something 
+// much cheaper to calculate
+// for values between 0 and 65534
+#define div255(num) ((num + (num >> 8)) >> 8)
+
+// Calculate the linear interpolation between two things
+// these values should be between 0 and 255 inclusive
+#define lerp255(bg, fg, a) ((uint8_t)div255((fg*a+bg*(255-a))))
+
+#define blend_pixel(bg, fg) PixelRGBA(				\
+	lerp255(bg.r(), fg.r(), fg.a()), \
+	lerp255(bg.g(), fg.g(), fg.a()), \
+	lerp255(bg.b(), fg.b(), fg.a()), 255)

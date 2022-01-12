@@ -16,65 +16,7 @@ struct PixelLine {
     PixelCoord pt2;
 };
 
-struct PixelRect {
-    int x;
-    int y;
-    int width;
-    int height;
 
-    PixelRect() : x(0), y(0), width(0), height(0) {}
-    PixelRect(const int x, const int y, const int w, const int h)
-        :x(x), y(y), width(w), height(h) {}
-
-    bool isEmpty() const
-    {
-        return ((width <= 0) || (height <= 0));
-    }
-
-    bool containsPoint(const int x1, const int y1) const
-    {
-        if ((x1 < this->x) || (y1 < this->y))
-            return false;
-
-        if ((x1 >= this->x + this->width) || (y1 >= this->y + this->height))
-            return false;
-
-        return true;
-    }
-
-    bool containsRect(const PixelRect& other) const
-    {
-        if (!containsPoint(other.x, other.y))
-        {
-            return false;
-        }
-
-        if (!containsPoint(other.x + other.width - 1, other.y + other.height - 1))
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    // return the intersection of rectangles a and b
-// if there is no intersection, one or both of width and height
-// will be == zero
-    PixelRect intersection(const PixelRect& b) const
-    {
-        int x = this->x > b.x ? this->x : b.x;
-        int y = this->y > b.y ? this->y : b.y;
-        int right = ((this->x + this->width) < (b.x + b.width)) ? (this->x + this->width) : (b.x + b.width);
-        int bottom = ((this->y + this->height) < (b.y + b.height)) ? (this->y + this->height) : (b.y + b.height);
-
-        int width = ((right - x) > 0) ? (right - x) : 0;
-        int height = ((bottom - y) > 0) ? (bottom - y) : 0;
-
-        return{ x, y, width, height };
-
-    }
-
-};
 
 /*
   PixelTriangle
@@ -136,7 +78,7 @@ struct PixelBezier
         PixelCoord p4;
         size_t fSegments;
 
-    public:
+public:
         PixelBezier(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, size_t segments = 60)
             :p1(x1, y1),
             p2(x2, y2),
@@ -179,15 +121,16 @@ public:
     virtual bool init(int w, int h) = 0;
     virtual PixelRGBA* getPixelPointer(const int x, const int y) = 0;
     virtual size_t bytesPerRow() const = 0;
-    virtual void setPixel(const int x, const int y, const PixelRGBA c) = 0;
+    virtual void copyPixel(const int x, const int y, const PixelRGBA c) = 0;
+    virtual void blendPixel(const int x, const int y, const PixelRGBA c) = 0;
     virtual void setAllPixels(const PixelRGBA c) = 0;
     virtual PixelRGBA getPixel(const int x, const int y) const = 0;
 
     // regular things
-    inline int x() const { return fBounds.x; }
-    inline int y() const { return fBounds.y; }
-    inline int width() const { return fBounds.width; }
-    inline int height() const { return fBounds.height; }
+    INLINE constexpr int x() const noexcept { return fBounds.x; }
+    INLINE constexpr int y() const noexcept { return fBounds.y; }
+    INLINE constexpr int width() const noexcept { return fBounds.width; }
+    INLINE constexpr int height() const noexcept { return fBounds.height; }
     
     // Calculate whether a point is whithin our bounds
     inline bool contains(double x, double y) const { return fBounds.containsPoint((int)x, (int)y); }
@@ -203,7 +146,13 @@ public:
         if (!fBounds.containsPoint(x, y))
             return;
 
-        setPixel(x, y, c);
+        if (c.isTransparent())
+            return;
+
+        if (c.isOpaque())
+            copyPixel(x, y, c);
+        else
+            blendPixel(x, y, c);
     }
 
     // when checking bounds, return totally transparent
@@ -215,16 +164,10 @@ public:
             return PixelRGBA(0);
 
         return getPixel(x, y);
-
-    }
-
-    uint8_t getLuminance(const int x, const int y) const
-    {
-
     }
 
     // ISample2D<PixelRGBA>
-    PixelRGBA getValue(double u, double v, const PixelCoord& p) const
+    PixelRGBA getValue(double u, double v, const PixelCoord& p)
     {
         int x = int((u * ((double)width() - 1)) + 0.5);
         int y = int((v * ((double)height() - 1)) + 0.5);

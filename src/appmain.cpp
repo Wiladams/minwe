@@ -909,9 +909,9 @@ LRESULT CALLBACK MsgHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     else if (msg == WM_ERASEBKGND) {
         //loopCount = loopCount + 1;
         //printf("WM_ERASEBKGND: %d\n", loopCount);
-        //if (gPaintHandler != nullptr) {
-        //    gPaintHandler(hWnd, msg, wParam, lParam);
-        //}
+        if (gPaintHandler != nullptr) {
+            gPaintHandler(hWnd, msg, wParam, lParam);
+        }
 
         // return non-zero indicating we dealt with erasing the background
         res = 1;

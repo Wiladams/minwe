@@ -148,6 +148,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\draw2d.h" />
     <ClInclude Include="..\..\src\gui.h" />
+    <ClInclude Include="..\..\src\pixeltypes.h" />
     <ClInclude Include="..\..\src\sampledraw2d.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

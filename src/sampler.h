@@ -16,9 +16,9 @@ public:
     SolidColorSampler(uint32_t c) :fColor(c) {}
     SolidColorSampler(const PixelRGBA& c) :fColor(c){}
 
-    virtual PixelRGBA getValue(double u, const PixelCoord& p) const { return fColor; }
-    virtual PixelRGBA getValue(double u, double v, const PixelCoord& p) const { return fColor; }
-    virtual PixelRGBA getValue(double u, double v, double w, const PixelCoord& p) const { return fColor; }
+    virtual PixelRGBA getValue(double u, const PixelCoord& p) { return fColor; }
+    virtual PixelRGBA getValue(double u, double v, const PixelCoord& p) { return fColor; }
+    virtual PixelRGBA getValue(double u, double v, double w, const PixelCoord& p) { return fColor; }
 };
 
 
@@ -39,7 +39,7 @@ public:
         :fWrapped(wrapped)
     {}
 
-    PixelRGBA getValue(double u, double v, const PixelCoord& p) const
+    PixelRGBA getValue(double u, double v, const PixelCoord& p)
     {
         // get value from our wrapped sampler
         PixelRGBA c = fWrapped->getValue(u, v, p);
@@ -67,7 +67,7 @@ public:
         :fGamma(gamma)
     {}
 
-    PixelRGBA getValue(double u, const PixelCoord& p) const
+    PixelRGBA getValue(double u, const PixelCoord& p) 
     {
         double wl = maths::Map(u, 0, 1, 380, 780);
         auto c = ColorRGBAFromWavelength(wl, fGamma);

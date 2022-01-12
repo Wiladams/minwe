@@ -66,16 +66,14 @@ inline void sampleRectangle(PixelMap& pmap,
 inline void sampledBezier(PixelMap& pmap, const int x1, const int y1, const int x2, const int y2,
     const int x3, const int y3, const int x4, const int y4, int segments, ISample1D<PixelRGBA>& c)
 {
-    PixelBezier bez(x1, y1, x2, y2, x3, y3, x4, y4);
-
     // Get starting point
-    PixelCoord lp = bezier_point(0, bez.p1, bez.p2, bez.p3, bez.p4);
+    PixelCoord lp = bezier_point(0, x1, y1, x2, y2, x3, y3, x4, y4);
 
     int i = 1;
     while (i <= segments) {
         double u = (double)i / segments;
 
-        PixelCoord p = bezier_point(u, bez.p1, bez.p2, bez.p3, bez.p4);
+        PixelCoord p = bezier_point(u, x1, y1, x2, y2, x3, y3, x4, y4);
 
         // draw line segment from last point to current point
         line(pmap, lp.x, lp.y, p.x, p.y, c.getValue(u,p));

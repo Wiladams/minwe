@@ -49,5 +49,5 @@ void onLoad()
 {
 	setCanvasSize(800, 600);
 	gAppWindow->moveTo(0, 0);
-	//layered();
+	layered();
 }

@@ -11,6 +11,8 @@
     for you. 
 */
 
+#include "apidefs.h"
+
 #include <stdint.h>
 #include <string.h>
 

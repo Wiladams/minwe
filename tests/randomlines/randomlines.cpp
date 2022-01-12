@@ -31,10 +31,10 @@ void draw()
 	PixelRGBA stroke(0xff000000);
 	PixelRGBA fill(0xffffffff);
 	//PixelRGBA background(0xffdccccc);
-	PixelRGBA background(0x0);
+	PixelRGBA bkgpixel(0x0);
 
 	// fill background with background color
-	gAppSurface->setAllPixels(background);
+	gAppSurface->setAllPixels(bkgpixel);
 
 
 	for (int i = 1; i <= 10000; i++)
@@ -70,7 +70,7 @@ void onLoop()
 
 void onLoad()
 {
-	setCanvasSize(1024, 768);
+	setCanvasSize(displayWidth/2, displayHeight);
 	//setCanvasSize(displayWidth, displayHeight);
 	setWindowPosition(0, 0);
 	layered();
