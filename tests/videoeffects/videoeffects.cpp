@@ -14,11 +14,15 @@
 using namespace maths;
 
 
+StopWatch appClock;
 
 // Source Samplers
+std::shared_ptr<ScreenSnapshot> screenCapture = nullptr;
 std::shared_ptr<ScreenSnapshot> screen1 = nullptr;
 std::shared_ptr<ScreenSnapshot> screen2 = nullptr;
-std::shared_ptr<SolidColorSampler> transSampler = nullptr;
+std::shared_ptr< StickyWindow> screenCap1 = nullptr;
+std::shared_ptr< StickyWindow> screenCap2 = nullptr;
+//std::shared_ptr<SolidColorSampler> transSampler = nullptr;
 
 // Wrapping Samplers
 std::shared_ptr<CheckerSampler> checkSamp = nullptr;
@@ -41,7 +45,7 @@ std::shared_ptr<RenderContext> ctx = nullptr;
 
 constexpr int CAPTUREWIDTH = 800;
 constexpr int CAPTUREHEIGHT = 800;
-constexpr int FRAMERATE = 20;
+constexpr int FRAMERATE = 30;
 
 int maxElements = 5000;
 int frequency = 8;
@@ -117,31 +121,41 @@ void keyPressed(const KeyboardEvent& e)
 	}
 }
 
+double thisTime;
+double lastTime;
 
 void onFrame()
 {
 	// If there's no effect, don't do anything
 	// keep whatever was last on the screen;
-	if (nullptr == currentEffect)
-		return;
+	//if (nullptr == currentEffect)
+	//	return;
+	
+	thisTime = appClock.millis();
+	auto diffTime = thisTime - lastTime;
+	printf("Interval: %3.2f  FPS: %3.2f\n", diffTime, (double)frameCount / appClock.seconds());
+	lastTime = thisTime;
 
-	screen1->next();
-	screen2->next();
+	screenCapture->next();
+
 
 	// start with blank slate
 	background(PixelRGBA(0));
 
-	//checkersEffect->draw(gAppSurface);
+	//ctx->rect(gAppSurface->getBounds(), { 0,0,1,1 }, *checkersEffect);
+	ctx->rect(gAppSurface->getBounds(), { 0,0,1,1 }, *checkSamp);
 
 	// Cross Fade
-	currentEffect->update();
+	//currentEffect->update();
 	//currentEffect->setProgress(progress);
-	ctx->rect(gAppSurface->getBounds(), { 0,0,1,1 }, *currentEffect);
+	//ctx->rect(gAppSurface->getBounds(), { 0,0,1,1 }, *currentEffect);
 
 
-
-	//ctx->rect(gAppSurface->getBounds(), { 0,0,1,1 }, *screen1);
-	//ctx->rect(gAppSurface->getBounds(), { 0,0,1,1 }, *screen2);
+	// Display individual sources
+	//ctx->rect(PixelRect(0,0,canvasWidth/2,canvasHeight), { 0,0,1,1 }, *screenCap1);
+	//ctx->rect(PixelRect(canvasWidth/2, 0, canvasWidth / 2, canvasHeight), { 0,0,1,1 }, *screenCap2);
+	//ctx->rect(gAppSurface->getBounds(), { 0,0,1,1 }, *screenCapture);
+	//ctx->rect(gAppSurface->getBounds(), { 0,0,1,1 }, *blankEffect);
 
 
 	reco->saveFrame();
@@ -154,25 +168,29 @@ void setup()
 
 	ctx = std::make_shared<RenderContext>(gAppSurface);
 
-	transSampler = std::make_shared<SolidColorSampler>(0x00000000);
+	screenCapture = std::make_shared<ScreenSnapshot>(0, 0, displayWidth, displayHeight / 2);
+	
+	screenCap1 = std::make_shared<StickyWindow>(PixelRect( 0, 0, screenCapture->width()/2, screenCapture->height() ), PixelRect(0,0, screenCapture->width(), screenCapture->height()), screenCapture);
+	screenCap2 = std::make_shared<StickyWindow>(PixelRect(screenCapture->width() / 2, 0, screenCapture->width() / 2, screenCapture->height()), PixelRect(0, 0, screenCapture->width(), screenCapture->height()), screenCapture);
 
-	screen1 = std::make_shared<ScreenSnapshot>(0, 0, displayWidth/2, displayHeight/2);
-	screen2 = std::make_shared<ScreenSnapshot>(displayWidth/2, 0, displayWidth / 2, displayHeight/2);
+	//screen1 = std::make_shared<ScreenSnapshot>(0, 0, displayWidth/2, displayHeight/2);
+	//screen2 = std::make_shared<ScreenSnapshot>(displayWidth/2, 0, displayWidth / 2, displayHeight/2);
 
-	checkersEffect = std::make_shared<EffectCheckers>(1, gAppSurface->getBounds(),8, screen1,screen2);
-	//paramShard = std::make_shared<ParametricShard>(screenSamp, PixelRect(100,100,640,480), gAppSurface->getBounds());
+
 	
 	blankEffect = std::make_shared<VisualEffect>(1,gAppSurface->getBounds(),nullptr, nullptr);
-	fadeFromBlack = std::make_shared<CrossFadeEffect>(2, gAppSurface->getBounds(), blankEffect, screen1);
-	fadeToBlack = std::make_shared<CrossFadeEffect>(2, gAppSurface->getBounds(), screen1, blankEffect);
-	fadeScreen1ToScreen2 = std::make_shared<CrossFadeEffect>(2, gAppSurface->getBounds(), screen1, screen2);
-	barnDoorOpen = std::make_shared<BarnDoorOpenEffect>(2, gAppSurface->getBounds(), screen1, screen2);
-	barnDoorClose = std::make_shared<BarnDoorCloseEffect>(2, gAppSurface->getBounds(), screen1, screen2);
+	fadeFromBlack = std::make_shared<CrossFadeEffect>(2, gAppSurface->getBounds(), blankEffect, screenCap1);
+	fadeToBlack = std::make_shared<CrossFadeEffect>(2, gAppSurface->getBounds(), screenCap1, blankEffect);
+	fadeScreen1ToScreen2 = std::make_shared<CrossFadeEffect>(1, gAppSurface->getBounds(), screenCap1, screenCap2);
+	barnDoorOpen = std::make_shared<BarnDoorOpenEffect>(1, gAppSurface->getBounds(), screenCap1, screenCap2);
+	barnDoorClose = std::make_shared<BarnDoorCloseEffect>(1, gAppSurface->getBounds(), screenCap1, screenCap2);
+
+	checkersEffect = std::make_shared<EffectCheckers>(1, gAppSurface->getBounds(), 8, screenCap1, blankEffect);
+	checkSamp = std::make_shared<CheckerSampler>(8, screenCap1, blankEffect);
 
 	currentEffect = blankEffect;
 
 	// setup the recorder
 	reco = std::make_shared<Recorder>(&(*gAppSurface), "frame-", 0);
-
 
 }

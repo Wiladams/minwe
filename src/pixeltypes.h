@@ -82,6 +82,14 @@ struct TextureCoord {
     double t;
 };
 
+union CoordD {
+    struct { double x, y; };
+    struct {double u, v;};
+    struct { double s, t; };
+};
+
+
+
 struct PixelSpan 
 {
 private:
@@ -111,10 +119,9 @@ struct PixelRect {
     PixelRect(const int x, const int y, const int w, const int h)
         :x(x), y(y), width(w), height(h) {}
 
-    INLINE constexpr bool isEmpty() const
-    {
-        return ((width <= 0) || (height <= 0));
-    }
+    INLINE constexpr bool isEmpty() const {return ((width <= 0) || (height <= 0));}
+
+    INLINE constexpr void moveTo(int newX, int newY) {this->x = newX;this->y = newY;}
 
     INLINE constexpr bool containsPoint(const int x1, const int y1) const
     {
@@ -160,6 +167,30 @@ struct PixelRect {
 
 };
 
+struct RectD {
+private:
+    double fx;
+    double fy;
+    double fwidth;
+    double fheight;
+
+public:
+    RectD() :fx(0), fy(0), fwidth(0), fheight(0) {}
+    RectD(double x, double y, const double w, const double h)
+        :fx(x), fy(y), fwidth(w), fheight(h) {}
+    RectD(const PixelRect& r) 
+        :fx(r.x), fy(r.y), 
+        fwidth(r.width), fheight(r.height) {}
+
+    INLINE constexpr double x() const noexcept { return fx; }
+    INLINE constexpr double y() const noexcept { return fy; }
+    INLINE constexpr double w() const noexcept { return fwidth; }
+    INLINE constexpr double h() const noexcept { return fheight; }
+
+    // type conversion
+    operator PixelRect () const { return { (int)maths::Round(x()),(int)maths::Round(y()),(int)maths::Round(w()), (int)maths::Round(h()) }; }
+};
+
 // Represents a rectangular area of a sampler
 struct TexelRect 
 { 
@@ -174,6 +205,9 @@ struct TexelRect
         :left(l), top(t), right(r), bottom(b) {}
 
     INLINE TexelRect& operator=(const TexelRect& other) noexcept = default;
+
+    INLINE constexpr double du() const noexcept { return right - left; }
+    INLINE constexpr double dv() const noexcept { return bottom - top; }
 
     // This routine assumes the frame is within the constrained area
     static TexelRect create(const PixelRect& isect, const PixelRect& constraint)
@@ -308,7 +342,7 @@ inline PixelRGBA texture2D(ISample2D<PixelRGBA> &tex0, const TextureCoord& st) n
 
 // Calculate the linear interpolation between two things
 // these values should be between 0 and 255 inclusive
-#define lerp255(bg, fg, a) ((uint8_t)div255((fg*a+bg*(255-a))))
+#define lerp255(bg, fg, a) (div255((fg*a+bg*(255-a))))
 
 #define blend_pixel(bg, fg) PixelRGBA(				\
 	lerp255(bg.r(), fg.r(), fg.a()), \

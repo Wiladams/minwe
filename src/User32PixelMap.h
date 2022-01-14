@@ -19,6 +19,7 @@
 #include "maths.hpp"
 #include "pixelmap.h"
 
+// Use this intrinsic for fast memory copies
 #pragma intrinsic(__stosd)
 
 
@@ -61,9 +62,9 @@ public:
         ::DeleteObject(fDIBHandle);
     }
 
-    virtual bool init(int awidth, int aheight)
+    bool init(int awidth, int aheight)
     {
-        fBounds = { 0,0,awidth,aheight };
+        fFrame = { 0,0,awidth,aheight };
 
         fBytesPerRow = winme::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
 
@@ -105,19 +106,19 @@ public:
         ::GdiFlush();
     }
 
-    inline BITMAPINFO getBitmapInfo() { return fBMInfo; }
-    inline HDC getDC() { return fBitmapDC; }
-    inline PixelRGBA* getData() { return (PixelRGBA*)fData; }
-    inline PixelRGBA* getPixelPointer(const int x, const int y) {return &((PixelRGBA*)fData)[(y * width()) + x]; }
-    inline size_t bytesPerRow() const { return fBytesPerRow; }
+    INLINE BITMAPINFO getBitmapInfo() { return fBMInfo; }
+    INLINE HDC getDC() { return fBitmapDC; }
+    INLINE PixelRGBA* getData() { return (PixelRGBA*)fData; }
+    INLINE PixelRGBA* getPixelPointer(const int x, const int y) {return &((PixelRGBA*)fData)[(y * width()) + x]; }
+    INLINE size_t bytesPerRow() const { return fBytesPerRow; }
 
     // Retrieve a single pixel
     // This one does no bounds checking, so the behavior is undefined
-// if the coordinates are beyond the boundary
-    virtual PixelRGBA getPixel(const int x, const int y) const
+    // if the coordinates are beyond the boundary
+    INLINE PixelRGBA getPixel(const int x, const int y) const
     {
         // Get data from BLContext
-        size_t offset = (size_t)(y * fBounds.width) + (size_t)x;
+        size_t offset = (size_t)(y * width()) + (size_t)x;
         return ((PixelRGBA*)fData)[offset];
     }
 
@@ -125,60 +126,61 @@ public:
     // Set a single pixel value
     // Assume range checking has already occured
     // Perform SRCCOPY operation on a pixel
-    virtual void copyPixel(const int x, const int y, const PixelRGBA c)
+    INLINE void copyPixel(const int x, const int y, const PixelRGBA c)
     {
-        size_t offset = (size_t)(y * fBounds.width) + (size_t)x;
+        size_t offset = (size_t)(y * width()) + (size_t)x;
         ((PixelRGBA*)fData)[offset] = c;
     }
 
     // Perform SRCOVER operation on a pixel
-    virtual void blendPixel(const int x, const int y, const PixelRGBA c)
+    INLINE void blendPixel(const int x, const int y, const PixelRGBA c)
     {
-        size_t offset = (size_t)(y * fBounds.width) + (size_t)x;
-        
+        size_t offset = (size_t)(y * width()) + (size_t)x;
         ((PixelRGBA*)fData)[offset] = blend_pixel(((PixelRGBA*)fData)[offset],c);
     }
-
-    virtual void set(const int x, const int y, const PixelRGBA c) {
-        if (!fBounds.containsPoint(x, y))
+    /*
+    INLINE void set(const int x, const int y, const PixelRGBA c) {
+        if (!fFrame.containsPoint(x, y))
             return;
 
         if (c.isTransparent())
             return;
 
         if (c.isOpaque()) {
-            size_t offset = (size_t)(y * fBounds.width) + (size_t)x;
+            // copy_pixel
+            size_t offset = (size_t)(y * fFrame.width) + (size_t)x;
             ((PixelRGBA*)fData)[offset] = c;
         }
         else {
-            size_t offset = (size_t)(y * fBounds.width) + (size_t)x;
+            // blend_pixel
+            size_t offset = (size_t)(y * fFrame.width) + (size_t)x;
 
             ((PixelRGBA*)fData)[offset] = blend_pixel(((PixelRGBA*)fData)[offset], c);
         }
     }
-
+    */
     // set consecutive pixels in a row 
     // Assume the range has already been clipped
-    inline void setPixels(const int x, const int y, const int width, const PixelRGBA src)
+    INLINE void setPixels(const int x, const int y, const int w, const PixelRGBA src)
     {
         // do line clipping
         // copy actual pixel data
         uint32_t* pixelPtr = (uint32_t*)getPixelPointer(x, y);
-        __stosd((unsigned long*)pixelPtr, src.value, width);
+        __stosd((unsigned long*)pixelPtr, src.value, w);
     }
 
     // Set every pixel to a specified value
     // we can use this fast intrinsic to fill
     // the whole area
-    virtual void setAllPixels(const PixelRGBA c)
+    INLINE void setAllPixels(const PixelRGBA c)
     {
-        size_t nPixels = fBounds.width * fBounds.height;
+        size_t nPixels = width() * height();
         __stosd((unsigned long*)fData, c.value, nPixels);
     }
 
-    virtual void setAllPixels(const uint32_t value)
+    INLINE void setAllPixels(const uint32_t value)
     {
-        size_t nPixels = fBounds.width * fBounds.height;
+        size_t nPixels = width() * height();
         __stosd((unsigned long*)fData, value, nPixels);
     }
 

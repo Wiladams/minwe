@@ -33,7 +33,8 @@
 //
 class CheckerPattern
 {
-    int fFrequency;  // How many times the pattern repeats
+    //double fFrequency;  // How many times the pattern repeats
+    double fFactor;
 
     // simple step function
     // if the value 'u' is below the threshold, then the low
@@ -45,13 +46,19 @@ class CheckerPattern
     }
 
 public:
-    CheckerPattern(int freq)
-        : fFrequency(freq)
-    {}
-
-    void setFrequency(int freq)
+    CheckerPattern(double freq)
+        //: fFrequency(freq)
     {
-        fFrequency = freq;
+        setFrequency(freq);
+    }
+
+    void setFrequency(double freq)
+    {
+        // we don't actually need to retain the frequency
+        // we just use it to make this calculation
+        // we'll use the fFactor in the getValue() routine
+        //fFrequency = freq;
+        fFactor = freq * (2 * maths::Pi);
     }
 
     // u and v range from 0 to 1 inclusive
@@ -60,8 +67,8 @@ public:
     // at construction time
     virtual bool evalParam(double u, double v, const PixelCoord&p) const
     {
-        double xrad = maths::Map(u, 0, 1, 0, fFrequency * (2 * maths::Pi));
-        double yrad = maths::Map(v, 0, 1, 0, fFrequency * (2 * maths::Pi));
+        double xrad = u * fFactor;
+        double yrad = v * fFactor;
 
         // we need values that are either 1 or -1
         // we change sign at 0
@@ -77,27 +84,19 @@ public:
 class CheckerSampler : public ISample2D<PixelRGBA>
 {
     CheckerPattern fPattern;
-    std::shared_ptr<ISample2D<PixelRGBA> > t1;   // First color
-    std::shared_ptr<ISample2D<PixelRGBA> > t2;   // Second color
-    PixelRect fFrame;
-    int xExtent;
-    int yExtent;
-    int fFrequency;
+    std::shared_ptr<ISample2D<PixelRGBA> > t1;   // First sampler
+    std::shared_ptr<ISample2D<PixelRGBA> > t2;   // Second sampler
 
 public:
-    CheckerSampler(PixelRect frame,
+    CheckerSampler(double freq,
         std::shared_ptr<ISample2D<PixelRGBA> > s1,
-        std::shared_ptr<ISample2D<PixelRGBA> > s2,
-        int freq)
-        : fFrame(frame),
-        fPattern(freq),
-        fFrequency(freq),
+        std::shared_ptr<ISample2D<PixelRGBA> > s2)
+        : fPattern(freq),
         t1(s1), t2(s2)
+    {}
+
+    void setFrequency(double freq) 
     {
-
-    }
-
-    void setFrequency(int freq) {
         fPattern.setFrequency(freq);
     }
 
@@ -120,8 +119,8 @@ class Checkerboard
     std::shared_ptr<ISample2D<PixelRGBA> > t1;   // First color
     std::shared_ptr<ISample2D<PixelRGBA> > t2;   // Second color
     PixelRect fFrame;
-    int xExtent;
-    int yExtent;
+    int xExtent=0;
+    int yExtent=0;
     int fFrequency;
 
 public:

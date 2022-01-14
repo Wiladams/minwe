@@ -49,10 +49,14 @@ public:
 	{
 		// Create two sticky windows 
 		// one for the left half
-		setDoor1(StickyWindow(PixelRect(constraint.x,constraint.y,constraint.width/2,constraint.height), constraint, s1));
+		TexelRect stickyTex1 = TexelRect(0, 0, 0.4999, 1);
+		setDoor1(StickyWindow(PixelRect(constraint.x,constraint.y,constraint.width/2,constraint.height), stickyTex1, s1));
+		//setDoor1(StickyWindow(PixelRect(constraint.x, constraint.y, constraint.width / 2, constraint.height), constraint, s1));
 
 		// one for the right half
-		setDoor2(StickyWindow(PixelRect(constraint.x+(constraint.width / 2), constraint.y, constraint.width / 2, constraint.height), constraint, s1));
+		TexelRect stickyTex2 = TexelRect(0.5, 0, 1, 1);
+		setDoor2(StickyWindow(PixelRect(constraint.x+(constraint.width / 2), constraint.y, constraint.width / 2, constraint.height), stickyTex2, s1));
+		//setDoor2(StickyWindow(PixelRect(constraint.x + (constraint.width / 2), constraint.y, constraint.width / 2, constraint.height), constraint, s1));
 	}
 
 	void onProgress() noexcept

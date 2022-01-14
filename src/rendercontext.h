@@ -6,20 +6,7 @@
 #include "matrix2d.h"
 #include "sampler.h"
 
-struct CoordD { double x; double y; };
 
-struct RectD { 
-	double x; double y; 
-	double width; double height; 
-
-	RectD() :x(0), y(0), width(0), height(0) {}
-	RectD(double x, double y, const double w, const double h)
-		:x(x), y(y), width(w), height(h) {}
-	RectD(const PixelRect& r) :x(r.x), y(r.y), width(r.width), height(r.height) {}
-
-	// type conversion
-	operator PixelRect () const { return {(int)Round(x),(int)Round(y),(int)Round(width), (int)Round(height)}; }
-};
 
 class RenderContext
 {
@@ -127,7 +114,8 @@ public:
 				//double u = maths::Map(col, dstRect.x, dstRect.x + dstRect.width - 1, srcExt.left, srcExt.right);
 				//double v = maths::Map(row, dstRect.y, dstRect.y + dstRect.height - 1, srcExt.top, srcExt.bottom);
 				auto c = style.getValue(u, v, { col,row });
-				fPixelMap->set(col, row, c);
+				//fPixelMap->set(col, row, c);
+				fPixelMap->copyPixel(col, row, c);
 
 				u += uadv;
 

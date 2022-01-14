@@ -48,86 +48,96 @@ public:
 
 };
 
-// Represents an initial portion of a boundary
-// As a sampler, it will subsequently offer pixel
-// values based on parameters, with origin relative
-// to the captured region
+// StickyWindow
+//
+// This is core function for many effects.  We want to
+// capture a portion of a source, not by copying it, but
+// by remembering the parametric location.  So, when we
+// move around, like a barn door for example, we retain the
+// original pixel coordinates, and can replicate them elsewhere.
+// This is done through a combination of "fStickyxxx" 
+// fields, and translation in the 'getValue()' function.
+//
+// Since this is a ISample2D, it can participate in many
+// other operations freely
 class StickyWindow : public ISample2D<PixelRGBA>
 {
+	// The sampler that we will source from
 	std::shared_ptr<ISample2D<PixelRGBA> > fWrapped;
-
-	PixelRect fConstraint;		// The boundary within which we move
 	
-	PixelRect fStickyFrame;
-	PixelRect fStickyVisible;
 	TexelRect fStickyTexel;
+	PixelRect fMovingFrame;		// The frame being moved somewhere else
+								// needed to calculate du/vFactor
+								// needed for contains()
 
-	PixelRect fMovingFrame;
-	PixelRect fVisibleFrame;
-	TexelRect fVisibleTexel;
+	// used to adjust u,v in getValue()
+	double duFactor = 1;
+	double dvFactor = 1;
 
 public:
 	StickyWindow() = default;
 
 	StickyWindow(const PixelRect& frame, const PixelRect& constraint, std::shared_ptr<ISample2D<PixelRGBA> > wrapped)
-		:fWrapped(wrapped),
-		fConstraint(constraint),
-		fStickyFrame(frame),
-		fMovingFrame(frame)
+		:fWrapped(wrapped)
+		,fMovingFrame(frame)
 	{
-		fStickyVisible = fConstraint.intersection(frame);
-		fStickyTexel = TexelRect::create(fStickyVisible, fConstraint);
+		auto visible = constraint.intersection(frame);
+		fStickyTexel = TexelRect::create(visible, constraint);
 
-		setVisible(fStickyVisible);
+		setVisible(visible);
+	}
+
+	StickyWindow(const PixelRect& frame, const TexelRect& sticky, std::shared_ptr<ISample2D<PixelRGBA> > wrapped)
+		:fWrapped(wrapped)
+		, fMovingFrame(frame)
+		, fStickyTexel(sticky)
+	{
+		setVisible(frame);
 	}
 
 	void setVisible(const PixelRect& other)
 	{
-		fVisibleFrame = fConstraint.intersection(other);
-		fVisibleTexel = TexelRect::create(fVisibleFrame, fConstraint);
+		// Calculate these here so we don't
+		// have to calculate them in getValue with a Map()
+		duFactor = (fStickyTexel.du() / ((double)fMovingFrame.width - 1));
+		dvFactor = (fStickyTexel.dv() / ((double)fMovingFrame.height - 1));
 	}
 	
-	PixelRect& movingFrame() { return fMovingFrame; }
+	INLINE constexpr PixelRect& movingFrame() noexcept { return fMovingFrame; }
 
-	void moveBy(int x, int y)
-	{
-		fMovingFrame.x += x;
-		fMovingFrame.y += y;
-
-		setVisible(fMovingFrame);
-	}
+	INLINE void moveBy(int x, int y) noexcept {moveTo(fMovingFrame.x + x, fMovingFrame.y + y);}
 	
-	void moveTo(int x, int y)
+	INLINE void moveTo(int x, int y) noexcept
 	{
-		fMovingFrame.x = x;
-		fMovingFrame.y = y;
-
+		fMovingFrame.moveTo(x, y);
 		setVisible(fMovingFrame);
 	}
 
-	bool contains(int x, int y)
-	{
-		return fVisibleFrame.containsPoint(x, y);
-	}
+	INLINE bool contains(int x, int y) const noexcept {return fMovingFrame.containsPoint(x, y);}
 
-	PixelRGBA getValue(double u, double v, const PixelCoord& p)
+	// getValue()
+	// Return a value from the wrapped sampler.
+	// We use the pixel coordinates because we need to adjust
+	// to our captured pixel frame.  So, this is not a perfect
+	// sampler, as it's location dependent, but that's the 
+	// nature of this sampler.
+	// Otherwise, we'd have to copy pixels from the source
+	PixelRGBA getValue(double u, double v, const PixelCoord& p) noexcept
 	{
 		// figure out the u within the moving frame
-		// First translate the point into the frame of the moving window
-		int mx = p.x;
-		int my = p.y;
-
-		// Then, determine what the u and v values are within the moving frame
 		// translate to where it would be in the original sticky window
-		double mu = maths::Map(mx, fMovingFrame.x, fMovingFrame.x + fMovingFrame.width - 1, fStickyTexel.left, fStickyTexel.right);
-		double mv = maths::Map(my, fMovingFrame.y, fMovingFrame.y + fMovingFrame.height - 1, fStickyTexel.top, fStickyTexel.bottom);
+		// add, subtract, multiply
+		double mu = fStickyTexel.left + (((double)p.x - fMovingFrame.x) * duFactor);
+		double mv = fStickyTexel.top + (((double)p.y - fMovingFrame.y) * dvFactor);
 
 		return fWrapped->getValue(mu, mv, p);
 	}
 };
 
-// A visual effect is just a sampler, with a timer
-// by default, it assumes there are two video sources
+// VisualEffect
+// A visual effect is a sampler, with a timer
+// and a duration.  It encapsulates things like
+// having two sources
 // but, a sub-class can do whatever it likes
 // as long as it generates a getValue(u,v)
 //
@@ -148,6 +158,8 @@ protected:
 	std::shared_ptr<ISample2D<PixelRGBA> > fSource2;
 
 public:
+	VisualEffect(double duration):VisualEffect(duration, PixelRect(), nullptr, nullptr) {}
+
 	VisualEffect(double duration, const PixelRect& constraint,
 		std::shared_ptr<ISample2D<PixelRGBA> > s1,
 		std::shared_ptr<ISample2D<PixelRGBA> > s2)
@@ -163,9 +175,14 @@ public:
 	INLINE std::shared_ptr<ISample2D<PixelRGBA> >  source1() { return fSource1; }
 	INLINE std::shared_ptr<ISample2D<PixelRGBA> >  source2() { return fSource2; }
 
+	// Maybe want to hold sources in an array to make it more generic
+	INLINE void setSource(int index, std::shared_ptr<ISample2D<PixelRGBA> >  source) {}
 	INLINE void setSource1(std::shared_ptr<ISample2D<PixelRGBA> >  source) { fSource1 = source; }
 	INLINE void setSource2(std::shared_ptr<ISample2D<PixelRGBA> >  source) { fSource2 = source; }
 
+	// This will reset the animation to 
+	// its starting point.  It just resets
+	// the start time and progress
 	void start() noexcept
 	{
 		fStartTime = fTimer.seconds();
@@ -174,23 +191,33 @@ public:
 		fProgress = 0;
 	}
 
+	// simply return the progress field
 	INLINE double constexpr progress() noexcept { return fProgress; }
 
+	// A function to be implemented by sub-classes
 	virtual void onProgress() noexcept
 	{
 	}
 
+	// externally, an animator must call update for 
+	// progress to be made.  You need to either call this
+	// or set the progress manually.
 	virtual void update() noexcept
 	{
 		auto u = maths::Map(fTimer.seconds(), fStartTime, fEndTime, 0, 1);
 		setProgress(u);
 	}
 
+	// If not calling update, the animator can call setProgress
+	// explicitly.  This is useful when you're 'scrubbing' through
+	// a timeline and want to control exactly how far along the effect is
 	void setProgress(double u) noexcept 
 	{
 		fProgress = maths::Clamp(u, 0, 1);
 		this->onProgress();
 	}
 
+	// By default, just return a transparent pixel.
+	// This is where a sub-class will do all its hardest work
 	PixelRGBA getValue(double u, double v, const PixelCoord& p){return PixelRGBA();}
 };

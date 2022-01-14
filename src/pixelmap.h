@@ -106,14 +106,14 @@ public:
 class PixelMap : public ISample2D<PixelRGBA>
 {
 protected:
-    PixelRect fBounds;
+    PixelRect fFrame;
 
 public:
-    PixelMap() :fBounds(0,0,0,0){}
+    PixelMap() :fFrame(0,0,0,0){}
 
     // virtual destructor so base classes setup properly
     PixelMap(int x, int y, int w, int h)
-        :fBounds(x,y,w,h) {}
+        :fFrame(x,y,w,h) {}
 
     virtual ~PixelMap() {}
 
@@ -127,15 +127,15 @@ public:
     virtual PixelRGBA getPixel(const int x, const int y) const = 0;
 
     // regular things
-    INLINE constexpr int x() const noexcept { return fBounds.x; }
-    INLINE constexpr int y() const noexcept { return fBounds.y; }
-    INLINE constexpr int width() const noexcept { return fBounds.width; }
-    INLINE constexpr int height() const noexcept { return fBounds.height; }
+    INLINE constexpr int x() const noexcept { return fFrame.x; }
+    INLINE constexpr int y() const noexcept { return fFrame.y; }
+    INLINE constexpr int width() const noexcept { return fFrame.width; }
+    INLINE constexpr int height() const noexcept { return fFrame.height; }
     
     // Calculate whether a point is whithin our bounds
-    inline bool contains(double x, double y) const { return fBounds.containsPoint((int)x, (int)y); }
+    inline bool contains(double x, double y) const { return fFrame.containsPoint((int)x, (int)y); }
 
-    const PixelRect& getBounds() const { return fBounds; }
+    const PixelRect& getBounds() const { return fFrame; }
 
     //
     // set(), and get() are the general purpose ways to get and set
@@ -143,7 +143,7 @@ public:
     // to avoid bounds checking,then use the getPixel(), and setPixel() forms
     // which MUST be implemented by a sub-class
     virtual void set(const int x, const int y, const PixelRGBA c) {
-        if (!fBounds.containsPoint(x, y))
+        if (!fFrame.containsPoint(x, y))
             return;
 
         if (c.isTransparent())
@@ -160,7 +160,7 @@ public:
     PixelRGBA get(const int x, const int y) const
     {
         // reject pixel if out of boundary
-        if (!fBounds.containsPoint(x, y))
+        if (!fFrame.containsPoint(x, y))
             return PixelRGBA(0);
 
         return getPixel(x, y);
