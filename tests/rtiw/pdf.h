@@ -51,7 +51,7 @@ class sphere_pdf : public pdf {
     sphere_pdf() { }
 
     double value(const vec3& direction) const override {
-        return 1/ (4 * pi);
+        return 1.0/ (4.0 * pi);
     }
 
     vec3 generate() const override {

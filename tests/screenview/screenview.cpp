@@ -13,12 +13,10 @@ std::shared_ptr<ScreenSnapshot> screenSamp = nullptr;
 void onFrame()
 {
     // Get current screen snapshot
+    screenSamp->next();
 
     // Draw a rectangle with snapshot as texture
-    screenSamp->next();
-    sampleRectangle(*gAppSurface,
-        0, 0,canvasWidth, canvasHeight,
-        *screenSamp);
+    sampleRectangle(*gAppSurface,gAppSurface->frame(),*screenSamp);
 
     // This way doesn't work because you end up creating a new bitmap
     // and device context each time, and you'll exhaust those resources
@@ -31,10 +29,10 @@ void onFrame()
 
 void setup()
 {
-    // setup the snapshot
-    screenSamp = std::make_shared<ScreenSnapshot>(0, 0, displayWidth / 2, displayHeight/2);
-
     // Setup application window
 	setCanvasSize(displayWidth/2, displayHeight/2);
     setFrameRate(30);
+
+    // setup the snapshot
+    screenSamp = std::make_shared<ScreenSnapshot>(0, 0, displayWidth / 2, displayHeight / 2);
 }

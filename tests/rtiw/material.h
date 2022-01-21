@@ -162,7 +162,7 @@ class isotropic : public material {
 
     double scattering_pdf(const ray& r_in, const hit_record& rec, const ray& scattered)
     const override {
-        return 1 / (4 * pi);
+        return 1.0 / (4.0 * pi);
     }
 
   public:

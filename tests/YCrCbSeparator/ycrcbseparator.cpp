@@ -11,14 +11,14 @@ constexpr int captureHeight = 1080;
 
 std::shared_ptr<RenderContext> ctx = nullptr;
 std::shared_ptr<ScreenSnapshot> screenSamp = nullptr;
-std::shared_ptr<GraySampler> gSamp = nullptr;
+std::shared_ptr<LumaSampler> gSamp = nullptr;
 
 // Rec 601-1 specification for YCrCb separation
 class YCrCbSeparator
 {
 	NTSCGray grayScaler;
 
-	void separate(ISample2D<PixelRGBA>& src, PixelMap& Y, PixelMap& Cr, PixelMap& Cb)
+	void separate(ISample2D<PixelRGBA, PixelCoord>& src, PixelMap& Y, PixelMap& Cr, PixelMap& Cb)
 	{
 		// run through the y pixelmap, grabbing items from the src
 		// separate along the way
@@ -48,9 +48,9 @@ void onFrame()
 
     screenSamp->next();
 
-    //ctx->rectangle(0, 0, canvasWidth, canvasHeight, *gSamp);
-    ctx->rect({ 0, 0, (double)canvasWidth/2, (double)canvasHeight }, *screenSamp, { 0,0,0.5,1 });
-    ctx->rect({ (double)canvasWidth/2, 0, (double)canvasWidth/2, (double)canvasHeight }, *gSamp, { 0.5,0,1,1 });
+    //ctx->rectangle(PixelRect(0, 0, canvasWidth, canvasHeight), *gSamp);
+    ctx->rect({ 0, 0, (double)canvasWidth/2, (double)canvasHeight }, { 0,0,0.5,1 }, *screenSamp);
+    ctx->rect({ (double)canvasWidth/2, 0, (double)canvasWidth/2, (double)canvasHeight }, { 0.5,0,1,1 }, *gSamp);
 }
 
 void setup()
@@ -65,5 +65,5 @@ void setup()
 	screenSamp = std::make_shared<ScreenSnapshot>(0, 0, captureWidth, captureHeight);
 
     // setup the grayscale sampler
-    gSamp = std::make_shared<GraySampler>(screenSamp);
+    gSamp = std::make_shared<LumaSampler>(screenSamp);
 }

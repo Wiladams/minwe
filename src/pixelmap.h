@@ -40,20 +40,20 @@ struct PixelTriangle {
         // to bottommost, so drawing is easier
         // This is essentially a 3 element bubble sort
         PixelCoord tmp;
-        if (verts[0].y > verts[1].y) {
+        if (verts[0].y() > verts[1].y()) {
             tmp = verts[0];
             verts[0] = verts[1];
             verts[1] = tmp;
         }
 
-        if (verts[1].y > verts[2].y) {
+        if (verts[1].y() > verts[2].y()) {
             tmp = verts[1];
             verts[1] = verts[2];
             verts[2] = tmp;
         }
 
         // One more round to ensure the second isn't the smallest
-        if (verts[0].y > verts[1].y) {
+        if (verts[0].y() > verts[1].y()) {
             tmp = verts[0];
             verts[0] = verts[1];
             verts[1] = tmp;
@@ -72,21 +72,28 @@ struct PixelEllipse
 // Cubic Bezier, defined by 4 points
 struct PixelBezier
 {
-        PixelCoord p1;
-        PixelCoord p2;
-        PixelCoord p3;
-        PixelCoord p4;
-        size_t fSegments;
+    PixelCoord p1;
+    PixelCoord p2;
+    PixelCoord p3;
+    PixelCoord p4;
+    size_t fSegments;
 
 public:
-        PixelBezier(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, size_t segments = 60)
-            :p1(x1, y1),
-            p2(x2, y2),
-            p3(x3, y3),
-            p4(x4, y4),
+    PixelBezier(const PixelCoord &pp1, const PixelCoord& pp2, const PixelCoord& pp3, const PixelCoord& pp4, size_t segments = 60)
+        :p1(pp1),p2(pp2),p3(pp3),p4(pp4),
+        fSegments(segments)
+    {
+
+    }
+    
+    PixelBezier(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, size_t segments = 60)
+            :p1({ x1, y1 }),
+            p2({ x2, y2 }),
+            p3({x3, y3}),
+            p4({x4, y4}),
             fSegments(segments)
-        {
-        }
+    {
+    }
 
 };
 
@@ -103,7 +110,7 @@ public:
     lines.  This leaves space for implementations to optimize
     these functions in ways that are specific to them.
 */
-class PixelMap : public ISample2D<PixelRGBA>
+class PixelMap : public ISample2D<PixelRGBA, PixelCoord>
 {
 protected:
     PixelRect fFrame;
@@ -115,15 +122,15 @@ public:
     PixelMap(int x, int y, int w, int h)
         :fFrame(x,y,w,h) {}
 
-    virtual ~PixelMap() {}
+    virtual ~PixelMap() = default;
 
     // Things a sub-class MUST implement
     virtual bool init(int w, int h) = 0;
     virtual PixelRGBA* getPixelPointer(const int x, const int y) = 0;
     virtual size_t bytesPerRow() const = 0;
-    virtual void copyPixel(const int x, const int y, const PixelRGBA c) = 0;
-    virtual void blendPixel(const int x, const int y, const PixelRGBA c) = 0;
-    virtual void setAllPixels(const PixelRGBA c) = 0;
+    virtual void copyPixel(const int x, const int y, const PixelRGBA &c) = 0;
+    virtual void blendPixel(const int x, const int y, const PixelRGBA &c) = 0;
+    virtual void setAllPixels(const PixelRGBA &c) = 0;
     virtual PixelRGBA getPixel(const int x, const int y) const = 0;
 
     // regular things
@@ -133,16 +140,17 @@ public:
     INLINE constexpr int height() const noexcept { return fFrame.height; }
     
     // Calculate whether a point is whithin our bounds
-    inline bool contains(double x, double y) const { return fFrame.containsPoint((int)x, (int)y); }
+    INLINE bool contains(double x, double y) const { return fFrame.containsPoint((int)x, (int)y); }
 
     const PixelRect& getBounds() const { return fFrame; }
+    INLINE const PixelRect& frame() const { return fFrame; }
 
     //
     // set(), and get() are the general purpose ways to get and set
     // pixel values.  They will do bounds checking.  If you want 
     // to avoid bounds checking,then use the getPixel(), and setPixel() forms
     // which MUST be implemented by a sub-class
-    virtual void set(const int x, const int y, const PixelRGBA c) {
+    virtual void set(const int x, const int y, const PixelRGBA &c) {
         if (!fFrame.containsPoint(x, y))
             return;
 
@@ -157,6 +165,7 @@ public:
 
     // when checking bounds, return totally transparent
     // when outside bounds
+    // specify coordinates in pixel space [0..width,height]
     PixelRGBA get(const int x, const int y) const
     {
         // reject pixel if out of boundary
@@ -167,12 +176,20 @@ public:
     }
 
     // ISample2D<PixelRGBA>
+    // specify location in normalized space [0..1]
+    // the PixelCoord tells you where in the caller the value
+    // is intended to be located.
     PixelRGBA getValue(double u, double v, const PixelCoord& p)
     {
-        int x = int((u * ((double)width() - 1)) + 0.5);
-        int y = int((v * ((double)height() - 1)) + 0.5);
+        int px = int((u * ((double)width() - 1)) + 0.5);
+        int py = int((v * ((double)height() - 1)) + 0.5);
 
-        return get(x, y);
+        return get(px, py);
     }
 };
 
+
+#define blend_pixel(bg, fg) PixelRGBA(				\
+	lerp255(bg.r(), fg.r(), fg.a()), \
+	lerp255(bg.g(), fg.g(), fg.a()), \
+	lerp255(bg.b(), fg.b(), fg.a()), 255)

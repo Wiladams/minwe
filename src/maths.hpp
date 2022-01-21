@@ -137,7 +137,12 @@ namespace maths {
     template <typename T>
     INLINE T Round(T val)
     {
-        return Floor(val + 0.5);
+        if (val > 0)
+            return std::floor(val + 0.5);
+        if (val < 0)
+            return std::floor(val - 0.5);
+        
+        return 0;
     }
 
     // isNaN only applies to floating point (float, double)
@@ -299,7 +304,7 @@ namespace maths {
         return (T)std::tanh(a);
     }
     
-
+    // DEPRECATE
     INLINE double randomRange(const double low, const double high)
     {
         double frac = (double)rand() / RAND_MAX;
@@ -308,9 +313,28 @@ namespace maths {
         return ret;
     }
 
-    INLINE double random(const double rndMax)
-    {
-        return randomRange(0, rndMax);
+    // Returns a random real in [0,1)
+    INLINE double random_double() {
+
+        return rand() / (RAND_MAX + 1.0);
     }
 
+    INLINE double random_double(const double low, const double high)
+    {
+        double frac = (double)rand() / RAND_MAX;
+        double ret = low + frac * (high - low);
+
+        return ret;
+    }
+    
+    INLINE double random(const double rndMax)
+    {
+        return random_double(0, rndMax);
+    }
+
+
+
+    // Returns a random integer in [min,max].
+    INLINE int random_int(int mn, int mx) {return static_cast<int>(randomRange(mn, mx + 1.0));}
+    INLINE int random_int(int mx) { return random_int(0, mx); }
 }

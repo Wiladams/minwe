@@ -1024,6 +1024,7 @@ User32WindowClass gAppWindowKind("appwindow", CS_GLOBALCLASS | CS_DBLCLKS | CS_H
 // in the very beginning
 bool prolog()
 {
+    // Initialize Windows networking API
     uint16_t version = MAKEWORD(2, 2);
     WSADATA lpWSAData;
     int res = ::WSAStartup(version, &lpWSAData);
@@ -1033,11 +1034,11 @@ bool prolog()
     // physical dots per inch and screen resolution, so the
     // first thing to do is to let Windows know we are Dpi aware
     // set awareness based on monitor, and get change messages when it changes
-    auto dpiContext = DPI_AWARENESS_CONTEXT_SYSTEM_AWARE;
-    //auto dpiContext = DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2;
-    
-    DPI_AWARENESS_CONTEXT oldContext = ::SetThreadDpiAwarenessContext(dpiContext);
-    
+    //auto dpiContext = DPI_AWARENESS_CONTEXT_SYSTEM_AWARE;
+    ////auto dpiContext = DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2;
+    //DPI_AWARENESS_CONTEXT oldContext = ::SetThreadDpiAwarenessContext(dpiContext);
+    auto bResult = ::SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
     // based on logical inches
     systemDpi = ::GetDpiForSystem();
 

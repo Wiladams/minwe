@@ -9,6 +9,11 @@
 //
 // PixelRGBA - 0xaarrggbb
 //
+
+// When you need a COLORREF to be compatible with 
+// some Windows GDI routines
+#define toCOLORREF(c) (c.r() | (c.g() << 8) | (c.b() << 16))
+
 /*
 void textAlign(ALIGNMENT horizontal, ALIGNMENT vertical) noexcept;
 void textFont(const char* fontname) noexcept;
@@ -127,8 +132,9 @@ void text(const char* txt, double x, double y)
     ::TextOutA(gAppSurface->getDC(), x, y, txt, strlen(txt));
 }
 
-void textColor(COLORREF c)
+void textColor(const PixelRGBA &pix)
 {
+    COLORREF c = toCOLORREF(pix);
     ::SetTextColor(gAppSurface->getDC(), c);
 }
 
@@ -168,16 +174,14 @@ void onFrame()
     static int fontSize = 12;
     static int dir = 1;
 
-    background(0xffffffff);
+    background(PixelRGBA(0xffffffff));
 
     PixelRGBA c(0xff000000);
-    textColor(c.toCOLORREF());
+    textColor(c);
     //textFont("Arial", fontSize);
     //textFont("Yu Gothic UI", fontSize);
     textFont("Vivaldi", fontSize);
     text("The Quick brown fox jumps over the lazy dogs back.", 10, 100);
-
-
 
     if (fontSize >= 128)
         dir = -1;
@@ -188,11 +192,9 @@ void onFrame()
     fontSize += dir;
 }
 
-
-
 void setup()
 {
-    setFrameRate(30);
+    setFrameRate(15);
 	setCanvasSize(1920, 480);
 
     FontMonger::listFontFamilies();

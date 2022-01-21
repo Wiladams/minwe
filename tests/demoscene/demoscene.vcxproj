@@ -150,7 +150,6 @@
     <ClInclude Include="drawingcontext.h" />
     <ClInclude Include="gui.h" />
     <ClInclude Include="layout.h" />
-    <ClInclude Include="matrix2d.h" />
     <ClInclude Include="p5.h" />
     <ClInclude Include="pixelsurface.h" />
     <ClInclude Include="windowmgr.h" />

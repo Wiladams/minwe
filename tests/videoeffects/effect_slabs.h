@@ -37,7 +37,7 @@ struct SamplerSprite
 		fTexFrame = { left,top,right,bottom };
 	}
 
-	void draw(PixelMap& pmap, const PixelRect &dstFrame, ISample2D<PixelRGBA>& sampler)
+	void draw(PixelMap& pmap, const PixelRect &dstFrame, ISample2D<PixelRGBA, PixelCoord>& sampler)
 	{
 		//rect(pmap, fCurrentPosition, *sampler, fTexFrame);
 
@@ -120,7 +120,7 @@ struct WindowSlab
 	}
 
 
-	void draw(PixelMap& pmap, ISample2D<PixelRGBA> &sampler)
+	void draw(PixelMap& pmap, ISample2D<PixelRGBA, PixelCoord> &sampler)
 	{
 		//rect(pmap, fCurrentPosition, *sampler, fTexFrame);
 
@@ -168,7 +168,7 @@ class WindowSlabber
 public:
 	WindowSlabber(int slabCount, const PixelRect &constraint, double rate=30)
 		: slabCount(slabCount),
-		advancement(1/rate)
+		advancement(1.0/rate)
 	{
 		slabWidth = constraint.width / slabCount;
 		slabLength = constraint.height / 2;
@@ -183,7 +183,7 @@ public:
 		}
 	}
 
-	void draw(PixelMap &pmap, ISample2D<PixelRGBA> &sampler)
+	void draw(PixelMap &pmap, ISample2D<PixelRGBA, PixelCoord> &sampler)
 	{
 		for (auto& slab : slabs)
 		{

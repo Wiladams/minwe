@@ -9,7 +9,7 @@
 // absolute pixel offsets, you use "pixelValue(u,v)"
 // In this case, 'u' and 'v' range from 0 to 1 inclusive
 //
-class ImageSampler : public ISample2D<PixelRGBA>
+class ImageSampler : public ISample2D<PixelRGBA, PixelCoord>
 {
 	PixelMap & fImage;
 
@@ -20,7 +20,7 @@ public:
 	{
 	}
 
-	PixelRGBA getValue(double u, double v, const PixelCoord &p)  const
+	PixelRGBA getValue(double u, double v, const PixelCoord &p) override
 	{
 		int x = int((u * ((double)fImage.width() - 1)) + 0.5);
 		int y = int((v * ((double)fImage.height() - 1)) + 0.5);

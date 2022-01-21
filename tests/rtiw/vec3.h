@@ -52,16 +52,18 @@ class vec3 {
 
     // a = a/t
     vec3& operator/=(const double t) {
-        return *this *= 1/t;
+        return *this *= 1.0/t;
+    }
+
+    double length_squared() const {
+        return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
     }
 
     double length() const {
         return std::sqrt(length_squared());
     }
 
-    double length_squared() const {
-        return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
-    }
+
 
     // Return true if the vector is close to zero in all dimensions.
     bool near_zero() const {

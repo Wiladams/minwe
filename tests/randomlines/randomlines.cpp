@@ -18,9 +18,9 @@ double random(const float rndMax)
 
 PixelRGBA randomColor()
 {
-	uint32_t r = uint32_t(random(255));
-	uint32_t g = uint32_t(random(255));
-	uint32_t b = uint32_t(random(255));
+	uint32_t r = uint32_t(random_int(255));
+	uint32_t g = uint32_t(random_int(255));
+	uint32_t b = uint32_t(random_int(255));
 
 	return { r,g,b,255 };
 }
@@ -41,12 +41,12 @@ void draw()
 	{
 		int x1 = random(float(canvasWidth - 1));
 		int y1 = random(float(canvasHeight - 1));
-		int x2 = randomRange(x1-40,x1+40);
-		int y2 = randomRange(y1-40, y1+40);
+		int x2 = random_int(x1-40,x1+40);
+		int y2 = random_int(y1-40, y1+40);
 
-		int r = int(random(255));
-		int g = int(random(255));
-		int b = int(random(255));
+		int r = random_int(255);
+		int g = random_int(255);
+		int b = random_int(255);
 
 		stroke = PixelRGBA(r, g, b, 255);
 		fill = PixelRGBA(r, g, b, 255);

@@ -152,6 +152,7 @@
     <ClInclude Include="..\..\src\gui.h" />
     <ClInclude Include="..\..\src\imagesampler.h" />
     <ClInclude Include="..\..\src\maths.hpp" />
+    <ClInclude Include="..\..\src\sampledraw2d.h" />
     <ClInclude Include="..\..\src\sampler.h" />
     <ClInclude Include="..\..\src\screensnapshot.h" />
     <ClInclude Include="..\..\src\targa.h" />

@@ -51,10 +51,10 @@ void drawPoints(std::shared_ptr<RenderContext> ctx)
 		double v = Map(y, 0, canvasHeight-1, 0, 1);
 
 		// get a random sample from the screen capture
-		auto c = screenSamp->getValue(u, v, { x,y });
+		auto c = screenSamp->getValue(u, v, PixelCoord({ x,y }));
 
 		// turn that into a couple of styled lines
-		fillCircle(*gAppSurface, x, y, stemHalf, c);
+		//fillCircle(*gAppSurface, x, y, stemHalf, c);
 		
 		//gAppSurface->set(x, y, c);
 
@@ -63,7 +63,7 @@ void drawPoints(std::shared_ptr<RenderContext> ctx)
 		//fillRectangle(*gAppSurface, x - stemHalf, y, stemSize, 1, c);
 		//fillRectangle(*gAppSurface, x, y - stemHalf, 1, stemSize, c);
 
-		//fillRectangle(*gAppSurface, x - stemHalf, y-stemHalf, stemSize, stemSize, c);
+		fillRectangle(*gAppSurface, x - stemHalf, y-stemHalf, stemSize, stemSize, c);
 
 	}
 }

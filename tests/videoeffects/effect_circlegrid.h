@@ -115,7 +115,7 @@ public:
 		fCircleInstance.reset(stemHalf);
 	}
 
-	void draw(PixelMap& pmap, std::shared_ptr<ISample2D<PixelRGBA> > sampler)
+	void draw(PixelMap& pmap, std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > sampler)
 	{
 		int rows = sqrt(fNumElements);
 		int cols = rows;

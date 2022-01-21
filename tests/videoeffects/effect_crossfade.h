@@ -18,13 +18,13 @@ class CrossFadeEffect : public VisualEffect
 public:
 	CrossFadeEffect(
 		double duration, const PixelRect& constraint,
-		std::shared_ptr<ISample2D<PixelRGBA> > s1, 
-		std::shared_ptr<ISample2D<PixelRGBA> > s2)
+		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
+		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
 		:VisualEffect(duration, constraint, s1, s2)
 	{
 	}
 
-	PixelRGBA getValue(double u, double v, const PixelCoord& p)
+	PixelRGBA getValue(double u, double v, const PixelCoord& p) override
 	{
 		auto c1 = fSource1->getValue(u, v, p);
 		auto c2 = fSource2->getValue(u, v, p);

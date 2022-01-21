@@ -56,5 +56,8 @@
     <ClInclude Include="..\..\src\checkerboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\sampledraw2d.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

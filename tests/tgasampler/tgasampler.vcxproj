@@ -148,6 +148,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\apidefs.h" />
     <ClInclude Include="..\..\src\draw2d.h" />
+    <ClInclude Include="..\..\src\imagesampler.h" />
     <ClInclude Include="..\..\src\sampledraw2d.h" />
     <ClInclude Include="..\..\src\sampler.h" />
     <ClInclude Include="..\..\src\User32PixelMap.h" />

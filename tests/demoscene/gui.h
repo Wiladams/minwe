@@ -281,7 +281,7 @@ public:
 
 	void translateBy(double x, double y)
 	{
-		fTransform.translate(x, y);
+		//fTransform.translate(x, y);
 	}
 
 	void setTransform(Matrix2D& m) { fTransform = m; }

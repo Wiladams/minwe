@@ -1,9 +1,18 @@
 #pragma once
 
 #include "apidefs.h"
+#include "coloring.h"
+#include "maths.hpp"
+#include "vec.h"
 
+#include <cassert>
 #include <array>
 #include <cstdint>
+
+
+using Coord = vec<2, double>;
+using PixelCoord = vec<2, int>;
+using TextureCoord = vec<2, double>;
 
 
 /*
@@ -27,12 +36,15 @@ struct PixelRGBA
     INLINE PixelRGBA() noexcept = default;
     INLINE constexpr PixelRGBA(const PixelRGBA& rhs) noexcept = default;
     INLINE constexpr explicit PixelRGBA(uint32_t val) noexcept : value(val) {}
-    INLINE PixelRGBA(uint32_t r, uint32_t g, uint32_t b, uint32_t a = 0xFFu) noexcept : value((r << 16) | (g << 8) | b | (a << 24)) {}
+    INLINE PixelRGBA(uint32_t r, uint32_t g, uint32_t b) noexcept : value((r << 16) | (g << 8) | b | (0xffu << 24)) {}
+    INLINE PixelRGBA(uint32_t r, uint32_t g, uint32_t b, uint32_t a) noexcept : value((r << 16) | (g << 8) | b | (a << 24)) {}
     
     // bool operator for fast comparison to fully transparent
     INLINE explicit operator bool() const noexcept { return value != 0; }
     INLINE PixelRGBA& operator=(const PixelRGBA& other) noexcept = default;
     INLINE constexpr bool operator==(const PixelRGBA& other) const noexcept { return equals(other); }
+    
+    INLINE operator ColorRGBA() { return ColorRGBA((float)r()/255.0f,g()/255.0f,b()/255.0f,a()/255.0f); }
 
     INLINE constexpr bool equals(const PixelRGBA& other) const noexcept { return value == other.value; }
 
@@ -52,43 +64,34 @@ struct PixelRGBA
 
 };
 
-// When you need a COLORREF to be compatible with 
-// some Windows GDI routines
-//uint32_t toCOLORREF() { return red | (green << 8) | (blue << 16); }
-// Convenience constructors
 
-// Return a simple grayscale
-//uint8_t lum() { return static_cast<uint8_t>((float)red * 0.2225f + (float)green * 0.7154f + (float)blue * 0.0721f); }
-
-
+/*
 struct PixelCoord {
-    int x;
-    int y;
+    int fx;
+    int fy;
 
     INLINE PixelCoord() noexcept = default;
     INLINE constexpr PixelCoord(const PixelCoord& other) noexcept = default;
-    INLINE PixelCoord(int x, int y) noexcept :x(x), y(y) {}
+    INLINE PixelCoord(int x, int y) noexcept :fx(x), fy(y) {}
+
+    INLINE constexpr int x() const noexcept { return fx; }
+    INLINE constexpr int y() const noexcept { return fy; }
 
     INLINE PixelCoord& operator=(const PixelCoord& other) noexcept = default;
 };
-
+*/
 struct PixelSize {
     int w;
     int h;
 };
 
+
+/*
 struct TextureCoord {
     double s;
     double t;
 };
-
-union CoordD {
-    struct { double x, y; };
-    struct {double u, v;};
-    struct { double s, t; };
-};
-
-
+*/
 
 struct PixelSpan 
 {
@@ -118,6 +121,7 @@ struct PixelRect {
     PixelRect() : x(0), y(0), width(0), height(0) {}
     PixelRect(const int x, const int y, const int w, const int h)
         :x(x), y(y), width(w), height(h) {}
+
 
     INLINE constexpr bool isEmpty() const {return ((width <= 0) || (height <= 0));}
 
@@ -240,43 +244,43 @@ struct TexelRect
 //
 
 // A 1 dimensional sampler
-template <typename T>
+template <typename T, typename U>
 struct ISample1D
 {
-    virtual T getValue(double u, const PixelCoord& p) = 0;
-    T operator()(double u, const PixelCoord& p) 
+    virtual T getValue(double u, const U& p) = 0;
+    T operator()(double u, const U& p) 
     {
         return getValue(u, p);
     }
 };
 
 // A 2 dimentional sampler
-template <typename T>
+template <typename T, typename U>
 struct ISample2D
 {
-    virtual T getValue(double u, double v, const PixelCoord& p) = 0;
-    T operator()(double u, double v, const PixelCoord& p) 
+    virtual T getValue(double u, double v, const U& p) = 0;
+    T operator()(double u, double v, const U& p) 
     {
         return getValue(u, v, p);
     }
 };
 
 // A 3 dimensional sampler
-template <typename T>
+template <typename T, typename U>
 struct ISample3D
 {
-    virtual T getValue(double u, double v, double w, const PixelCoord& p) = 0;
-    T operator()(double u, double v, double w, const PixelCoord& p)
+    virtual T getValue(double u, double v, double w, const U& p) = 0;
+    T operator()(double u, double v, double w, const U& p)
     {
         return getValue(u, v, w, p);
     }
 };
 
-template <typename T>
+template <typename T, typename U>
 struct ISampleRGBA :
-    public ISample1D<T>,
-    public ISample2D<T>,
-    public ISample3D<T>
+    public ISample1D<T,U>,
+    public ISample2D<T,U>,
+    public ISample3D<T,U>
 {
 
 };
@@ -330,21 +334,8 @@ public:
 // Some useful functions
 // return a pixel value from a ISample2D based on the texture coordinates
 // this is purely a convenience to match what you can do in OpenGL GLSL language
-inline PixelRGBA texture2D(ISample2D<PixelRGBA> &tex0, const TextureCoord& st) noexcept
+INLINE PixelRGBA texture2D(ISample2D<PixelRGBA, PixelCoord> &tex0, const TextureCoord& st) noexcept
 {
-    return tex0.getValue(st.s, st.t, {});
+    return tex0.getValue(st.s(), st.t(), {});
 }
 
-// turn a division by 255 into something 
-// much cheaper to calculate
-// for values between 0 and 65534
-#define div255(num) ((num + (num >> 8)) >> 8)
-
-// Calculate the linear interpolation between two things
-// these values should be between 0 and 255 inclusive
-#define lerp255(bg, fg, a) (div255((fg*a+bg*(255-a))))
-
-#define blend_pixel(bg, fg) PixelRGBA(				\
-	lerp255(bg.r(), fg.r(), fg.a()), \
-	lerp255(bg.g(), fg.g(), fg.a()), \
-	lerp255(bg.b(), fg.b(), fg.a()), 255)

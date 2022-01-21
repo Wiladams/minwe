@@ -19,11 +19,11 @@ void onFrame()
 	int x = cx + (radius * cos(maths::Radians(angle)));
 	int y = cy + (radius * sin(maths::Radians(angle)));
 
-	fillEllipse(*gAppSurface, cx, cy, 18, 18, PixelRGBA(0xff00ff00));
+	fillCircle(*gAppSurface, cx, cy, 18, PixelRGBA(0xff00ff00));
+
 	line(*gAppSurface, cx, cy, x, y, PixelRGBA(0xff00ffff));
 
-
-	fillEllipse(*gAppSurface, x, y, 30, 30, PixelRGBA(0xffff0000));
+	fillCircle(*gAppSurface, x, y, 30, PixelRGBA(0xffff0000));
 
 	angle += increment;
 }

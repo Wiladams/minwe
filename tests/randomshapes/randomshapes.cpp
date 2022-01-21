@@ -1,28 +1,15 @@
 #include "apphost.h"
 #include "draw2d.h"
 
-double randomRange(const float low, const float high)
-{
-	double frac = (double)rand() / RAND_MAX;
-	double ret = low + frac * (high - low);
 
-	return ret;
-}
-
-double random(const float rndMax)
-{
-	return randomRange(0, rndMax);
-}
-
-
-void background(PixelRGBA c)
+void background(const PixelRGBA &c)
 {
 	gAppSurface->setAllPixels(c);
 }
 
-inline PixelRGBA randomColor()
+inline PixelRGBA randomColor(uint32_t alpha)
 {
-	return { (int)random(255), (int)random(255), (int)random(255) };
+	return PixelRGBA((int)maths::random(255), (int)maths::random(255), (int)maths::random(255), alpha);
 }
 
 void drawRandomPoints(PixelRect r)
@@ -30,9 +17,9 @@ void drawRandomPoints(PixelRect r)
 
 	for (int i = 0; i < 50000; i++)
 	{
-		auto c = randomColor();
-		c.alpha = 210;
-		gAppSurface->set(r.x + (int)random(r.width), r.y + (int)random(r.height), c);
+		auto c = randomColor(210);
+
+		gAppSurface->set(r.x + (int)maths::random(r.width), r.y + (int)maths::random(r.height), c);
 	}
 }
 
@@ -44,8 +31,8 @@ void drawRandomLines(PixelRect bounds)
 		int y1 = randomRange(bounds.y, bounds.y+bounds.height - 1);
 		int x2 = randomRange(bounds.x, bounds.x + bounds.width - 1);
 		int y2 = randomRange(bounds.y, bounds.y+bounds.height - 1);
-		auto c = randomColor();
-		c.alpha = 210;
+		auto c = randomColor(210);
+		//c.alpha = 210;
 
 		line(*gAppSurface, x1, y1, x2, y2, c);
 	}
@@ -81,8 +68,8 @@ void drawRandomEllipses(PixelRect bounds)
 
 		int xRadius = randomRange(4, 60);
 		int yRadius = randomRange(4, 60);
-		auto c = randomColor();
-		c.alpha = 200;
+		auto c = randomColor(200);
+		//c.alpha = 200;
 
 		fillEllipse(*gAppSurface, cx, cy, xRadius, yRadius, c);
 	}

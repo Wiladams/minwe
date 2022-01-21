@@ -147,6 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\checkerboard.h" />
+    <ClInclude Include="..\..\src\gui.h" />
     <ClInclude Include="..\..\src\pixelmap.h" />
     <ClInclude Include="..\..\src\pixeltypes.h" />
     <ClInclude Include="..\..\src\recorder.h" />

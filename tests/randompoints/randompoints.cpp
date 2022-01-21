@@ -26,11 +26,11 @@ void drawRandomPoints()
 
 	for (int i = 0; i < MAXPOINTS; i++)
 	{
-		int x = random(canvasWidth);
-		int y = random(canvasHeight);
-		uint32_t r = random(255);
-		uint32_t g = random(255);
-		uint32_t b = random(255);
+		int x = random_int(canvasWidth);
+		int y = random_int(canvasHeight);
+		uint32_t r = random_int(255);
+		uint32_t g = random_int(255);
+		uint32_t b = random_int(255);
 
 		gAppSurface->set(x, y, { r,g,b });
 	}

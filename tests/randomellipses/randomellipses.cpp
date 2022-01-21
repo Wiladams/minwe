@@ -2,13 +2,13 @@
 #include "draw2d.h"
 
 
-inline PixelRGBA randomColor(int alpha=255)
+inline PixelRGBA randomColor(uint32_t alpha=255)
 {
-	return { (int)maths::random(255), (int)maths::random(255), (int)maths::random(255), alpha };
+	return { (uint32_t)maths::random(255), (uint32_t)maths::random(255), (uint32_t)maths::random(255), alpha };
 }
 
 
-void background(PixelRGBA c)
+void background(const PixelRGBA &c)
 {
 	gAppSurface->setAllPixels(c);
 }
@@ -28,8 +28,8 @@ void drawRandomEllipses(PixelRect bounds)
 
 void onLoop()
 {
-	background(0x00);
-	drawRandomEllipses({ 0,0,canvasWidth,canvasHeight });
+	background(PixelRGBA(0x00));
+	drawRandomEllipses(PixelRect{ 0,0,canvasWidth,canvasHeight });
 	refreshScreen();
 }
 

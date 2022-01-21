@@ -155,7 +155,7 @@ bool isFullscreen() noexcept
     return gIsFullscreen;
 }
 
-void background(PixelRGBA c)
+void background(const PixelRGBA &c) noexcept
 {
     gAppSurface->setAllPixels(c);
 }
@@ -205,10 +205,10 @@ void onLoop()
         // this will possibly result in dropped
         // frames, but it will ensure we keep up
         // to speed with the wall clock
-        //while (fNextMillis <= fsw.millis())
-        //{
-        //    fNextMillis += fInterval;
-        //}
+        while (fNextMillis <= fsw.millis())
+        {
+            fNextMillis += fInterval;
+        }
     }
 
 }

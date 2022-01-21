@@ -148,9 +148,11 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\apidefs.h" />
     <ClInclude Include="..\..\src\draw2d.h" />
-    <ClInclude Include="..\..\src\NativeWindow.hpp" />
+    <ClInclude Include="..\..\src\pixeltypes.h" />
     <ClInclude Include="..\..\src\sampledraw2d.h" />
     <ClInclude Include="..\..\src\sampler.h" />
+    <ClInclude Include="perlin.h" />
+    <ClInclude Include="perlintexture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

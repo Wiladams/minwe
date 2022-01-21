@@ -9,6 +9,7 @@ int segments = 50;			// more segments make smoother curve
 int dir = 1;				// which direction is the animation running
 RainbowSampler s(1.0);		// Sample a rainbow of colors
 
+constexpr int FRAMERATE = 15;
 int currentIteration = 1;	// Changes during running
 int iterations = 30;		// increase past frame rate to slow down
 
@@ -16,7 +17,7 @@ int iterations = 30;		// increase past frame rate to slow down
 void drawRandomBezier(const PixelRect bounds)
 {
 	// clear to black
-	gAppSurface->setAllPixels(0xff000000);
+	gAppSurface->setAllPixels(PixelRGBA(0xff000000));
 
 	// draw axis line
 	line(*gAppSurface, bounds.x, bounds.y+bounds.height / 2, bounds.x+bounds.width, bounds.y + bounds.height / 2, PixelRGBA(0xffff0000));
@@ -51,7 +52,7 @@ void drawRandomBezier(const PixelRect bounds)
 void setup()
 {
 	setCanvasSize(800, 600);
-	setFrameRate(30);
+	setFrameRate(FRAMERATE);
 }
 
 void keyReleased(const KeyboardEvent& e) {

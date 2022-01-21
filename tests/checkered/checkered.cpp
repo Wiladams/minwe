@@ -4,6 +4,7 @@
 #include "targa.h"
 #include "imagesampler.h"
 #include "screensnapshot.h"
+#include "sampledraw2d.h"
 
 #include <memory>
 
@@ -18,22 +19,14 @@ auto transSampler = std::make_shared< SolidColorSampler>(0x0);
 auto s1 = std::make_shared< SolidColorSampler>(0xff555555);
 auto s2 = std::make_shared< SolidColorSampler>(0xffdddddd);
 auto red1 = std::make_shared< SolidColorSampler>(0xffff0000);
+std::shared_ptr<CheckerSampler> chksamp = nullptr;
 
 void onFrame()
 {
     background(PixelRGBA(0));
 
-    // Generic background gray checkerboard
-    Checkerboard bkgnd({0,0,canvasWidth,canvasHeight}, PixelRGBA(0xffCCCCCC), PixelRGBA(0xff0f0f0f), 8);
-    //bkgnd.draw(gAppSurface);
-
-    // smaller board with larger squares
     screenSamp->next();
-    Checkerboard chkfg({ 0,0,canvasWidth,canvasHeight },
-        transSampler,
-        screenSamp,
-        16);
-    chkfg.draw(gAppSurface);
+    sampleRectangle(*gAppSurface, gAppSurface->frame(), *chksamp);
 }
 
 void setup()
@@ -42,19 +35,13 @@ void setup()
 
     // Load a Targa image 
     targa::initFromFile(img, "..\\debug\\shuttle.tga");
-	isamp1 = std::make_shared<ImageSampler>(img);
+	//isamp1 = std::make_shared<ImageSampler>(img);
     screenSamp = std::make_shared<ScreenSnapshot>(320,400,640,480);
 
-    targa::initFromFile(img2, "..\\debug\\money-256.tga");
-	isamp2 = std::make_shared<ImageSampler>(img2);
+    //targa::initFromFile(img2, "..\\debug\\money-256.tga");
+	//isamp2 = std::make_shared<ImageSampler>(img2);
 
-    Checkerboard chkbg({ 0,0,canvasWidth,canvasHeight }, 
-        red1, 
-        isamp2, 
-        canvasWidth/6);
-    //chkbg.draw(gAppSurface);
-
-
+    chksamp = std::make_shared<CheckerSampler>(4, screenSamp, transSampler);
 }
 
 // Press Esc to quit the program

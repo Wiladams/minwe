@@ -34,9 +34,9 @@ PixelRect target;
 // line generalized line equation
 bool calculateLine(const PixelCoord pt1, const PixelCoord pt2, int &a, int &b, int &c)
 {
-    a = pt1.y - pt2.y;
-    b = pt2.x - pt1.x;
-    c = (pt1.x * pt2.y) - (pt2.x * pt1.y);
+    a = pt1.y() - pt2.y();
+    b = pt2.x() - pt1.x();
+    c = (pt1.x() * pt2.y()) - (pt2.x() * pt1.y());
 
     if (a == 0 && b == 0)
         return false;
@@ -48,7 +48,7 @@ double distanceToLine(PixelCoord pt, PixelCoord pt1, PixelCoord pt2)
 {
     int a, b, c = 0;
     calculateLine(pt1, pt2, a, b, c);
-    return abs(a * pt.x + b * pt.y + c) / sqrt(a * a + b * b);
+    return abs(a * pt.x() + b * pt.y() + c) / sqrt(a * a + b * b);
 }
 
 // Recalculate border lines
@@ -82,25 +82,24 @@ void onFrame()
     PixelRGBA controlLineColor(0xffff0000);
 
     // clear screen first
-    background(0xcc1c1c1c);
+    background(PixelRGBA(0xcc1c1c1c));
 
     calcBorderLines();
 
     // draw border lines
-    for (int i = 0; i < borderLines.size(); i++)
+    for (auto &it : borderLines)
     {
-        const auto &it = borderLines[i];
-        line(*gAppSurface, it.pt1.x, it.pt1.y, it.pt2.x, it.pt2.y, controlLineColor);
+        line(*gAppSurface, it.pt1.x(), it.pt1.y(), it.pt2.x(), it.pt2.y(), controlLineColor);
     }
 
 
     // Draw Transparent window
-    fillRectangle(*gAppSurface, cx, cy, extentX, extentY, 0x01000000);
+    fillRectangle(*gAppSurface, cx, cy, extentX, extentY, PixelRGBA(0xcc1c1c1c));
 
 
     if (showTarget) {
         // draw mouse target
-        fillRectangle(*gAppSurface, target.x, target.y, target.width, target.height, 0xffff0000);
+        fillRectangle(*gAppSurface, target.x, target.y, target.width, target.height, PixelRGBA(0xffff0000));
     }
 }
 

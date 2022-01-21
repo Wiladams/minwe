@@ -5,7 +5,7 @@
 #include "gui.h"
 #include "rendercontext.h"
 #include "screensnapshot.h"
-#include "glsl.h"
+//#include "glsl.h"
 
 #include <array>
 
@@ -146,14 +146,14 @@ public:
     virtual PixelRGBA* getPixelPointer(const int x, const int y) { return fWrapped.getPixelPointer(x, y); }
     virtual size_t bytesPerRow() const { return fWrapped.bytesPerRow(); }
 
-    void set(const int x, const int y, const PixelRGBA c) { fWrapped.setPixel(x, y, c); }
+    void set(const int x, const int y, const PixelRGBA &c) override { fWrapped.set(x, y, c); }
 
-    void setAllPixels(const PixelRGBA c) { fWrapped.setAllPixels(c); }
+    void setAllPixels(const PixelRGBA &c) override { fWrapped.setAllPixels(c); }
 
     //
     // Do convolution here at the point where we're about to get a pixel
     //
-    PixelRGBA getPixel(const int x, const int y) const
+    PixelRGBA getPixel(const int x, const int y) const override
     {
         // If we're at the borders, just return the pixel
         // maybe return the gray value
@@ -235,7 +235,7 @@ public:
 
 std::shared_ptr<RenderContext> ctx = nullptr;
 std::shared_ptr<ScreenSnapshot> screenSamp = nullptr;
-std::shared_ptr<GraySampler> gSamp = nullptr;
+std::shared_ptr<LumaSampler> gSamp = nullptr;
 std::shared_ptr<ConvolutionPixelMap> convSamp = nullptr;
 
 
@@ -244,7 +244,7 @@ void onFrame()
     screenSamp->next();
 
     //ctx->rectangle(0, 0, canvasWidth, canvasHeight, *screenSamp);
-    ctx->rectangle(0, 0, canvasWidth, canvasHeight, *convSamp);
+    ctx->rectangle(PixelRect(0, 0, canvasWidth, canvasHeight), *convSamp);
 }
 
 void setup()
@@ -255,7 +255,7 @@ void setup()
 	// display screen sampler
 	screenSamp = std::make_shared<ScreenSnapshot>(0, 0, canvasWidth, canvasHeight);
 
-    gSamp = std::make_shared<GraySampler>(screenSamp);
+    gSamp = std::make_shared<LumaSampler>(screenSamp);
 
     // setup convolution sampler
     convSamp = std::make_shared<ConvolutionPixelMap>(*screenSamp);

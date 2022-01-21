@@ -47,7 +47,6 @@ class CheckerPattern
 
 public:
     CheckerPattern(double freq)
-        //: fFrequency(freq)
     {
         setFrequency(freq);
     }
@@ -81,16 +80,16 @@ public:
     }
 };
 
-class CheckerSampler : public ISample2D<PixelRGBA>
+class CheckerSampler : public ISample2D<PixelRGBA, PixelCoord>
 {
     CheckerPattern fPattern;
-    std::shared_ptr<ISample2D<PixelRGBA> > t1;   // First sampler
-    std::shared_ptr<ISample2D<PixelRGBA> > t2;   // Second sampler
+    std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > t1;   // First sampler
+    std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > t2;   // Second sampler
 
 public:
     CheckerSampler(double freq,
-        std::shared_ptr<ISample2D<PixelRGBA> > s1,
-        std::shared_ptr<ISample2D<PixelRGBA> > s2)
+        std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
+        std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
         : fPattern(freq),
         t1(s1), t2(s2)
     {}
@@ -110,14 +109,15 @@ public:
     }
 };
 
+/*
 // The checkerboard is a graphic which uses the 
 // CheckerPattern, and surrounds it with the stuff
 // necessary for it to draw independently.
 class Checkerboard
 {
     CheckerPattern fPattern;
-    std::shared_ptr<ISample2D<PixelRGBA> > t1;   // First color
-    std::shared_ptr<ISample2D<PixelRGBA> > t2;   // Second color
+    std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > t1;   // First color
+    std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > t2;   // Second color
     PixelRect fFrame;
     int xExtent=0;
     int yExtent=0;
@@ -159,3 +159,4 @@ public:
             }
     }
 };
+*/

@@ -19,9 +19,9 @@ double random(const float rndMax)
 
 PixelRGBA randomColor(uint32_t alpha=255)
 {
-	uint32_t r = random(255);
-	uint32_t g = random(255);
-	uint32_t b = random(255);
+	uint32_t r = random_int(255);
+	uint32_t g = random_int(255);
+	uint32_t b = random_int(255);
 
 	return { r,g,b,alpha };
 }
@@ -30,6 +30,9 @@ void keyReleased(const KeyboardEvent& e)
 {
 	if (e.keyCode == VK_ESCAPE)
 		halt();
+
+	if (e.keyCode == VK_SPACE)
+		outlineOnly = !outlineOnly;
 }
 
 void onFrame()
@@ -41,14 +44,12 @@ void onFrame()
 
 	for (int i = 1; i <= 2000; i++)
 	{
-		int x1 = random(canvasWidth - 1);
-		int y1 = random(canvasHeight - 1);
-		//int lwidth = randomRange(4, 40);
-		//int lheight = randomRange(4, 40);
-		int lwidth = 60;
-		int lheight = 60;
+		int x1 = random_int(canvasWidth - 1);
+		int y1 = random_int(canvasHeight - 1);
+		int lwidth = random_int(4, 60);
+		int lheight = random_int(4, 60);
 
-		c = randomColor(255);
+		c = randomColor(127);
 
 		if (outlineOnly)
 		{
@@ -68,7 +69,7 @@ void setup()
 {
 	//fullscreen();
 	setCanvasSize(800, 800);
-	layered();
+	//layered();
 
-	setFrameRate(100);
+	setFrameRate(30);
 }

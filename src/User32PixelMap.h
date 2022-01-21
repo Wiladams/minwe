@@ -126,39 +126,19 @@ public:
     // Set a single pixel value
     // Assume range checking has already occured
     // Perform SRCCOPY operation on a pixel
-    INLINE void copyPixel(const int x, const int y, const PixelRGBA c)
+    INLINE void copyPixel(const int x, const int y, const PixelRGBA &c) override
     {
         size_t offset = (size_t)(y * width()) + (size_t)x;
         ((PixelRGBA*)fData)[offset] = c;
     }
 
     // Perform SRCOVER operation on a pixel
-    INLINE void blendPixel(const int x, const int y, const PixelRGBA c)
+    INLINE void blendPixel(const int x, const int y, const PixelRGBA &c) override
     {
         size_t offset = (size_t)(y * width()) + (size_t)x;
         ((PixelRGBA*)fData)[offset] = blend_pixel(((PixelRGBA*)fData)[offset],c);
     }
-    /*
-    INLINE void set(const int x, const int y, const PixelRGBA c) {
-        if (!fFrame.containsPoint(x, y))
-            return;
 
-        if (c.isTransparent())
-            return;
-
-        if (c.isOpaque()) {
-            // copy_pixel
-            size_t offset = (size_t)(y * fFrame.width) + (size_t)x;
-            ((PixelRGBA*)fData)[offset] = c;
-        }
-        else {
-            // blend_pixel
-            size_t offset = (size_t)(y * fFrame.width) + (size_t)x;
-
-            ((PixelRGBA*)fData)[offset] = blend_pixel(((PixelRGBA*)fData)[offset], c);
-        }
-    }
-    */
     // set consecutive pixels in a row 
     // Assume the range has already been clipped
     INLINE void setPixels(const int x, const int y, const int w, const PixelRGBA src)
@@ -172,17 +152,18 @@ public:
     // Set every pixel to a specified value
     // we can use this fast intrinsic to fill
     // the whole area
-    INLINE void setAllPixels(const PixelRGBA c)
+    INLINE void setAllPixels(const PixelRGBA &c)
     {
         size_t nPixels = width() * height();
         __stosd((unsigned long*)fData, c.value, nPixels);
     }
 
+    /*
     INLINE void setAllPixels(const uint32_t value)
     {
         size_t nPixels = width() * height();
         __stosd((unsigned long*)fData, value, nPixels);
     }
-
+    */
 
  };

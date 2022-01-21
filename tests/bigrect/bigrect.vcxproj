@@ -146,7 +146,9 @@
     <ClCompile Include="bigrect.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\apphost.h" />
     <ClInclude Include="..\..\src\draw2d.h" />
+    <ClInclude Include="..\..\src\NativeWindow.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

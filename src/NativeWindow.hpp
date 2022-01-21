@@ -2,7 +2,7 @@
 
 
 /*
-    This filej contains a fairly minimal representation of a window
+    This file contains a fairly minimal representation of a window
     class.  It allows for the creation of Native windows without
     much fuss.
 

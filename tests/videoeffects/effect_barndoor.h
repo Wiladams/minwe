@@ -12,8 +12,8 @@ protected:
 	StickyWindow fDoor2;	// Right door
 
 	BarnDoors(double duration, const PixelRect& constraint,
-		std::shared_ptr<ISample2D<PixelRGBA> > s1,
-		std::shared_ptr<ISample2D<PixelRGBA> > s2)
+		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
+		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
 		: VisualEffect(duration, constraint, s1, s2)
 	{}
 
@@ -28,10 +28,10 @@ protected:
 
 	PixelRGBA getValue(double u, double v, const PixelCoord& p)
 	{
-		if (fDoor1.contains(p.x, p.y))
+		if (fDoor1.contains(p.x(), p.y()))
 			return fDoor1.getValue(u, v, p);
 
-		if (fDoor2.contains(p.x, p.y))
+		if (fDoor2.contains(p.x(), p.y()))
 			return fDoor2.getValue(u, v, p);
 
 		return fSource2->getValue(u, v, p);
@@ -43,8 +43,8 @@ class BarnDoorOpenEffect : public BarnDoors
 
 public:
 	BarnDoorOpenEffect(double duration, const PixelRect& constraint,
-		std::shared_ptr<ISample2D<PixelRGBA> > s1,
-		std::shared_ptr<ISample2D<PixelRGBA> > s2)
+		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
+		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
 		: BarnDoors(duration, constraint, s1, s2)
 	{
 		// Create two sticky windows 
@@ -78,8 +78,8 @@ class BarnDoorCloseEffect : public BarnDoors
 
 public:
 	BarnDoorCloseEffect(double duration, const PixelRect& constraint,
-		std::shared_ptr<ISample2D<PixelRGBA> > s1,
-		std::shared_ptr<ISample2D<PixelRGBA> > s2)
+		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
+		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
 		: BarnDoors(duration, constraint, s1, s2)
 	{
 		// Create two sprites, 

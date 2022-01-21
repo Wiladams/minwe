@@ -37,20 +37,20 @@ struct CubicBezier
 //
 // Use a Cubic Bezier curve to distort the parameters 
 // of a sampler
-class CubicSurfaceSampler : public ISample2D<PixelRGBA>
+class CubicSurfaceSampler : public ISample2D<PixelRGBA, PixelCoord>
 {
     CubicBezier ucurve;     // x, y distortion curve
     CubicBezier vcurve;
 
-    std::shared_ptr<ISample2D<PixelRGBA> > fWrapped = nullptr;
+    std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > fWrapped = nullptr;
 
 public:
-    CubicSurfaceSampler(std::shared_ptr<ISample2D<PixelRGBA> > wrapped, const CubicBezier& pc1, const CubicBezier& pc2)
+    CubicSurfaceSampler(std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > wrapped, const CubicBezier& pc1, const CubicBezier& pc2)
         : fWrapped(wrapped), ucurve(pc1), vcurve(pc2)
     {
     }
 
-    PixelRGBA getValue(double u, double v, const PixelCoord& p) const
+    PixelRGBA getValue(double u, double v, const PixelCoord& p) override
     {
         double u1 = ucurve.eval(u);
         double v1 = vcurve.eval(v);
@@ -71,7 +71,7 @@ CubicBezier curve2(0.0, 0.25, 0.25, 0.0);
 void onFrame()
 {
     screenSamp->next();
-    sampleRectangle(*gAppSurface, 0, 0, canvasWidth, canvasHeight, *curveSamp);
+    sampleRectangle(*gAppSurface, PixelRect(0, 0, canvasWidth, canvasHeight), *curveSamp);
 }
 
 void setup()

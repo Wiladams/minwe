@@ -187,22 +187,17 @@ INLINE void vline(PixelMap& pmap, const int x, const int y, const int height, co
     int x2 = x;
     int y2 = y+height-1;
 
-    if (clipLine(pmap.getBounds(), x1, y1, x2, y2))
+    if (clipLine(pmap.frame(), x1, y1, x2, y2))
         verticalLine(pmap, x1, y1, y2-y1, src);
 }
 
 /*
-strokeLine()
+line()
 
 Stroke a line using the current stroking pixel.
-Uses Bresenham line drawing.  Does not check for clipping,
-but the underlying PixelBuffer might.
+Uses Bresenham line drawing.
 
-Note: an easy optimization would be to use the specialized
-horizontal and vertical line drawing routines when necessary
-
-BUGBUG - should sanity check line fits
-within bounds
+clips line to frame of pixelmap
 */
 INLINE void line(PixelMap& pmap, const int x1, const int y1, const int x2, const int y2, const PixelRGBA &c)
 {
@@ -380,9 +375,9 @@ INLINE static int findTopmostVertex(PixelCoord* verts, const int numVerts)
     int vmin = 0;
 
     for (int i = 0; i < numVerts; i++) {
-        if (verts[i].y < ymin)
+        if (verts[i].y() < ymin)
         {
-            ymin = verts[i].y;
+            ymin = verts[i].y();
             vmin = i;
         }
     }
@@ -413,11 +408,11 @@ struct APolyDda {
         // set starting/ending ypos and current xpos
         ybeg = yend;
         //yend = round(pVerts[vertNext].y);
-        yend = pVerts[vertNext].y;
-        x = pVerts[vertIndex].x;
+        yend = pVerts[vertNext].y();
+        x = pVerts[vertIndex].x();
 
         // Calculate fractional number of pixels to step in x (dx)
-        float xdelta = pVerts[vertNext].x - pVerts[vertIndex].x;
+        float xdelta = pVerts[vertNext].x() - pVerts[vertIndex].x();
         int ydelta = yend - ybeg;
         if (ydelta > 0) {
             dx = xdelta / ydelta;
@@ -432,7 +427,7 @@ inline void setConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, 
 {
     // set starting line
     APolyDda ldda, rdda;
-    int y = verts[vmin].y;
+    int y = verts[vmin].y();
     ldda.yend = rdda.yend = y;
 
     // setup polygon scanner for left side, starting from top
@@ -536,7 +531,7 @@ INLINE void fillRectangle(PixelMap& pmap, const int x, const int y, const int w,
 {
     // We calculate clip area up front
     // so we don't have to do clipLine for every single line
-    PixelRect dstRect = PixelRect(pmap.x(), pmap.y(), pmap.width(), pmap.height()).intersection({ x,y,w,h });
+    PixelRect dstRect = pmap.frame().intersection({ x,y,w,h });
 
     // If the rectangle is outside the frame of the pixel map
     // there's nothing to be drawn
@@ -568,7 +563,7 @@ INLINE void fillEllipse(PixelMap& pmap, int centerx, int centery, int xRadius, i
 
         int x = (int)Floor((awidth / 2.0) * cos(angle));
         int y = (int)Floor((aheight / 2.0) * sin(angle));
-        verts[i] = PixelCoord(x + centerx, y + centery);
+        verts[i] = PixelCoord({ x + centerx, y + centery });
     }
     
     int vmin = findTopmostVertex(verts, nverts);
@@ -577,7 +572,8 @@ INLINE void fillEllipse(PixelMap& pmap, int centerx, int centery, int xRadius, i
 
 // filling a circle with a fixed color
 //
-INLINE void fillCircle(PixelMap& pmap, int centerX, int centerY, int radius, PixelRGBA fillStyle) {
+INLINE void fillCircle(PixelMap& pmap, int centerX, int centerY, int radius, const PixelRGBA &fillStyle) 
+{
     auto x1 = centerX - radius, y1 = centerY - radius;
     auto  x2 = centerX + radius, y2 = centerY + radius;
     for (int y = y1; y < y2; y++) {
@@ -617,7 +613,7 @@ INLINE PixelCoord bezier_point(double u,
     int x = (int)Round(bezier_cubic(u, x1, x2, x3, x4));
     int y = (int)Round(bezier_cubic(u, y1, y2, y3, y4));
 
-    return { x,y };
+    return PixelCoord({ x,y });
 
 }
 
@@ -638,7 +634,7 @@ INLINE void bezier(PixelMap& pmap, const int x1, const int y1, const int x2, con
         PixelCoord p = bezier_point(u, x1, y1, x2, y2, x3, y3, x4, y4);
 
         // draw line segment from last point to current point
-        line(pmap, lp.x, lp.y, p.x, p.y, c);
+        line(pmap, lp.x(), lp.y(), p.x(), p.y(), c);
 
         // Assign current to last
         lp = p;

@@ -60,16 +60,17 @@ public:
 //
 // Since this is a ISample2D, it can participate in many
 // other operations freely
-class StickyWindow : public ISample2D<PixelRGBA>
+class StickyWindow : public ISample2D<PixelRGBA, PixelCoord>
 {
 	// The sampler that we will source from
-	std::shared_ptr<ISample2D<PixelRGBA> > fWrapped;
-	
-	TexelRect fStickyTexel;
-	PixelRect fMovingFrame;		// The frame being moved somewhere else
-								// needed to calculate du/vFactor
-								// needed for contains()
+	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > fWrapped;
 
+	// The frame being moved somewhere else
+	// needed to calculate du/vFactor
+	// needed for contains()
+	PixelRect fMovingFrame;		
+	TexelRect fStickyTexel;
+								
 	// used to adjust u,v in getValue()
 	double duFactor = 1;
 	double dvFactor = 1;
@@ -77,7 +78,7 @@ class StickyWindow : public ISample2D<PixelRGBA>
 public:
 	StickyWindow() = default;
 
-	StickyWindow(const PixelRect& frame, const PixelRect& constraint, std::shared_ptr<ISample2D<PixelRGBA> > wrapped)
+	StickyWindow(const PixelRect& frame, const PixelRect& constraint, std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > wrapped)
 		:fWrapped(wrapped)
 		,fMovingFrame(frame)
 	{
@@ -87,7 +88,7 @@ public:
 		setVisible(visible);
 	}
 
-	StickyWindow(const PixelRect& frame, const TexelRect& sticky, std::shared_ptr<ISample2D<PixelRGBA> > wrapped)
+	StickyWindow(const PixelRect& frame, const TexelRect& sticky, std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > wrapped)
 		:fWrapped(wrapped)
 		, fMovingFrame(frame)
 		, fStickyTexel(sticky)
@@ -95,6 +96,8 @@ public:
 		setVisible(frame);
 	}
 
+	// call this whenever changing the location
+	// of the window
 	void setVisible(const PixelRect& other)
 	{
 		// Calculate these here so we don't
@@ -122,13 +125,13 @@ public:
 	// sampler, as it's location dependent, but that's the 
 	// nature of this sampler.
 	// Otherwise, we'd have to copy pixels from the source
-	PixelRGBA getValue(double u, double v, const PixelCoord& p) noexcept
+	PixelRGBA getValue(double u, double v, const PixelCoord& p) override 
 	{
 		// figure out the u within the moving frame
 		// translate to where it would be in the original sticky window
 		// add, subtract, multiply
-		double mu = fStickyTexel.left + (((double)p.x - fMovingFrame.x) * duFactor);
-		double mv = fStickyTexel.top + (((double)p.y - fMovingFrame.y) * dvFactor);
+		double mu = fStickyTexel.left + (((double)p.x() - fMovingFrame.x) * duFactor);
+		double mv = fStickyTexel.top + (((double)p.y() - fMovingFrame.y) * dvFactor);
 
 		return fWrapped->getValue(mu, mv, p);
 	}
@@ -144,7 +147,7 @@ public:
 // You can use this base class as a 'do nothing' effect
 // as it will always return a transparent pixel
 //
-class VisualEffect : public ISample2D<PixelRGBA>
+class VisualEffect : public ISample2D<PixelRGBA, PixelCoord>
 {
 protected:
 	StopWatch fTimer;
@@ -154,15 +157,15 @@ protected:
 	double fStartTime=0;
 	double fEndTime=0;
 
-	std::shared_ptr<ISample2D<PixelRGBA> > fSource1;
-	std::shared_ptr<ISample2D<PixelRGBA> > fSource2;
+	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > fSource1;
+	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > fSource2;
 
 public:
 	VisualEffect(double duration):VisualEffect(duration, PixelRect(), nullptr, nullptr) {}
 
 	VisualEffect(double duration, const PixelRect& constraint,
-		std::shared_ptr<ISample2D<PixelRGBA> > s1,
-		std::shared_ptr<ISample2D<PixelRGBA> > s2)
+		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
+		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
 		:fProgress(0),
 		fConstraint(constraint),
 		fDuration(duration),
@@ -170,15 +173,15 @@ public:
 		fSource2(s2)
 	{}
 
-	virtual ~VisualEffect() {}
+	virtual ~VisualEffect() = default;
 
-	INLINE std::shared_ptr<ISample2D<PixelRGBA> >  source1() { return fSource1; }
-	INLINE std::shared_ptr<ISample2D<PixelRGBA> >  source2() { return fSource2; }
+	INLINE std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> >  source1() { return fSource1; }
+	INLINE std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> >  source2() { return fSource2; }
 
 	// Maybe want to hold sources in an array to make it more generic
-	INLINE void setSource(int index, std::shared_ptr<ISample2D<PixelRGBA> >  source) {}
-	INLINE void setSource1(std::shared_ptr<ISample2D<PixelRGBA> >  source) { fSource1 = source; }
-	INLINE void setSource2(std::shared_ptr<ISample2D<PixelRGBA> >  source) { fSource2 = source; }
+	INLINE void setSource(int index, std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> >  source) {}
+	INLINE void setSource1(std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> >  source) { fSource1 = source; }
+	INLINE void setSource2(std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> >  source) { fSource2 = source; }
 
 	// This will reset the animation to 
 	// its starting point.  It just resets
@@ -219,5 +222,5 @@ public:
 
 	// By default, just return a transparent pixel.
 	// This is where a sub-class will do all its hardest work
-	PixelRGBA getValue(double u, double v, const PixelCoord& p){return PixelRGBA();}
+	PixelRGBA getValue(double u, double v, const PixelCoord& p) override {return PixelRGBA();}
 };

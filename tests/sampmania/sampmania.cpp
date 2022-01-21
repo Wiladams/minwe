@@ -2,17 +2,38 @@
 #include "gui.h"
 #include "sampledraw2d.h"
 #include "screensnapshot.h"
+#include "perlintexture.h"
 
 std::shared_ptr<ScreenSnapshot> screenSamp = nullptr;
+std::shared_ptr< NoiseSampler> perlinSamp = nullptr;
 
+double ts = 4;
+
+void keyPressed(const KeyboardEvent& e)
+{
+	switch (e.keyCode) {
+	case VK_UP:
+		ts += 1;
+		ts = maths::Clamp(ts, 0, canvasWidth);
+
+		break;
+	case VK_DOWN:
+		ts -= 1;
+		ts = maths::Clamp(ts, 0, canvasWidth);
+		break;
+	}
+}
 
 void onFrame()
 {
+	//sampleRectangle(*gAppSurface, gAppSurface->frame(), *perlinSamp);
+
 	// draw a triangle using a screen snapshot as a texture
 	screenSamp->next();
-	sampleTriangle(*gAppSurface, 10, 300,
-		700, 700,
-		10, 700,
+	sampleTriangle(*gAppSurface, 
+		350, 200,
+		700, 450,
+		10, 450,
 		*screenSamp,
 		{0,0,canvasWidth, canvasHeight});
 
@@ -23,20 +44,26 @@ void onFrame()
 		verts, nverts, 0, 
 		*screenSamp, 
 		{ 0,0,canvasWidth, canvasHeight });
+
+	// Rectangle
+	NoiseSampler noiseSamp(ts);
+	//sampleRect(*gAppSurface, { 600,720,600,400 }, { 0,0,1,1 }, *screenSamp);
+	sampleRectangle(*gAppSurface, { 600,720,600,400 }, noiseSamp);
+
 }
 
 void setup()
 {
-	RainbowSampler s(1.0);
-	screenSamp = std::make_shared<ScreenSnapshot>(100, 400, displayWidth / 4, displayHeight / 4);
-
 	setCanvasSize(1920, 1080);
 	setFrameRate(15);
 
+	screenSamp = std::make_shared<ScreenSnapshot>(0, 150, 800, displayHeight / 2);
+	perlinSamp = std::make_shared<NoiseSampler>(4);
+
 	// some 1D sampled horizontal lines
+	RainbowSampler s(1.0);
 	for (int counter = 1; counter <= 300; counter++) {
 		sampleSpan(*gAppSurface, 10, 40+counter, 300+counter, s);
 	}
-
 
 }

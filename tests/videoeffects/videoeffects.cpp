@@ -26,7 +26,7 @@ std::shared_ptr< StickyWindow> screenCap2 = nullptr;
 
 // Wrapping Samplers
 std::shared_ptr<CheckerSampler> checkSamp = nullptr;
-std::shared_ptr<GraySampler> graySamp = nullptr;
+std::shared_ptr<LumaSampler> graySamp = nullptr;
 std::shared_ptr<EffectCheckers> checkersEffect = nullptr;
 
 // Effects Samplers
@@ -131,10 +131,10 @@ void onFrame()
 	//if (nullptr == currentEffect)
 	//	return;
 	
-	thisTime = appClock.millis();
-	auto diffTime = thisTime - lastTime;
-	printf("Interval: %3.2f  FPS: %3.2f\n", diffTime, (double)frameCount / appClock.seconds());
-	lastTime = thisTime;
+	//thisTime = appClock.millis();
+	//auto diffTime = thisTime - lastTime;
+	//printf("Interval: %3.2f  FPS: %3.2f\n", diffTime, (double)frameCount / appClock.seconds());
+	//lastTime = thisTime;
 
 	screenCapture->next();
 
@@ -143,7 +143,7 @@ void onFrame()
 	background(PixelRGBA(0));
 
 	//ctx->rect(gAppSurface->getBounds(), { 0,0,1,1 }, *checkersEffect);
-	ctx->rect(gAppSurface->getBounds(), { 0,0,1,1 }, *checkSamp);
+	ctx->rectangle(gAppSurface->getBounds(), *checkSamp);
 
 	// Cross Fade
 	//currentEffect->update();

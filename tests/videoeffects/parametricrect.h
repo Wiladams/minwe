@@ -13,9 +13,9 @@ struct ParametricShard
 {
 	ParametricRect fParamRect;
 	PixelRect fFrame;
-	std::shared_ptr<ISample2D<PixelRGBA> > fWrapped;
+	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > fWrapped;
 
-	ParametricShard(std::shared_ptr<ISample2D<PixelRGBA> > wrapped, const PixelRect& origin, const PixelRect &constraint)
+	ParametricShard(std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > wrapped, const PixelRect& origin, const PixelRect &constraint)
 		:fWrapped(wrapped),
 		fParamRect(origin, constraint)
 	{
