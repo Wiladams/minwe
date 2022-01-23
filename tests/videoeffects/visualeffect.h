@@ -3,9 +3,11 @@
 #include "stopwatch.h"
 #include "pixelmap.h"
 #include "maths.hpp"
+#include "normalizedwindow.h"
 
 #include <memory>
 
+/*
 // A rectangle which retains texture coordinates
 // no matter where it's moved to
 // When it draws, it uses a sampler and the texture
@@ -68,7 +70,7 @@ class StickyWindow : public ISample2D<PixelRGBA, PixelCoord>
 	// The frame being moved somewhere else
 	// needed to calculate du/vFactor
 	// needed for contains()
-	PixelRect fMovingFrame;		
+	TexelRect fMovingFrame;
 	TexelRect fStickyTexel;
 								
 	// used to adjust u,v in getValue()
@@ -80,25 +82,24 @@ public:
 
 	StickyWindow(const PixelRect& frame, const PixelRect& constraint, std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > wrapped)
 		:fWrapped(wrapped)
-		,fMovingFrame(frame)
 	{
 		auto visible = constraint.intersection(frame);
 		fStickyTexel = TexelRect::create(visible, constraint);
+		fMovingFrame = fStickyTexel;
 
-		setVisible(visible);
+		setVisible(fStickyTexel);
 	}
 
 	StickyWindow(const PixelRect& frame, const TexelRect& sticky, std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > wrapped)
 		:fWrapped(wrapped)
-		, fMovingFrame(frame)
 		, fStickyTexel(sticky)
 	{
-		setVisible(frame);
+		setVisible(sticky);
 	}
 
 	// call this whenever changing the location
 	// of the window
-	void setVisible(const PixelRect& other)
+	void setVisible(const TexelRect& other)
 	{
 		// Calculate these here so we don't
 		// have to calculate them in getValue with a Map()
@@ -108,9 +109,9 @@ public:
 	
 	INLINE constexpr PixelRect& movingFrame() noexcept { return fMovingFrame; }
 
-	INLINE void moveBy(int x, int y) noexcept {moveTo(fMovingFrame.x + x, fMovingFrame.y + y);}
+	INLINE void moveBy(double dx, double dy) noexcept {moveTo(fMovingFrame.x + x, fMovingFrame.y + y);}
 	
-	INLINE void moveTo(int x, int y) noexcept
+	INLINE void moveTo(double x, double y) noexcept
 	{
 		fMovingFrame.moveTo(x, y);
 		setVisible(fMovingFrame);
@@ -136,6 +137,7 @@ public:
 		return fWrapped->getValue(mu, mv, p);
 	}
 };
+*/
 
 // VisualEffect
 // A visual effect is a sampler, with a timer
@@ -147,45 +149,34 @@ public:
 // You can use this base class as a 'do nothing' effect
 // as it will always return a transparent pixel
 //
-class VisualEffect : public ISample2D<PixelRGBA, PixelCoord>
+class VisualEffect : public NormalizedWindowManager
 {
 protected:
 	StopWatch fTimer;
-	PixelRect fConstraint;
+
 	double fDuration;
 	double fProgress;	// Value from [0..1]
 	double fStartTime=0;
 	double fEndTime=0;
 
-	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > fSource1;
-	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > fSource2;
-
 public:
-	VisualEffect(double duration):VisualEffect(duration, PixelRect(), nullptr, nullptr) {}
-
-	VisualEffect(double duration, const PixelRect& constraint,
-		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
-		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
-		:fProgress(0),
-		fConstraint(constraint),
-		fDuration(duration),
-		fSource1(s1),
-		fSource2(s2)
+	VisualEffect(double duration)
+		: fProgress(0)
+		,fDuration(duration)
 	{}
 
+
 	virtual ~VisualEffect() = default;
-
-	INLINE std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> >  source1() { return fSource1; }
-	INLINE std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> >  source2() { return fSource2; }
-
-	// Maybe want to hold sources in an array to make it more generic
-	INLINE void setSource(int index, std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> >  source) {}
-	INLINE void setSource1(std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> >  source) { fSource1 = source; }
-	INLINE void setSource2(std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> >  source) { fSource2 = source; }
 
 	// This will reset the animation to 
 	// its starting point.  It just resets
 	// the start time and progress
+	// BUGBUG
+	// WAA - The problem here is that although 
+	// we start, progress is governed by calling
+	// udate(), or setProgress()
+	// if neither of those occur, we don't actually
+	// progress
 	void start() noexcept
 	{
 		fStartTime = fTimer.seconds();
@@ -220,7 +211,4 @@ public:
 		this->onProgress();
 	}
 
-	// By default, just return a transparent pixel.
-	// This is where a sub-class will do all its hardest work
-	PixelRGBA getValue(double u, double v, const PixelCoord& p) override {return PixelRGBA();}
 };

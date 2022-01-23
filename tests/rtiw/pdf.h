@@ -33,8 +33,8 @@ class cosine_pdf : public pdf {
     cosine_pdf(const vec3& w) { uvw.build_from_w(w); }
 
     double value(const vec3& direction) const override {
-        auto cosine_theta = dot(unit_vector(direction), uvw.w());
-        return fmax(0, cosine_theta/pi);
+        auto cosine_theta = dot(direction.unit(), uvw.w());
+        return fmax(0, cosine_theta/ maths::Pi);
     }
 
     vec3 generate() const override {
@@ -51,7 +51,7 @@ class sphere_pdf : public pdf {
     sphere_pdf() { }
 
     double value(const vec3& direction) const override {
-        return 1.0/ (4.0 * pi);
+        return 1.0/ (4.0 * maths::Pi);
     }
 
     vec3 generate() const override {
@@ -92,7 +92,7 @@ class mixture_pdf : public pdf {
     }
 
     vec3 generate() const override {
-        if (random_double() < 0.5)
+        if (maths::random_double() < 0.5)
             return p[0]->generate();
         else
             return p[1]->generate();

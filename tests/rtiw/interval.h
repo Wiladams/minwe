@@ -1,7 +1,5 @@
 #pragma once
 
-#ifndef INTERVAL_H
-#define INTERVAL_H
 //==============================================================================================
 // To the extent possible under law, the author(s) have dedicated all copyright and related and
 // neighboring rights to this software to the public domain worldwide. This software is
@@ -13,7 +11,7 @@
 
 class interval {
   public:
-    interval() : min(+infinity), max(-infinity) {} // Default interval is empty
+    interval() : min(+maths::infinity), max(-maths::infinity) {} // Default interval is empty
 
     interval(double _min, double _max) : min(_min), max(_max) {}
 
@@ -46,16 +44,9 @@ class interval {
 };
 
 
-const interval interval::empty    = interval(+infinity, -infinity);
-const interval interval::universe = interval(-infinity, +infinity);
-
-interval operator+(const interval& ival, double displacement) {
-    return interval(ival.min + displacement, ival.max + displacement);
-}
-
-interval operator+(double displacement, const interval& ival) {
-    return ival + displacement;
-}
+interval operator+(const interval& ival, double displacement);
+interval operator+(double displacement, const interval& ival);
 
 
-#endif
+
+

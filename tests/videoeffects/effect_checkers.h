@@ -12,10 +12,10 @@ class EffectCheckers : public VisualEffect
 	CheckerSampler fSampler;
 
 public:
-	EffectCheckers(double duration, const PixelRect& constraint, int freq,
+	EffectCheckers(double duration, int freq,
 		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
 		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
-		: VisualEffect(duration, constraint, s1,s2)
+		: VisualEffect(duration)
 		,fSampler(freq, s1, s2)
 	{}
 

@@ -1,6 +1,5 @@
 #pragma once
-#ifndef RTW_STB_IMAGE_H
-#define RTW_STB_IMAGE_H
+
 
 
 // Disable strict warnings for this header from the Microsoft Visual C++ compiler.
@@ -8,7 +7,7 @@
     #pragma warning (push, 0)
 #endif
 
-#define STB_IMAGE_IMPLEMENTATION
+//#define STB_IMAGE_IMPLEMENTATION
 #include "external/stb_image.h"
 
 #include <cstdlib>
@@ -93,4 +92,4 @@ class rtw_image {
 #endif
 
 
-#endif
+

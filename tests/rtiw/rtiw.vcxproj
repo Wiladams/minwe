@@ -145,15 +145,19 @@
     <ClCompile Include="..\..\src\gui.cpp" />
     <ClCompile Include="raytracer.cpp" />
     <ClCompile Include="rtiw.cpp" />
+    <ClCompile Include="rtweekend.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\checkerboard.h" />
+    <ClInclude Include="..\..\src\maths.hpp" />
     <ClInclude Include="..\..\src\User32PixelMap.h" />
     <ClInclude Include="aabb.h" />
     <ClInclude Include="bvh.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="color.h" />
     <ClInclude Include="constant_medium.h" />
+    <ClInclude Include="external\stb_image.h" />
+    <ClInclude Include="external\stb_image_write.h" />
     <ClInclude Include="hittable.h" />
     <ClInclude Include="hittable_list.h" />
     <ClInclude Include="interval.h" />

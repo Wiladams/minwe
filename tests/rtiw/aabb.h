@@ -1,7 +1,6 @@
 #pragma once
 
-#ifndef AABB_H
-#define AABB_H
+
 //==============================================================================================
 // Originally written in 2016 by Peter Shirley <ptrshrl@gmail.com>
 //
@@ -98,15 +97,8 @@ class aabb {
 };
 
 
+aabb operator+(const aabb& bbox, const vec3& offset);
+aabb operator+(const vec3& offset, const aabb& bbox);
 
 
-aabb operator+(const aabb& bbox, const vec3& offset) {
-    return aabb(bbox.x + offset.x(), bbox.y + offset.y(), bbox.z + offset.z());
-}
 
-aabb operator+(const vec3& offset, const aabb& bbox) {
-    return bbox + offset;
-}
-
-
-#endif

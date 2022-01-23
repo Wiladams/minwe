@@ -1,7 +1,6 @@
 #pragma once
 
-#ifndef MATERIAL_H
-#define MATERIAL_H
+
 //==============================================================================================
 // Originally written in 2016 by Peter Shirley <ptrshrl@gmail.com>
 //
@@ -35,7 +34,7 @@ class material {
     virtual color emitted(
         const ray& r_in, const hit_record& rec, double u, double v, const point3& p
     ) const {
-        return color(0,0,0);
+        return color({ 0,0,0 });
     }
 
     virtual bool scatter(const ray& r_in, const hit_record& rec, scatter_record& srec) const {
@@ -63,8 +62,8 @@ class lambertian : public material {
 
     double scattering_pdf(const ray& r_in, const hit_record& rec, const ray& scattered)
     const override {
-        auto cosine = dot(rec.normal, unit_vector(scattered.direction()));
-        return cosine < 0 ? 0 : cosine/pi;
+        auto cosine = dot(rec.normal, scattered.direction().unit());
+        return cosine < 0 ? 0 : cosine/ maths::Pi;
     }
 
   public:
@@ -80,7 +79,7 @@ class metal : public material {
         srec.attenuation = albedo;
         srec.pdf_ptr = nullptr;
         srec.skip_pdf = true;
-        vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
+        vec3 reflected = reflect(r_in.direction().unit(), rec.normal);
         srec.skip_pdf_ray =
             ray(rec.p, reflected + fuzz*random_in_unit_sphere(), r_in.time());
         return true;
@@ -97,19 +96,19 @@ class dielectric : public material {
     dielectric(double index_of_refraction) : ir(index_of_refraction) {}
 
     bool scatter(const ray& r_in, const hit_record& rec, scatter_record& srec) const override {
-        srec.attenuation = color(1.0, 1.0, 1.0);
+        srec.attenuation = color({ 1.0, 1.0, 1.0 });
         srec.pdf_ptr = nullptr;
         srec.skip_pdf = true;
         double refraction_ratio = rec.front_face ? (1.0/ir) : ir;
 
-        vec3 unit_direction = unit_vector(r_in.direction());
+        vec3 unit_direction = r_in.direction().unit();
         double cos_theta = fmin(dot(-unit_direction, rec.normal), 1.0);
         double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
 
         bool cannot_refract = refraction_ratio * sin_theta > 1.0;
         vec3 direction;
 
-        if (cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double())
+        if (cannot_refract || reflectance(cos_theta, refraction_ratio) > maths::random_double())
             direction = reflect(unit_direction, rec.normal);
         else
             direction = refract(unit_direction, rec.normal, refraction_ratio);
@@ -139,7 +138,7 @@ class diffuse_light : public material {
     color emitted(const ray& r_in, const hit_record& rec, double u, double v, const point3& p)
     const override {
         if (!rec.front_face)
-            return color(0,0,0);
+            return color({ 0,0,0 });
         return emit->value(u, v, p);
     }
 
@@ -162,7 +161,7 @@ class isotropic : public material {
 
     double scattering_pdf(const ray& r_in, const hit_record& rec, const ray& scattered)
     const override {
-        return 1.0 / (4.0 * pi);
+        return 1.0 / (4.0 * maths::Pi);
     }
 
   public:
@@ -170,4 +169,4 @@ class isotropic : public material {
 };
 
 
-#endif
+

@@ -51,7 +51,7 @@ class hittable {
     }
 
     virtual vec3 random(const vec3& o) const {
-        return vec3(1,0,0);
+        return vec3({ 1,0,0 });
     }
 };
 
@@ -87,13 +87,13 @@ class translate : public hittable {
 class rotate_y : public hittable {
   public:
     rotate_y(shared_ptr<hittable> p, double angle) : object(p) {
-        auto radians = degrees_to_radians(angle);
+        auto radians = maths::Radians(angle);
         sin_theta = sin(radians);
         cos_theta = cos(radians);
         bbox = object->bounding_box();
 
-        point3 min( infinity,  infinity,  infinity);
-        point3 max(-infinity, -infinity, -infinity);
+        point3 min({ maths::infinity, maths::infinity, maths::infinity });
+        point3 max({ -maths::infinity, -maths::infinity, -maths::infinity });
 
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 2; j++) {
@@ -105,7 +105,7 @@ class rotate_y : public hittable {
                     auto newx =  cos_theta*x + sin_theta*z;
                     auto newz = -sin_theta*x + cos_theta*z;
 
-                    vec3 tester(newx, y, newz);
+                    vec3 tester({ newx, y, newz });
 
                     for (int c = 0; c < 3; c++) {
                         min[c] = fmin(min[c], tester[c]);

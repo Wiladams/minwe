@@ -192,4 +192,4 @@ public:
 #define blend_pixel(bg, fg) PixelRGBA(				\
 	lerp255(bg.r(), fg.r(), fg.a()), \
 	lerp255(bg.g(), fg.g(), fg.a()), \
-	lerp255(bg.b(), fg.b(), fg.a()), 255)
+	lerp255(bg.b(), fg.b(), fg.a()), fg.a())

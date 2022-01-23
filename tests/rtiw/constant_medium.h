@@ -33,14 +33,14 @@ class constant_medium : public hittable {
     bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
         // Print occasional samples when debugging. To enable, set enableDebug true.
         const bool enableDebug = false;
-        const bool debugging = enableDebug && random_double() < 0.00001;
+        const bool debugging = enableDebug && maths::random_double() < 0.00001;
 
         hit_record rec1, rec2;
 
         if (!boundary->hit(r, interval::universe, rec1))
             return false;
 
-        if (!boundary->hit(r, interval(rec1.t+0.0001, infinity), rec2))
+        if (!boundary->hit(r, interval(rec1.t+0.0001, maths::infinity), rec2))
             return false;
 
         if (debugging) std::cerr << "\nt_min=" << rec1.t << ", t_max=" << rec2.t << '\n';
@@ -56,7 +56,7 @@ class constant_medium : public hittable {
 
         const auto ray_length = r.direction().length();
         const auto distance_inside_boundary = (rec2.t - rec1.t) * ray_length;
-        const auto hit_distance = neg_inv_density * log(random_double());
+        const auto hit_distance = neg_inv_density * log(maths::random_double());
 
         if (hit_distance > distance_inside_boundary)
             return false;

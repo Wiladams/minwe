@@ -16,13 +16,17 @@
 */
 
 
+
+
+
+#include "apidefs.h"
+#include "bitbang.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <cmath>
 #include <intrin.h>
-
-#include "bitbang.h"
-#include "apidefs.h"
+#include <limits>
 
 #pragma intrinsic(__stosd)
 
@@ -41,6 +45,8 @@ namespace maths {
 
     // Math constants
     // Some useful constants
+    static constexpr double infinity = std::numeric_limits<double>::infinity();
+
     //static const float  PI32 = 3.14159265359f;
     static constexpr Float ShadowEpsilon = 0.0001f;
     static constexpr Float Pi = 3.14159265358979323846;
@@ -162,13 +168,13 @@ namespace maths {
     // The input 't' MUST be between 0.0 >= t <= 1
     //template <typename U, typename T>
     template <typename T>
-    INLINE T Lerp(const double t, T v1, T v2)
+    INLINE T Lerp(const double t, const T &v1, const T &v2)
     {
-        return (T)((1 - t) * v1 + t * v2);
+        return (T)(v1 *(1 - t)  + v2* t);
     }
 
     template<>
-    INLINE double Lerp(const double t, double v1, double v2)
+    INLINE double Lerp(const double t, const double &v1, const double &v2)
     {
         return (1 - t) * v1 + t * v2;
     }

@@ -198,4 +198,5 @@ using vec2f = vec<2, float>;
 
 using vec3f = vec<3, float>;
 
+
 using vec4f = vec<4, float>;

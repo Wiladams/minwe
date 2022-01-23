@@ -1,6 +1,5 @@
 #pragma once
-#ifndef SPHERE_H
-#define SPHERE_H
+
 //==============================================================================================
 // Originally written in 2016 by Peter Shirley <ptrshrl@gmail.com>
 //
@@ -23,15 +22,15 @@ class sphere : public hittable {
     sphere() {}
 
     sphere(point3 ctr, double r, shared_ptr<material> m) : center(ctr), radius(r), mat(m) {
-        const auto rvec = vec3(radius, radius, radius);
+        const auto rvec = vec3({ radius, radius, radius });
         bbox = aabb(center - rvec, center + rvec);
     }
 
     bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
         vec3 oc = r.origin() - center;
-        auto a = r.direction().length_squared();
+        auto a = r.direction().lengthSquared();
         auto half_b = dot(oc, r.direction());
-        auto c = oc.length_squared() - radius*radius;
+        auto c = oc.lengthSquared() - radius*radius;
 
         auto discriminant = half_b*half_b - a*c;
         if (discriminant < 0) return false;
@@ -59,18 +58,18 @@ class sphere : public hittable {
 
     double pdf_value(const point3& o, const vec3& v) const override {
         hit_record rec;
-        if (!this->hit(ray(o, v), interval(0.001, infinity), rec))
+        if (!this->hit(ray(o, v), interval(0.001, maths::infinity), rec))
             return 0;
 
-        auto cos_theta_max = sqrt(1 - radius*radius/(center-o).length_squared());
-        auto solid_angle = 2*pi*(1-cos_theta_max);
+        auto cos_theta_max = sqrt(1 - radius*radius/(center-o).lengthSquared());
+        auto solid_angle = 2* maths::Pi *(1-cos_theta_max);
 
         return  1 / solid_angle;
     }
 
     vec3 random(const point3& o) const override {
         vec3 direction = center - o;
-        auto distance_squared = direction.length_squared();
+        auto distance_squared = direction.lengthSquared();
         onb uvw;
         uvw.build_from_w(direction);
         return uvw.local(random_to_sphere(radius, distance_squared));
@@ -92,24 +91,24 @@ class sphere : public hittable {
         //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
 
         auto theta = acos(-p.y());
-        auto phi = atan2(-p.z(), p.x()) + pi;
+        auto phi = atan2(-p.z(), p.x()) + maths::Pi;
 
-        u = phi / (2*pi);
-        v = theta / pi;
+        u = phi / (2* maths::Pi);
+        v = theta / maths::Pi;
     }
 
     static vec3 random_to_sphere(double radius, double distance_squared) {
-        auto r1 = random_double();
-        auto r2 = random_double();
+        auto r1 = maths::random_double();
+        auto r2 = maths::random_double();
         auto z = 1 + r2*(sqrt(1-radius*radius/distance_squared) - 1);
 
-        auto phi = 2*pi*r1;
+        auto phi = 2*maths::Pi*r1;
         auto x = cos(phi)*sqrt(1-z*z);
         auto y = sin(phi)*sqrt(1-z*z);
 
-        return vec3(x, y, z);
+        return vec3({ x, y, z });
     }
 };
 
 
-#endif
+

@@ -210,8 +210,59 @@ struct TexelRect
 
     INLINE TexelRect& operator=(const TexelRect& other) noexcept = default;
 
+
+    // The arithmetic operators are good for doing
+    // interpolation
+    TexelRect& operator+=(const TexelRect& other)
+    {
+        left += other.left;
+        top += other.top;
+        right += other.right;
+        bottom += other.bottom;
+
+        return *this;
+    }
+
+    TexelRect& operator*=(double s)
+    {
+        left *= s;
+        top *= s;
+        right *= s;
+        bottom *= s;
+
+        return *this;
+    }
+
+    TexelRect operator+(const TexelRect& rhs)
+    {
+        TexelRect res(*this);
+        return res += rhs;
+    }
+
+    TexelRect operator * (double s) const
+    {
+        TexelRect res(*this);
+        return res *= s;
+    }
+
     INLINE constexpr double du() const noexcept { return right - left; }
     INLINE constexpr double dv() const noexcept { return bottom - top; }
+
+    void moveTo(double u, double v) {
+        double diffu = u - left;
+        double diffv = v - top;
+        left += diffu;
+        top += diffv;
+        right += diffu;
+        bottom += diffv;
+    }
+
+    INLINE void setLeft(double newLeft) { left = newLeft; }
+    INLINE void setTop(double newTop) { top = newTop; }
+
+    bool contains(double u, double v) const {
+        return ((u >= left) && (u <= right) && (v >= top) && (v <= bottom));
+    }
 
     // This routine assumes the frame is within the constrained area
     static TexelRect create(const PixelRect& isect, const PixelRect& constraint)

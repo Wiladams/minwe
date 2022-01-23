@@ -64,7 +64,7 @@ class hittable_list : public hittable {
 
     vec3 random(const vec3 &o) const override {
         auto int_size = static_cast<int>(objects.size());
-        return objects[random_int(0, int_size-1)]->random(o);
+        return objects[maths::random_int(0, int_size-1)]->random(o);
     }
 
   public:

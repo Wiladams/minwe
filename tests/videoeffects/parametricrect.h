@@ -53,7 +53,7 @@ struct ParametricShard
 			{
 				double u = maths::Map(col, isect.x, isect.x + isect.width - 1, left, right);
 				double v = maths::Map(row, isect.y, isect.y + isect.height - 1, top, bottom);
-				auto c = fWrapped->getValue(u, v, { col,row });
+				auto c = fWrapped->getValue(u, v, PixelCoord({ col,row }));
 				pmap->set(col, row, c);
 			}
 		}

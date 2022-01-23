@@ -1,27 +1,35 @@
+//
+// Exercise and develop various kinds of visual effects
+//
 #include "gui.h"
 #include "screensnapshot.h"
 #include "recorder.h"
 #include "stopwatch.h"
 #include "rendercontext.h"
+#include "sampledraw2d.h"
 
 #include "effect_barndoor.h"
 #include "effect_circlegrid.h"
 #include "effect_slabs.h"
 #include "effect_checkers.h"
 #include "effect_crossfade.h"
-#include "parametricrect.h"
+
+#include "normalizedwindow.h"
 
 using namespace maths;
 
 
 StopWatch appClock;
 
+// Window manager
+std::shared_ptr< NormalizedWindowManager> windowMan = nullptr;
+
 // Source Samplers
 std::shared_ptr<ScreenSnapshot> screenCapture = nullptr;
 std::shared_ptr<ScreenSnapshot> screen1 = nullptr;
 std::shared_ptr<ScreenSnapshot> screen2 = nullptr;
-std::shared_ptr< StickyWindow> screenCap1 = nullptr;
-std::shared_ptr< StickyWindow> screenCap2 = nullptr;
+std::shared_ptr< NormalizedWindow> screenCap1 = nullptr;
+std::shared_ptr< NormalizedWindow> screenCap2 = nullptr;
 //std::shared_ptr<SolidColorSampler> transSampler = nullptr;
 
 // Wrapping Samplers
@@ -34,6 +42,7 @@ std::shared_ptr<VisualEffect> blankEffect = nullptr;
 std::shared_ptr<CrossFadeEffect> fadeFromBlack = nullptr;
 std::shared_ptr<CrossFadeEffect> fadeToBlack = nullptr;
 std::shared_ptr<CrossFadeEffect> fadeScreen1ToScreen2 = nullptr;
+std::shared_ptr<CrossFadeEffect> fadeScreen2ToScreen1 = nullptr;
 std::shared_ptr<BarnDoorOpenEffect> barnDoorOpen = nullptr;
 std::shared_ptr<BarnDoorCloseEffect> barnDoorClose = nullptr;
 
@@ -53,7 +62,6 @@ int currentIteration = 0;	// Changes during running
 int maxiterations = FRAMERATE;		// increase past frame rate to slow down
 double progress = 0;
 
-std::shared_ptr< ParametricShard> paramShard = nullptr;
 
 
 void keyReleased(const KeyboardEvent& e)
@@ -81,6 +89,12 @@ void keyReleased(const KeyboardEvent& e)
 		currentEffect->start();
 		break;
 
+	case VK_F3:
+		// flip between screens
+		currentEffect = fadeScreen2ToScreen1;
+		currentEffect->start();
+		break;
+
 	case VK_F4:
 	case '4':
 		currentEffect = barnDoorOpen;
@@ -97,7 +111,7 @@ void keyReleased(const KeyboardEvent& e)
 
 	case VK_F10:
 	case '0':
-		fadeToBlack->setSource1(currentEffect->source2());
+		//fadeToBlack->setSource1(currentEffect->source2());
 		currentEffect = fadeToBlack;
 		currentEffect->start();
 		break;
@@ -128,8 +142,8 @@ void onFrame()
 {
 	// If there's no effect, don't do anything
 	// keep whatever was last on the screen;
-	//if (nullptr == currentEffect)
-	//	return;
+	if (nullptr == currentEffect)
+		return;
 	
 	//thisTime = appClock.millis();
 	//auto diffTime = thisTime - lastTime;
@@ -143,12 +157,13 @@ void onFrame()
 	background(PixelRGBA(0));
 
 	//ctx->rect(gAppSurface->getBounds(), { 0,0,1,1 }, *checkersEffect);
-	ctx->rectangle(gAppSurface->getBounds(), *checkSamp);
+	//ctx->rectangle(gAppSurface->getBounds(), *checkSamp);
 
 	// Cross Fade
-	//currentEffect->update();
+	currentEffect->update();
 	//currentEffect->setProgress(progress);
-	//ctx->rect(gAppSurface->getBounds(), { 0,0,1,1 }, *currentEffect);
+	//ctx->rect(gAppSurface->frame(), { 0,0,1,1 }, *currentEffect);
+	sampleRectangle(*gAppSurface, PixelRect(0, 0, canvasWidth, canvasHeight), *currentEffect);
 
 
 	// Display individual sources
@@ -156,7 +171,6 @@ void onFrame()
 	//ctx->rect(PixelRect(canvasWidth/2, 0, canvasWidth / 2, canvasHeight), { 0,0,1,1 }, *screenCap2);
 	//ctx->rect(gAppSurface->getBounds(), { 0,0,1,1 }, *screenCapture);
 	//ctx->rect(gAppSurface->getBounds(), { 0,0,1,1 }, *blankEffect);
-
 
 	reco->saveFrame();
 }
@@ -166,26 +180,26 @@ void setup()
 	setCanvasSize(displayWidth/2, displayHeight/2);
 	setFrameRate(FRAMERATE);
 
+	windowMan = std::make_shared<NormalizedWindowManager>();
+
+
 	ctx = std::make_shared<RenderContext>(gAppSurface);
 
 	screenCapture = std::make_shared<ScreenSnapshot>(0, 0, displayWidth, displayHeight / 2);
 	
-	screenCap1 = std::make_shared<StickyWindow>(PixelRect( 0, 0, screenCapture->width()/2, screenCapture->height() ), PixelRect(0,0, screenCapture->width(), screenCapture->height()), screenCapture);
-	screenCap2 = std::make_shared<StickyWindow>(PixelRect(screenCapture->width() / 2, 0, screenCapture->width() / 2, screenCapture->height()), PixelRect(0, 0, screenCapture->width(), screenCapture->height()), screenCapture);
-
-	//screen1 = std::make_shared<ScreenSnapshot>(0, 0, displayWidth/2, displayHeight/2);
-	//screen2 = std::make_shared<ScreenSnapshot>(displayWidth/2, 0, displayWidth / 2, displayHeight/2);
-
+	screenCap1 = std::make_shared<NormalizedWindow>(TexelRect(0, 0, 0.499, 1.0), screenCapture);
+	screenCap2 = std::make_shared<NormalizedWindow>(TexelRect(0.50, 0, 1.0, 1.0), screenCapture);
 
 	
-	blankEffect = std::make_shared<VisualEffect>(1,gAppSurface->getBounds(),nullptr, nullptr);
-	fadeFromBlack = std::make_shared<CrossFadeEffect>(2, gAppSurface->getBounds(), blankEffect, screenCap1);
-	fadeToBlack = std::make_shared<CrossFadeEffect>(2, gAppSurface->getBounds(), screenCap1, blankEffect);
-	fadeScreen1ToScreen2 = std::make_shared<CrossFadeEffect>(1, gAppSurface->getBounds(), screenCap1, screenCap2);
-	barnDoorOpen = std::make_shared<BarnDoorOpenEffect>(1, gAppSurface->getBounds(), screenCap1, screenCap2);
-	barnDoorClose = std::make_shared<BarnDoorCloseEffect>(1, gAppSurface->getBounds(), screenCap1, screenCap2);
+	blankEffect = std::make_shared<VisualEffect>(1);
+	fadeFromBlack = std::make_shared<CrossFadeEffect>(2, blankEffect, screenCap1);
+	fadeToBlack = std::make_shared<CrossFadeEffect>(2, screenCap1, blankEffect);
+	fadeScreen1ToScreen2 = std::make_shared<CrossFadeEffect>(1, screenCap1, screenCap2);
+	fadeScreen2ToScreen1 = std::make_shared<CrossFadeEffect>(1, screenCap2, screenCap1);
+	barnDoorOpen = std::make_shared<BarnDoorOpenEffect>(1, screenCap1, screenCap2);
+	barnDoorClose = std::make_shared<BarnDoorCloseEffect>(1, screenCap1, screenCap2);
 
-	checkersEffect = std::make_shared<EffectCheckers>(1, gAppSurface->getBounds(), 8, screenCap1, blankEffect);
+	checkersEffect = std::make_shared<EffectCheckers>(1, 8, screenCap1, blankEffect);
 	checkSamp = std::make_shared<CheckerSampler>(8, screenCap1, blankEffect);
 
 	currentEffect = blankEffect;

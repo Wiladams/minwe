@@ -13,13 +13,6 @@
 
 #include "vec.h"
 
-/*
-// generate random vector
-static vec3<T> random()
-{
-    return vec<3,T>({(float)maths::random_double(), (float)maths::random_double(), (float)maths::random_double()});
-}
-*/
 //
 // generate perlin noise for things that need
 // some noise

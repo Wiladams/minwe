@@ -54,10 +54,10 @@ double distanceToLine(PixelCoord pt, PixelCoord pt1, PixelCoord pt2)
 // Recalculate border lines
 void calcBorderLines()
 {
-    borderLines[0] = { { 0,cy - 1 },{cx + extentX, cy - 1} };             // top
-    borderLines[1] = { {cx - 1,cy},{cx - 1,canvasHeight} };               // left
-    borderLines[2] = { {cx,cy + extentY},{canvasWidth,cy + extentY} };    // bottom
-    borderLines[3] = { {cx + extentX,0},{cx + extentX,cy + extentY} };    // right
+    borderLines[0] = { PixelCoord({ 0,cy - 1 }),PixelCoord({cx + extentX, cy - 1}) };             // top
+    borderLines[1] = { PixelCoord({cx - 1,cy}),PixelCoord({cx - 1,canvasHeight}) };               // left
+    borderLines[2] = { PixelCoord({cx,cy + extentY}),PixelCoord({canvasWidth,cy + extentY}) };    // bottom
+    borderLines[3] = { PixelCoord({cx + extentX,0}),PixelCoord({cx + extentX,cy + extentY}) };    // right
 }
 
 void calcTarget()
@@ -83,6 +83,7 @@ void onFrame()
 
     // clear screen first
     background(PixelRGBA(0xcc1c1c1c));
+    //background(PixelRGBA(0x0));
 
     calcBorderLines();
 
@@ -94,7 +95,7 @@ void onFrame()
 
 
     // Draw Transparent window
-    fillRectangle(*gAppSurface, cx, cy, extentX, extentY, PixelRGBA(0xcc1c1c1c));
+    fillRectangle(*gAppSurface, cx, cy, extentX, extentY, PixelRGBA(0x7fffff00));
 
 
     if (showTarget) {

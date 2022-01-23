@@ -1,7 +1,6 @@
 #pragma once
 
-#ifndef RAY_H
-#define RAY_H
+
 //==============================================================================================
 // Originally written in 2016 by Peter Shirley <ptrshrl@gmail.com>
 //
@@ -40,4 +39,3 @@ class ray {
     double tm=0.0;
 };
 
-#endif

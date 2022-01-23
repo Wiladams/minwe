@@ -69,7 +69,7 @@ struct SamplerSprite
 			{
 				double u = maths::Map(col, isect.x, isect.x + isect.width - 1, left, right);
 				double v = maths::Map(row, isect.y, isect.y + isect.height - 1, top, bottom);
-				auto c = sampler.getValue(u, v, { col,row });
+				auto c = sampler.getValue(u, v, PixelCoord({ col,row }));
 				pmap.set(col, row, c);
 			}
 		}
@@ -148,7 +148,7 @@ struct WindowSlab
 			{
 				double u = maths::Map(col, isect.x, isect.x+isect.width-1, left, right);
 				double v = maths::Map(row, isect.y, isect.y + isect.height - 1, top, bottom);
-				auto c = sampler.getValue(u, v, { col,row });
+				auto c = sampler.getValue(u, v, PixelCoord({ col,row }));
 				pmap.set(col, row, c);
 			}
 		}

@@ -8,15 +8,13 @@ User32PixelMap src(320, 240);
 
 void setup()
 {
-
-
 	setCanvasSize(1024, 768);
 
 	// set the canvas to white
-	gAppSurface->setAllPixels(0xffffffff);
+	gAppSurface->setAllPixels(PixelRGBA(0xffffffff));
 
 	// create the source as a solid color
-	src.setAllPixels(0xffffff00);
+	src.setAllPixels(PixelRGBA(0xffffff00));
 
 	// Now do the blit
 	blit(*gAppSurface, 10, 10, src);

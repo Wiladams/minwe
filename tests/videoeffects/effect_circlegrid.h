@@ -133,7 +133,7 @@ public:
 				double u = Map(x, 0, (double)(fWidth - 1), 0, 1);
 				double v = Map(y, 0, (double)(fHeight - 1), 0, 1);
 
-				auto c = sampler->getValue(u, v, { x,y });
+				auto c = sampler->getValue(u, v, PixelCoord({ x,y }));
 
 				fCircleInstance.draw(pmap, x, y, c);
 			}

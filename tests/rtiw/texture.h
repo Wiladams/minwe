@@ -33,7 +33,7 @@ class solid_color : public texture {
     solid_color(color c) : color_value(c) {}
 
     solid_color(double red, double green, double blue)
-      : solid_color(color(red,green,blue)) {}
+        : solid_color(color({ red,green,blue })) {}
 
     color value(double u, double v, const point3& p) const override {
         return color_value;
@@ -81,7 +81,7 @@ class noise_texture : public texture {
 
     color value(double u, double v, const point3& p) const override {
         auto s = scale * p;
-        return color(1,1,1)*0.5*(1 + sin(s.z() + 10*noise.turb(s)));
+        return color({ 1,1,1 }) * 0.5 * (1 + sin(s.z() + 10 * noise.turb(s)));
     }
 
   public:
@@ -97,7 +97,7 @@ class image_texture : public texture {
 
     color value(double u, double v, const point3& p) const override {
         // If we have no texture data, then return solid cyan as a debugging aid.
-        if (image.height() <= 0) return color(0,1,1);
+        if (image.height() <= 0) return color({ 0,1,1 });
 
         // Clamp input texture coordinates to [0,1] x [1,0]
         u = interval(0,1).clamp(u);
@@ -108,7 +108,7 @@ class image_texture : public texture {
         auto pixel = image.pixel_data(i,j);
 
         const auto color_scale = 1.0 / 255.0;
-        return color(color_scale*pixel[0], color_scale*pixel[1], color_scale*pixel[2]);
+        return color({ color_scale * pixel[0], color_scale * pixel[1], color_scale * pixel[2] });
     }
 
   private:

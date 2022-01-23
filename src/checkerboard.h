@@ -87,6 +87,10 @@ class CheckerSampler : public ISample2D<PixelRGBA, PixelCoord>
     std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > t2;   // Second sampler
 
 public:
+    CheckerSampler(int freq, const PixelRGBA &c1, const PixelRGBA &c2)
+        :CheckerSampler(freq, std::make_shared< SolidColorSampler>(c1), std::make_shared< SolidColorSampler>(c2))
+    {}
+
     CheckerSampler(double freq,
         std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
         std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
