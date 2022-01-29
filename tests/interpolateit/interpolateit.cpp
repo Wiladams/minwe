@@ -1,6 +1,13 @@
 #include "apphost.h"
 #include "maths.hpp"
 #include "pixeltypes.h"
+#include "interpolator.h"
+
+
+TexelRect testIterpolator(double u)
+{
+
+}
 
 void onLoad()
 {

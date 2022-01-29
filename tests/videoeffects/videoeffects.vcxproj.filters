@@ -80,5 +80,32 @@
     <ClInclude Include="..\..\src\gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="effect_corners.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="effect_push.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="effect_fingers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\interpolator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\easing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\stopwatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="animator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="effect_rainblocks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="effect_wiper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

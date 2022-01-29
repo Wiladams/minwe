@@ -146,7 +146,9 @@
     <ClCompile Include="stickytexel.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\apidefs.h" />
     <ClInclude Include="..\..\src\normalizedwindow.h" />
+    <ClInclude Include="..\..\src\pixelmap.h" />
     <ClInclude Include="..\..\src\pixeltypes.h" />
     <ClInclude Include="..\..\src\sampledraw2d.h" />
     <ClInclude Include="..\..\src\screensnapshot.h" />

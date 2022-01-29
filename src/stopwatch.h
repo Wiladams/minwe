@@ -14,44 +14,45 @@
     the reset() method was called.
 */
 
-
-
-/*
-    A simple class to handle high precision keeping of
-    time.  The class is a stopwatch because it will
-    report number of seconds ellapsed since the last call
-    to 'reset', and not wall clock time.
-*/
+//
+// This stopwatch uses the windows performance counter mechanism
+// The operation of this methods is highly dependent on the clock
+// speed of the processor, which can change from between cpu cores
+// There have been challenges with this method of counting over the years
+// but as of Windows 10, it seems to be fairly reliable
 class StopWatch
 {
     double fStartTime;
-
+    
     // These are convenience functions that wrap up the 
-// various Windows APIs needed for a high precision timer
+    // various Windows APIs needed for a high precision timer
     static int64_t GetPerfFrequency()
     {
-        //int64_t anum;
-        LARGE_INTEGER anum;
+        int64_t anum;
 
-        int success = QueryPerformanceFrequency(&anum);
+        int success = QueryPerformanceFrequency((LARGE_INTEGER*) &anum);
         if (success == 0) {
             return 0;   //, ffi.C.GetLastError(); 
         }
 
-        return anum.QuadPart;
+        return anum;
     }
 
     static int64_t GetPerfCounter()
     {
-        LARGE_INTEGER pnum;
-        int success = QueryPerformanceCounter(&pnum);
+        int64_t anum;
+
+        int success = QueryPerformanceCounter((LARGE_INTEGER*)&anum);
         if (success == 0) {
-            return 0; //--, ffi.C.GetLastError();
+            //return 0; //--, ffi.C.GetLastError();
+            return 1;
         }
 
-        return pnum.QuadPart;
+        return anum;
     }
 
+    // Take the current number of ticks and turn 
+    // it into a number of seconds
     static double GetCurrentTickTime()
     {
         double frequency = 1.0 / GetPerfFrequency();
@@ -62,6 +63,7 @@ class StopWatch
     }
 
 public:
+    //StopWatch(const StopWatch& other) = default;
     StopWatch()
     {
         reset();

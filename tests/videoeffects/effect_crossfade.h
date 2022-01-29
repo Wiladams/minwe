@@ -1,10 +1,10 @@
 #pragma once
 
-#include "visualeffect.h"
+#include "animator.h"
 
 #define lerp255(bg, fg, a) ((uint32_t)div255((fg*a+bg*(255-a))))
 
-class CrossFadeEffect : public VisualEffect
+class CrossFadeEffect : public WindowAnimation
 {
 	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > fSource1;
 	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > fSource2;
@@ -23,7 +23,7 @@ public:
 		double duration,
 		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
 		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
-		:VisualEffect(duration)
+		:WindowAnimation(duration)
 		,fSource1(s1)
 		,fSource2(s2)
 	{

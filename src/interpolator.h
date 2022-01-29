@@ -2,19 +2,26 @@
 
 #include "apidefs.h"
 
+
 #include <functional>
 #include <vector>
 
 
 // A templatized parametric function that takes a single double
-// value, sets a parametric value.
-// return true if the function succeeds, false otherwise
+// value, and returns a value of the templatized type.
 // The value of 'u' typically ranges from 0 to 1, but it
 // can be anything
 template <typename T>
-using PFunc1 = std::function< T(const double u) >;
+using PFunc1 = std::function< T (const double u) >;
 
-using PFuncDouble = PFunc1<double>;
+template <typename T>
+using PFunc2 = std::function< T(const double u, const T & value) >;
+
+template <typename T>
+using PFunc2Ref = std::function< T &(const double u, T& value) >;
+
+
+using PFunc1Double = PFunc1<double>;
 
 /*
 * A generalized structure for holding linear gradients.
@@ -32,8 +39,8 @@ struct InterpolatorStop
 	double offset;
 	T data;
 
-	InterpolatorStop() noexcept = default
-	InterpolatorStop(const LinearStop<T>& other) noexcept = default
+	InterpolatorStop() noexcept = default;
+	InterpolatorStop(const InterpolatorStop<T>& other) noexcept = default;
 
 	InterpolatorStop(const double off, const T& value) noexcept
 		:offset(off),

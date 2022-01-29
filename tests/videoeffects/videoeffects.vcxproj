@@ -147,7 +147,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\checkerboard.h" />
+    <ClInclude Include="..\..\src\easing.h" />
     <ClInclude Include="..\..\src\gui.h" />
+    <ClInclude Include="..\..\src\interpolator.h" />
     <ClInclude Include="..\..\src\pixelmap.h" />
     <ClInclude Include="..\..\src\pixeltypes.h" />
     <ClInclude Include="..\..\src\recorder.h" />
@@ -155,13 +157,20 @@
     <ClInclude Include="..\..\src\sampledraw2d.h" />
     <ClInclude Include="..\..\src\sampler.h" />
     <ClInclude Include="..\..\src\screensnapshot.h" />
+    <ClInclude Include="..\..\src\stopwatch.h" />
     <ClInclude Include="..\..\src\User32PixelMap.h" />
+    <ClInclude Include="animator.h" />
     <ClInclude Include="effect_barndoor.h" />
+    <ClInclude Include="effect_rainblocks.h" />
     <ClInclude Include="effect_checkers.h" />
     <ClInclude Include="effect_circlegrid.h" />
+    <ClInclude Include="effect_corners.h" />
     <ClInclude Include="effect_crossfade.h" />
+    <ClInclude Include="effect_fingers.h" />
+    <ClInclude Include="effect_push.h" />
     <ClInclude Include="effect_randomdots.h" />
     <ClInclude Include="effect_slabs.h" />
+    <ClInclude Include="effect_wiper.h" />
     <ClInclude Include="parametricrect.h" />
     <ClInclude Include="visualeffect.h" />
   </ItemGroup>

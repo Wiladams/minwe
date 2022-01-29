@@ -208,7 +208,15 @@ struct TexelRect
     INLINE TexelRect(double l, double t, double r, double b) noexcept
         :left(l), top(t), right(r), bottom(b) {}
 
-    INLINE TexelRect& operator=(const TexelRect& other) noexcept = default;
+    INLINE TexelRect& operator=(const TexelRect& rhs) noexcept
+    {
+        left = rhs.left;
+        top = rhs.top;
+        right = rhs.right;
+        bottom = rhs.bottom;
+
+        return *this;
+    };
 
 
     // The arithmetic operators are good for doing

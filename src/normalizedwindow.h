@@ -6,6 +6,73 @@
 #include <vector>
 #include <memory>
 
+struct SubSample : public ISample2D<PixelRGBA, PixelCoord>
+{
+protected:
+	double uFactor = 1;
+	double vFactor = 1;
+
+public:
+	std::shared_ptr< ISample2D<PixelRGBA, PixelCoord> > fWrapped;	// The thing we're sub-sampling from
+	TexelRect fStickyBounds;
+	TexelRect fMovingFrame;
+
+	SubSample() { setFrame(TexelRect(0, 0, 1, 1)); }
+	SubSample(std::shared_ptr< ISample2D<PixelRGBA, PixelCoord> > wrapped, const TexelRect &bounds)
+		:SubSample(wrapped, bounds, bounds) 
+	{
+		setFrame(TexelRect(0, 0, 1, 1));
+	}
+
+	SubSample(std::shared_ptr< ISample2D<PixelRGBA, PixelCoord> > wrapped, 
+		const TexelRect &bounds,
+		const TexelRect &frame)
+		:fWrapped(wrapped)
+		,fStickyBounds(bounds)
+	{
+		setFrame(frame);
+	}
+
+	virtual ~SubSample() = default;
+
+	void setBounds(const TexelRect& bounds)
+	{
+		fStickyBounds = bounds;
+		onFrameChanged();
+	}
+
+	void setFrame(const TexelRect& frame)
+	{
+		fMovingFrame = frame;
+		onFrameChanged();
+	}
+
+	virtual void onFrameChanged() 
+	{
+		uFactor = ((fStickyBounds.right - fStickyBounds.left) / (fMovingFrame.right - fMovingFrame.left));
+		vFactor = ((fStickyBounds.bottom - fStickyBounds.top) / (fMovingFrame.bottom - fMovingFrame.top));
+	}
+
+	virtual bool contains(double u, double v)
+	{
+		return fMovingFrame.contains(u, v);
+	}
+
+	virtual PixelRGBA getValue(double u, double v, const PixelCoord& p)
+	{
+		if (nullptr != fWrapped)
+		{
+			double u1 = fStickyBounds.left + (u - fMovingFrame.left) * uFactor;
+			double v1 = fStickyBounds.top + (v - fMovingFrame.top) * vFactor;
+
+			return fWrapped->getValue(u1, v1, p);
+		}
+
+		// return transparent if we're not wrapping anything
+		return PixelRGBA(0x0);
+	}
+};
+
 // 
 // Trying to get the math right on Sub-samples
 // We want a SubSample to be able to grab a portion of
@@ -25,93 +92,97 @@
 // This way we don't have to copy the graphics into individual
 // pixelmaps of their own.  But, the real benefit is you 
 // can remain in the normalized coordinates domain.
-struct NormalizedWindow : public ISample2D<PixelRGBA, PixelCoord>
+struct SampledWindow : public ISample2D<PixelRGBA, PixelCoord>
 {
-	std::shared_ptr< ISample2D<PixelRGBA, PixelCoord> > fWrapped;	// The thing we're sub-sampling from
+private:
+	double uFactor = 0;
+	double vFactor = 0;
+
+public:
+	// These are public so they can be animated
 	TexelRect fStickyBounds;
 	TexelRect fMovingFrame;
-	double uFactor = 1;
-	double vFactor = 1;
+	
+	// Background image
+	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > fBackground = nullptr;
 
-	NormalizedWindow(const TexelRect& bounds, std::shared_ptr< ISample2D<PixelRGBA, PixelCoord> > wrapped)
-		: fWrapped(wrapped)
-		, fStickyBounds(bounds)
+public:
+	std::vector<std::shared_ptr<SampledWindow > > fChildren;
+
+	SampledWindow() { setFrame(TexelRect(0, 0, 1, 1)); };
+	SampledWindow(std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > background)
+		:fBackground(background) 
 	{
 		setFrame(TexelRect(0, 0, 1, 1));
 	}
-
-	NormalizedWindow(const TexelRect& bounds, const TexelRect& frame, std::shared_ptr< ISample2D<PixelRGBA, PixelCoord> > wrapped)
-		: fWrapped(wrapped)
-		, fStickyBounds(bounds)
+	SampledWindow(std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > background, const TexelRect &bounds)
 	{
-		setFrame(frame);
+		fBackground = std::make_shared<SubSample>(background, bounds);
+		setFrame(TexelRect(0, 0, 1, 1));
 	}
 
-/*
-	void moveTo(double u, double v)
+	virtual ~SampledWindow() {}
+
+	void setBounds(const TexelRect& bounds)
 	{
-		fMovingBounds.moveTo(u, v);
-		calcFactors();
+		fStickyBounds = bounds;
+		onFrameChanged();
 	}
-*/
+
 	void setFrame(const TexelRect& frame)
 	{
 		fMovingFrame = frame;
-		calcFactors();
+		onFrameChanged();
 	}
 
-	void calcFactors()
-	{
-		uFactor = fStickyBounds.du() / fMovingFrame.du();
-		vFactor = fStickyBounds.dv() / fMovingFrame.dv();
+	virtual void onFrameChanged() 
+	{ 
+		uFactor = ((fStickyBounds.right - fStickyBounds.left) / (fMovingFrame.right - fMovingFrame.left));
+		vFactor = ((fStickyBounds.bottom - fStickyBounds.top) / (fMovingFrame.bottom - fMovingFrame.top));
 	}
+
 
 	bool contains(double u, double v)
 	{
 		return fMovingFrame.contains(u, v);
 	}
 
-	PixelRGBA getValue(double u, double v, const PixelCoord& p) override
-	{
 
-		double u1 = maths::Map(u, fMovingFrame.left, fMovingFrame.right, fStickyBounds.left,fStickyBounds.right);
-		double v1 = maths::Map(v, fMovingFrame.top, fMovingFrame.bottom,fStickyBounds.top,fStickyBounds.bottom);
 
-		double mu = u1;
-		double mv = v1;
-		return fWrapped->getValue(mu, mv, p);
-	}
-
-};
-
-// This is a window manager done in normalized coordinate space
-// all the children must be SubSample, which is like a base
-// class for windows
-struct NormalizedWindowManager : public ISample2D<PixelRGBA, PixelCoord>
-{
-	std::vector<std::shared_ptr<NormalizedWindow > > fChildren;
-
-	void addChild(std::shared_ptr<NormalizedWindow > aChild)
+	// Dealing with Window grouping stuff
+	void addChild(std::shared_ptr<SampledWindow > aChild)
 	{
 		fChildren.push_back(aChild);
 	}
 
+	void clearChildren()
+	{
+		// tell each of the children to clear their children
+		fChildren.clear();
+	}
+
+
+
 	// Reference: http://www.guyrutenberg.com/2007/11/19/c-goes-to-operator/
 	// useful for while loops
-	PixelRGBA getValue(double u, double v, const PixelCoord& p) override
+	PixelRGBA getValue(double parentu, double parentv, const PixelCoord& p) override
 	{
 		// find which most visible child the uv coordinates hit
 		// ask that child for a value.
-		// WAA - an even better thing would be to blend the colors of 
-		// all the children below, but the samplers themselves can 
-		// do that, so we just grab the highest sampler
 		int count = fChildren.size();
+		double myu = (parentu - fMovingFrame.left)/fMovingFrame.du();
+		double myv = (parentv - fMovingFrame.top)/fMovingFrame.dv();
+
 		while (count-- > 0)
 		{
-			if (fChildren[count]->contains(u, v))
-				return fChildren[count]->getValue(u, v, p);
+			if (fChildren[count]->contains(myu, myv))
+				return fChildren[count]->getValue(myu, myv, p);
 		}
+
+		if (nullptr != fBackground)
+			return fBackground->getValue(myu, myv, p);
 
 		return PixelRGBA(0x0);
 	}
+
 };

@@ -184,7 +184,8 @@ public:
         int px = int((u * ((double)width() - 1)) + 0.5);
         int py = int((v * ((double)height() - 1)) + 0.5);
 
-        return get(px, py);
+        return getPixel(px, py);
+        //return get(px, py);
     }
 };
 
