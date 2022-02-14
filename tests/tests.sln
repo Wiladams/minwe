@@ -85,8 +85,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "udpscreenview", "udpscreenv
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bezsurface", "bezsurface\bezsurface.vcxproj", "{E0A59432-F996-4703-A840-D8AB304061ED}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "videoeffects", "videoeffects\videoeffects.vcxproj", "{9D93919A-48E9-48EE-9326-2177A5A56E38}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "camview", "camview\camview.vcxproj", "{51CF672E-BD11-490B-BCA5-5BED82BB3CA4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mathfun", "mathfun\mathfun.vcxproj", "{B49EBA1E-CA90-4B5C-9709-1D23119B2AF7}"
@@ -431,14 +429,6 @@ Global
 		{E0A59432-F996-4703-A840-D8AB304061ED}.Release|x64.Build.0 = Release|x64
 		{E0A59432-F996-4703-A840-D8AB304061ED}.Release|x86.ActiveCfg = Release|Win32
 		{E0A59432-F996-4703-A840-D8AB304061ED}.Release|x86.Build.0 = Release|Win32
-		{9D93919A-48E9-48EE-9326-2177A5A56E38}.Debug|x64.ActiveCfg = Debug|x64
-		{9D93919A-48E9-48EE-9326-2177A5A56E38}.Debug|x64.Build.0 = Debug|x64
-		{9D93919A-48E9-48EE-9326-2177A5A56E38}.Debug|x86.ActiveCfg = Debug|Win32
-		{9D93919A-48E9-48EE-9326-2177A5A56E38}.Debug|x86.Build.0 = Debug|Win32
-		{9D93919A-48E9-48EE-9326-2177A5A56E38}.Release|x64.ActiveCfg = Release|x64
-		{9D93919A-48E9-48EE-9326-2177A5A56E38}.Release|x64.Build.0 = Release|x64
-		{9D93919A-48E9-48EE-9326-2177A5A56E38}.Release|x86.ActiveCfg = Release|Win32
-		{9D93919A-48E9-48EE-9326-2177A5A56E38}.Release|x86.Build.0 = Release|Win32
 		{51CF672E-BD11-490B-BCA5-5BED82BB3CA4}.Debug|x64.ActiveCfg = Debug|x64
 		{51CF672E-BD11-490B-BCA5-5BED82BB3CA4}.Debug|x64.Build.0 = Debug|x64
 		{51CF672E-BD11-490B-BCA5-5BED82BB3CA4}.Debug|x86.ActiveCfg = Debug|Win32
