@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "80bc91a3-a3d5-4429-94a3-7d0fc53cf73a": {
+      "ProjectGuid": "80bc91a3-a3d5-4429-94a3-7d0fc53cf73a",
+      "DisplayName": "texmap",
+      "ColorIndex": 0
+    }
+  },
+  "NextColorIndex": 1
+}
