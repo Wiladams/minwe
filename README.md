@@ -271,3 +271,64 @@ void subscribe(FileDropEventTopic::Subscriber s);
 void subscribe(TouchEventTopic::Subscriber s);
 void subscribe(PointerEventTopic::Subscriber s);
 ```
+
+You can actually subscribe to the events more than once, to process them in different
+parts of the application, but it is typical to only subscribe once and have all the 
+processing occur in one place.
+
+A typical subscription might look like this
+
+```C
+void handleMouseEvent(const MouseEventTopic& p, const MouseEvent& e)
+{
+    // If the user has implemented explicit mouse handling routines
+    // send the event there.
+    pmouseX = mouseX;
+    pmouseY = mouseY;
+    mouseX = e.x;
+    mouseY = e.y;
+
+    switch (e.activity) {
+    case MOUSEMOVED:
+
+        if (gMouseMovedHandler != nullptr) {
+            gMouseMovedHandler(e);
+        }
+        break;
+
+    case MOUSEPRESSED:
+        mouseIsPressed = true;
+        if (gMousePressedHandler != nullptr) {
+            gMousePressedHandler(e);
+        }
+        break;
+
+    case MOUSERELEASED:
+        mouseIsPressed = false;
+        if (gMouseReleasedHandler != nullptr) {
+            gMouseReleasedHandler(e);
+        }
+        if (gMouseClickedHandler != nullptr) {
+            gMouseClickedHandler(e);
+        }
+        break;
+
+    case MOUSEWHEEL:
+        if (gMouseWheelHandler != nullptr) {
+            gMouseWheelHandler(e);
+        }
+        break;
+
+    case MOUSEHWHEEL:
+        if (gMouseHWheelHandler != nullptr) {
+            gMouseHWheelHandler(e);
+        }
+        break;
+    }
+
+
+}
+
+    subscribe(handleMouseEvent);
+```
+
