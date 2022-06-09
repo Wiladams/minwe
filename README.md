@@ -332,3 +332,121 @@ void handleMouseEvent(const MouseEventTopic& p, const MouseEvent& e)
     subscribe(handleMouseEvent);
 ```
 
+By including apphost.h, you can create a fair number of applications, and you are
+in complete control of eventing model, drawing, and the like.  There is another
+convenience layer.
+
+```C
+// gui.h
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+	APP_EXPORT void setup();
+	APP_EXPORT void onFrame();
+
+	APP_EXPORT void fullscreen() noexcept;
+	APP_EXPORT void background(const PixelRGBA &c) noexcept;
+
+	// keyboard event processing
+	typedef void (*KeyEventHandler)(const KeyboardEvent& e);
+
+	APP_EXPORT void keyPressed(const KeyboardEvent& e);
+	APP_EXPORT void keyReleased(const KeyboardEvent& e);
+	APP_EXPORT void keyTyped(const KeyboardEvent& e);
+
+	// mouse event processing
+	typedef void (*MouseEventHandler)(const MouseEvent& e);
+
+	APP_EXPORT void mouseClicked(const MouseEvent& e);
+	APP_EXPORT void mouseDragged(const MouseEvent& e);
+	APP_EXPORT void mouseMoved(const MouseEvent& e);
+	APP_EXPORT void mousePressed(const MouseEvent& e);
+	APP_EXPORT void mouseReleased(const MouseEvent& e);
+	APP_EXPORT void mouseWheel(const MouseEvent& e);
+	APP_EXPORT void mouseHWheel(const MouseEvent& e);
+
+	APP_EXPORT void setFrameRate(const int);
+#ifdef __cplusplus
+}
+#endif
+
+```
+
+These functions are all intended to be implemented by the user's application.
+When compiling, simply include gui.cpp as one of the files.  Perhaps the most
+important is setup().  This function, if the application implements it, is called
+after various libraries and routines have been loaded and initiated, but before
+the main event processing loop begins.  It is convenient to implement sizing of 
+the main window, and whatever other processing should occur before the application
+really gets going.
+
+A typical application might look like this;
+
+```C
+#include "gui.h"
+#include "sampler.h"
+
+void setup()
+{
+	setCanvasSize(1024, 768);
+    setFrameRate(15);
+
+}
+```
+
+In this case, the application drawing canvas will be set to 1024 x 768.  In addition
+the frame rate of the application is set to 15 frames per second.
+
+```C
+void onFrame()
+{
+    // Get current screen snapshot
+    screenSamp->next();
+
+    // Draw a rectangle with snapshot as texture
+    sampleRectangle(*gAppSurface,gAppSurface->frame(),*screenSamp);
+}
+```
+
+If the application implements the onFrame() function, it will be called every time
+through the event loop, based on the frame rate.  This is typically whatever drawing
+is to be done occurs.
+
+It is similar with the various mouse and keyboard functions.  If they are implemented,
+they will be called at the appropriate times in accordance with the event handler implemented
+within gui.cpp.  If the application does not implement these routines, they simply are not called.
+
+gui.h contains a few global variables that can be accessed from within the application.
+
+```C
+#ifdef __cplusplus
+extern "C" {
+#endif
+	// Size of the application area, set through
+	// createCanvas()
+	APP_EXPORT extern int width;
+	APP_EXPORT extern int height;
+
+	APP_EXPORT extern uint64_t frameCount;
+	APP_EXPORT extern uint64_t droppedFrames;
+
+	APP_EXPORT extern PixelRGBA* pixels;
+
+	// Keyboard Globals
+	APP_EXPORT extern int keyCode;
+	APP_EXPORT extern int keyChar;
+
+	// Mouse Globals
+	APP_EXPORT extern bool mouseIsPressed;
+	APP_EXPORT extern int mouseX;
+	APP_EXPORT extern int mouseY;
+	APP_EXPORT extern int mouseDelta;
+	APP_EXPORT extern int pmouseX;
+	APP_EXPORT extern int pmouseY;
+
+
+#ifdef __cplusplus
+}
+#endif
+```
