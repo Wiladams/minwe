@@ -30,7 +30,7 @@ class YCrCbSeparator
 				double u = maths::Map(col, srcBounds.x, (double)srcBounds.x + srcBounds.width - 2, 0, 1);
 				double v = maths::Map(row, srcBounds.y, static_cast<double>(srcBounds.y + srcBounds.height - 2), 0, 1);
 
-				auto c = src.getValue(u, v, { col,row });
+				auto c = src.getValue(u, v, PixelCoord({ (int)col,(int)row }));
 
 				// dot(color, graycoefficients)
 				float Y = (0.299 * c.r()) + (0.587 * c.g()) + (0.114 * c.b());

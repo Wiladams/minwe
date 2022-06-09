@@ -1,2 +1,0 @@
-D:\repos\minwe\proj\Debug\proj.exe
-D:\repos\minwe\proj\Debug\proj.pdb
