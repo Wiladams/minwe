@@ -1,44 +1,28 @@
 #include "apphost.h"
-#include "draw2d.h"
+#include "draw.h"
+#include "maths.hpp"
 
-constexpr int MAXPOINTS = 200000;
+using namespace maths;
 
-double randomRange(const float low, const float high)
-{
-	double frac = (double)rand() / RAND_MAX;
-	double ret = low + frac * (high - low);
+constexpr size_t MAXPOINTS = 200000;
+PixelArray gpa;
 
-	return ret;
-}
-
-double random(const float rndMax)
-{
-	return randomRange(0, rndMax);
-}
-
-void background(PixelRGBA c)
-{
-	gAppSurface->setAllPixels(c);
-}
 
 void drawRandomPoints()
 {
-
-	for (int i = 0; i < MAXPOINTS; i++)
+	for (size_t i = 0; i < MAXPOINTS; i++)
 	{
-		int x = random_int(canvasWidth);
-		int y = random_int(canvasHeight);
-		uint32_t r = random_int(255);
-		uint32_t g = random_int(255);
-		uint32_t b = random_int(255);
+		size_t x = random_int(canvasWidth-1);
+		size_t y = random_int(canvasHeight-1);
+		uint32_t gray = random_int(255);
 
-		gAppSurface->set(x, y, { r,g,b });
+		canvasPixels[(y * canvasWidth) + x] = PixelRGBA(gray, gray, gray);
 	}
 }
 
 void onLoop()
 {
-	background(PixelRGBA(0x0));
+	gAppSurface->setAllPixels(PixelRGBA(0x0));
 
 	drawRandomPoints();
 	
@@ -48,6 +32,8 @@ void onLoop()
 void onLoad()
 {
 	setCanvasSize(800, 600);
+	gpa.initArray(canvasPixels, canvasWidth, canvasHeight, canvasBytesPerRow);
+
 	gAppWindow->moveTo(0, 0);
 	layered();
 }

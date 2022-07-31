@@ -34,10 +34,6 @@ inline void sampleHLine2D(PixelMap& pb, int x1, int y1, int w,
 // the desired section of the sampler
 inline void sampleRect(PixelMap& pmap, const PixelRect & dstisect, TexelRect srcExt, ISample2D<PixelRGBA, PixelCoord>& src)
 {
-    // find the intersection between the source rectangle
-    // and the frame
-    //PixelRect dstisect = pmap.frame().intersection(dstFrame);
-
     // if the intersection is empty, we have
     // nothing to draw, so return
     if (dstisect.isEmpty())
@@ -63,7 +59,7 @@ inline void sampleRect(PixelMap& pmap, const PixelRect & dstisect, TexelRect src
     }
 }
 
-void sampleRectangle(PixelMap& pmap, const PixelRect& dstFrame, ISample2D<PixelRGBA, PixelCoord>& samp)
+inline void sampleRectangle(PixelMap& pmap, const PixelRect& dstFrame, ISample2D<PixelRGBA, PixelCoord>& samp)
 {
     PixelRect dstisect = pmap.frame().intersection(dstFrame);
     TexelRect trex = TexelRect::create(dstisect, pmap.frame());
@@ -203,7 +199,7 @@ inline void sampleTriangle(PixelMap& pb, const int x1, const int y1,
     sampleConvexPolygon(pb, tri.verts, nverts, vmin, src, clipRect);
 }
 
-void sampleCircle(PixelMap& pmap, int centerX, int centerY, int radius, ISample2D<PixelRGBA, PixelCoord>& fillStyle)
+inline void sampleCircle(PixelMap& pmap, int centerX, int centerY, int radius, ISample2D<PixelRGBA, PixelCoord>& fillStyle)
 {
     auto x1 = centerX - radius, y1 = centerY - radius;
     auto  x2 = centerX + radius, y2 = centerY + radius;

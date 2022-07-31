@@ -71,6 +71,8 @@ int loopCount = 0;
 // Display Globals
 int canvasWidth = 0;
 int canvasHeight = 0;
+PixelRGBA* canvasPixels = nullptr;
+size_t canvasBytesPerRow = 0;
 
 int displayWidth = 0;
 int displayHeight= 0;
@@ -429,6 +431,9 @@ LRESULT HandleMouseMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_XBUTTONUP:
             e.activity = MOUSERELEASED;
             break;
+
+        // On mouse wheels, the x, and y offset by the window
+        // rathern than being the client area
         case WM_MOUSEWHEEL:
             e.activity = MOUSEWHEEL;
             e.delta = GET_WHEEL_DELTA_WPARAM(wParam);
@@ -664,7 +669,7 @@ LRESULT HandlePaintMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         DestWidth,DestHeight,
         xSrc,ySrc,
         SrcWidth, SrcHeight,
-        gAppSurface->getData(),&info,
+        gAppSurface->data(),&info,
         DIB_RGB_COLORS,
         SRCCOPY);
         
@@ -818,7 +823,7 @@ void layered()
 
 void noLayered()
 {
-    gAppWindow->clearExtendedStyle(WS_EX_LAYERED|WS_EX_NOREDIRECTIONBITMAP);
+    gAppWindow->removeExtendedStyle(WS_EX_LAYERED|WS_EX_NOREDIRECTIONBITMAP);
     gAppWindow->setWindowStyle(gLastWindowStyle);
 
     gIsLayered = false;
@@ -829,9 +834,22 @@ bool isLayered()
     return gIsLayered;
 }
 
+// Set an opacity value between 0.0 and 1.0
+// 1.0 == fully opaque (not transparency)
+// less than that makes the whole window more transparent
+void windowOpacity(float o)
+{
+    gAppWindow->setOpacity(o);
+}
+
 void setWindowPosition(int x, int y)
 {
     gAppWindow->moveTo(x, y);
+}
+
+APP_EXPORT void setTitle(const char* title)
+{
+    gAppWindow->setTitle(title);
 }
 
 bool setCanvasSize(long aWidth, long aHeight)
@@ -845,9 +863,12 @@ bool setCanvasSize(long aWidth, long aHeight)
 
 
     gAppSurface = std::make_shared<User32PixelMap>(aWidth, aHeight);
+    canvasPixels = gAppSurface->data();
+
     canvasWidth = aWidth;
     canvasHeight = aHeight;
-    
+    canvasBytesPerRow = gAppSurface->stride();
+
     if (gAppWindow != nullptr)
         gAppWindow->setCanvasSize(aWidth, aHeight);
 

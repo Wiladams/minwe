@@ -341,6 +341,6 @@ namespace maths {
 
 
     // Returns a random integer in [min,max].
-    INLINE int random_int(int mn, int mx) {return static_cast<int>(randomRange(mn, mx + 1.0));}
+    INLINE int random_int(int mn, int mx) {return static_cast<int>(randomRange(mn, mx));}
     INLINE int random_int(int mx) { return random_int(0, mx); }
 }

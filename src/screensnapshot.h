@@ -24,7 +24,7 @@
 
 class ScreenSnapshot : public User32PixelMap
 {
-    HDC fScreenDC;  // Device Context for the screen
+    HDC fSourceDC;  // Device Context for the screen
 
     // which location on the screen are we capturing
     int fOriginX;   
@@ -32,23 +32,50 @@ class ScreenSnapshot : public User32PixelMap
 
 
 public:
-    ScreenSnapshot(int x, int y, int awidth, int aheight)
+    ScreenSnapshot()
+        : fSourceDC(nullptr)
+        , fOriginX(0)
+        , fOriginY(0)
+    {}
+
+    ScreenSnapshot(int x, int y, int awidth, int aheight, HDC srcDC = NULL)
         : User32PixelMap(awidth, aheight),
         fOriginX(x),
         fOriginY(y)
     {
-        // create a device context for the display
-        //fScreenDC = CreateDCA("DISPLAY", nullptr, nullptr, nullptr);
-        fScreenDC = GetDC(nullptr);
+        init(x, y, awidth, aheight, NULL);
 
         // take at least one snapshot
         next();
     }
 
+    bool init(int x, int y, int awidth, int aheight, HDC srcDC=NULL)
+    {
+        User32PixelMap::init(awidth, aheight);
+
+        if (NULL == srcDC)
+            fSourceDC = GetDC(nullptr);
+        else
+            fSourceDC = srcDC;
+
+        fOriginX = x;
+        fOriginY = y;
+
+        return true;
+    }
+
     // take a snapshot of current screen
     bool next()
     {
-        BitBlt(getDC(), 0, 0, width(), height(), fScreenDC, fOriginX, fOriginY, SRCCOPY | CAPTUREBLT);
+        // copy the screendc into our backing buffer
+        // getDC retrieves the device context of the backing buffer
+        // which in this case is the 'destination'
+        // the fSourceDC is the source
+        // the width and height are dictated by the width() and height() 
+        // and the source origin is given by fOriginX, fOriginY
+        // We use the parameters (SRCCOPY, CAPTUREBLT) because that seems 
+        // to be best practice in this case
+        BitBlt(getDC(), 0, 0, width(), height(), fSourceDC, fOriginX, fOriginY, SRCCOPY | CAPTUREBLT);
 
         return true;
     }

@@ -1,7 +1,10 @@
 #include "gui.h"
 #include "stopwatch.h"
+#include "recorder.h"
 
 using namespace maths;
+
+Recorder reco;  // The recorder
 
 struct pulseCircle
 {
@@ -34,8 +37,6 @@ struct pulseCircle
 };
 
 pulseCircle pc1(0.50);
-//pulseCircle pc2(0.25);
-
 
 
 inline PixelRGBA randomColor(uint32_t alpha = 255)
@@ -54,13 +55,13 @@ void drawLines()
 }
 
 
-
-
 void setup()
 {
-    setCanvasSize(400, 400);
-    setFrameRate(20);
+    setCanvasSize(800, 800);
+    setFrameRate(15);
     layered();
+
+    reco.init(&*gAppSurface);
 }
 
 void onFrame()
@@ -69,5 +70,21 @@ void onFrame()
 
     drawLines();
     pc1.draw();
-    //pc2.draw();
+
+    reco.saveFrame();
+}
+
+void keyReleased(const KeyboardEvent& e) {
+    switch (e.keyCode)
+    {
+    case VK_ESCAPE:
+        halt();
+        break;
+
+    case 'R':
+    {
+        reco.toggleRecording();
+    }
+    break;
+    }
 }

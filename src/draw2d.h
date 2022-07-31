@@ -148,12 +148,12 @@ inline bool clipLine(const PixelRect &bounds, int& x0, int& y0, int& x1, int& y1
 // so no range checking happens here
 INLINE void copySpan(PixelMap& pmap, const int x, const int y, const int width, const PixelRGBA& src)
 {
-    __stosd((unsigned long*)pmap.getPixelPointer(x, y), src.value, width);
+    __stosd((unsigned long*)pmap.pixelPointer(x, y), src.value, width);
 }
 
 INLINE void blendSpan(PixelMap& pmap, const int x, const int y, const int width, const PixelRGBA& src)
 {
-    PixelRGBA* pixelPtr = (PixelRGBA*)pmap.getPixelPointer(x, y);
+    PixelRGBA* pixelPtr = (PixelRGBA*)pmap.pixelPointer(x, y);
     for (int offset = 0; offset < width; offset++)
         pixelPtr[offset] = blend_pixel(pixelPtr[offset], src);
 }
@@ -674,14 +674,14 @@ INLINE void blit(PixelMap & pb, const int x, const int y, PixelMap & src)
     // we're trying to avoid knowing the internal details of the
     // pixel maps, so we use getPixelPointer() to get a pointer
     // realistically, the blit should be implemented in PixelMap
-    uint32_t* dstPtr = (uint32_t *)pb.getPixelPointer(dstX,dstY);
+    uint32_t* dstPtr = (uint32_t *)pb.pixelPointer(dstX,dstY);
 
     int rowCount = 0;
     for (int srcrow = srcY; srcrow < srcY+ dstisect.height; srcrow++)
     {
-        uint32_t* srcPtr = (uint32_t*)src.getPixelPointer(srcX, srcrow);
+        uint32_t* srcPtr = (uint32_t*)src.pixelPointer(srcX, srcrow);
         memcpy(dstPtr, srcPtr, dstisect.width * 4);
         rowCount++;
-        dstPtr = (uint32_t*)pb.getPixelPointer(dstisect.x, dstisect.y+rowCount);
+        dstPtr = (uint32_t*)pb.pixelPointer(dstisect.x, dstisect.y+rowCount);
     }
 }

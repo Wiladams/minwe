@@ -1,18 +1,18 @@
 #include "apphost.h"
 #include "draw2d.h"
 
-double randomRange(const float low, const float high)
-{
-	double frac = (double)rand() / RAND_MAX;
-	double ret = low + frac * (high - low);
+//double randomRange(const float low, const float high)
+//{
+//	double frac = (double)rand() / RAND_MAX;
+//	double ret = low + frac * (high - low);
 
-	return ret;
-}
+//	return ret;
+//}
 
-double random(const float rndMax)
-{
-	return randomRange(0, rndMax);
-}
+//double random(const float rndMax)
+//{
+//	return randomRange(0, rndMax);
+//}
 
 PixelRGBA randomColor()
 {

@@ -2,7 +2,6 @@
 #include "targa.h"
 #include "rendercontext.h"
 
-
 void setup()
 {
 	User32PixelMap img;
@@ -12,6 +11,7 @@ void setup()
 	//targa::initFromFile(img, "..\\debug\\marbles.tga");
 	
 	setCanvasSize(img.width(), img.height());
+	setTitle("Targa Sampler");
 
 	RenderContext ctx(gAppSurface);
 

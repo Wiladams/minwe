@@ -89,11 +89,13 @@ APP_EXPORT extern unsigned int systemPpi;
 APP_EXPORT extern int canvasWidth;
 APP_EXPORT extern int canvasHeight;
 
+APP_EXPORT extern PixelRGBA* canvasPixels;
+APP_EXPORT extern size_t canvasBytesPerRow;
 
 
 // The various 'onxxx' routines are meant to be implemented by
 // application environment code.  If they are implemented
-// the ndt runtime will load them in and call them at appropriate times
+// the runtime will load them in and call them at appropriate times
 // if they are not implemented, they simply won't be called.
 APP_EXPORT void onLoad();	// upon loading application
 APP_EXPORT void onUnload();
@@ -105,8 +107,9 @@ APP_EXPORT void onLoop();	// called each time through application main loop
 // by the implementing application.
 // The control the lifetime of the environment, creation of primary window
 // and whether various parts of the IO system are present
-
+APP_EXPORT void windowOpacity(float o);	// set overall opacity of window
 APP_EXPORT void showAppWindow();
+APP_EXPORT void setTitle(const char* title);
 APP_EXPORT void halt();
 
 //EXPORT void forceRedraw(void* param, int64_t tickCount);

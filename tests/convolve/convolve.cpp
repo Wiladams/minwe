@@ -5,6 +5,7 @@
 #include "gui.h"
 #include "rendercontext.h"
 #include "screensnapshot.h"
+#include "pixeltypes.h"
 //#include "glsl.h"
 
 #include <array>
@@ -104,9 +105,9 @@ struct ConvolutionFilter
     float fData[3][3];
 };
 
-class ConvolutionPixelMap : public PixelMap
+class ConvolutionPixelMap : public PixelArray
 {
-    PixelMap& fWrapped;
+    PixelArray& fWrapped;
     NTSCGray fLuminance;    // For turning things gray
     
     float kernelContrib = 0;
@@ -143,7 +144,7 @@ public:
         return true;
     }
 
-    virtual PixelRGBA* getPixelPointer(const int x, const int y) { return fWrapped.getPixelPointer(x, y); }
+    virtual PixelRGBA* pixelPointer(const int x, const int y) { return fWrapped.getPixelPointer(x, y); }
     virtual size_t bytesPerRow() const { return fWrapped.bytesPerRow(); }
 
     void set(const int x, const int y, const PixelRGBA &c) override { fWrapped.set(x, y, c); }

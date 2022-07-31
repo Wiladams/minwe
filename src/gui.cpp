@@ -1,6 +1,7 @@
 #include "gui.h"
-#include "stopwatch.h"
 
+#include "stopwatch.h"
+#include "recorder.h"
 
 
 static bool gIsFullscreen = false;
@@ -27,9 +28,6 @@ double fNextMillis = 0;
 uint64_t fDroppedFrames = 0;
 uint64_t frameCount;
 
-//int width;
-//int height;
-
 
 PixelRGBA* pixels = nullptr;
 
@@ -48,7 +46,12 @@ int pmouseY=0;
 
 StopWatch fsw;
 
+Recorder gRecorder;
 
+void recordingStart() { gRecorder.record(); }
+void recordingStop() { gRecorder.stop(); }
+void recordingPause() { gRecorder.pause(); }
+void recordingToggle() { gRecorder.toggleRecording(); }
 
 void handleKeyboardEvent(const KeyboardEventTopic& p, const KeyboardEvent& e)
 {
@@ -58,13 +61,11 @@ void handleKeyboardEvent(const KeyboardEventTopic& p, const KeyboardEvent& e)
     switch (e.activity) 
     {
     case KEYPRESSED:
-        //p5::keyCode = e.keyCode;
         if (gKeyPressedHandler) {
             gKeyPressedHandler(e);
         }
         break;
     case KEYRELEASED:
-        //p5::keyCode = e.keyCode;
         if (gKeyReleasedHandler) {
             gKeyReleasedHandler(e);
         }
@@ -125,7 +126,6 @@ void handleMouseEvent(const MouseEventTopic& p, const MouseEvent& e)
         break;
 
     case MOUSEWHEEL:
-        //p5::mouseDelta = e.delta;
         if (gMouseWheelHandler != nullptr) {
             gMouseWheelHandler(e);
         }
@@ -197,6 +197,8 @@ void onLoop()
             gDrawHandler();
         }
         
+        gRecorder.saveFrame();
+
         // Since we're on the clock, we will refresh
         // the screen.
         refreshScreen();
@@ -253,6 +255,10 @@ void onLoad()
         gSetupHandler();
     }
 
+    // setup the recorder
+    gRecorder.init(&*gAppSurface);
+
+    // 
     // If there was any drawing done during setup
     // display that at least once.
     refreshScreen();

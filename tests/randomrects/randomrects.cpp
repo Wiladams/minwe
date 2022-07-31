@@ -1,23 +1,17 @@
 
-#include "gui.h"
-#include "draw2d.h"
+//#include "gui.h"
+//#include "draw2d.h"
+#include "apphost.h"
+#include "draw.h"
+#include "maths.hpp"
+
+using namespace maths;
 
 bool outlineOnly = false;
+PixelArray gpa;
 
-double randomRange(const float low, const float high)
-{
-	double frac = (double)rand() / RAND_MAX;
-	double ret = low + frac * (high - low);
 
-	return ret;
-}
-
-double random(const float rndMax)
-{
-	return randomRange(0, rndMax);
-}
-
-PixelRGBA randomColor(uint32_t alpha=255)
+INLINE PixelRGBA randomColor(uint32_t alpha=255)
 {
 	uint32_t r = random_int(255);
 	uint32_t g = random_int(255);
@@ -35,12 +29,13 @@ void keyReleased(const KeyboardEvent& e)
 		outlineOnly = !outlineOnly;
 }
 
-void onFrame()
+void onLoop()
 {
 	PixelRGBA stroke;
 	PixelRGBA fill;
 	PixelRGBA c;
-	background(PixelRGBA(0));
+
+	gAppSurface->setAllPixels(PixelRGBA(0x0));
 
 	for (int i = 1; i <= 2000; i++)
 	{
@@ -49,27 +44,32 @@ void onFrame()
 		int lwidth = random_int(4, 60);
 		int lheight = random_int(4, 60);
 
-		c = randomColor(127);
+		c = randomColor(192);
 
 		if (outlineOnly)
 		{
 			stroke = c;
-			strokeRectangle(*gAppSurface, x1, y1, lwidth, lheight, stroke);
+			draw::copyRectangle(*gAppSurface, x1, y1, lwidth, lheight, c);
+
 		}
 		else
 		{
 			fill = c;
-			fillRectangle(*gAppSurface, x1, y1, lwidth, lheight, fill);
+			draw::copyRectangle(*gAppSurface, x1, y1, lwidth, lheight, c);
 		}
 	}
+
+	refreshScreen();
 }
 
 
-void setup()
+void onLoad()
 {
-	//fullscreen();
 	setCanvasSize(800, 800);
-	//layered();
+	gpa.initArray(canvasPixels, canvasWidth, canvasHeight, canvasBytesPerRow);
 
-	setFrameRate(30);
+	windowOpacity(0.33);
+
+	//gAppWindow->moveTo(0, 0);
+	//layered();
 }

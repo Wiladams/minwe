@@ -30,9 +30,9 @@ class User32PixelMap : public PixelMap
     HBITMAP fDIBHandle = nullptr;
     HGDIOBJ fOriginDIBHandle = nullptr;
     HDC     fBitmapDC = nullptr;
-    void * fData = nullptr;       // A pointer to the data
+
     size_t fDataSize=0;       // How much data is allocated
-    size_t fBytesPerRow = 0;        // Row stride
+
 
     // A couple of constants
     static const int bitsPerPixel = 32;
@@ -44,7 +44,7 @@ public:
     }
 
     User32PixelMap(const long awidth, const long aheight)
-        : PixelMap(0,0,awidth,aheight)
+//        : PixelMap(0,0,awidth,aheight)
     {
         fDataSize = 0;
 
@@ -62,18 +62,17 @@ public:
         ::DeleteObject(fDIBHandle);
     }
 
-    bool init(int awidth, int aheight)
+    virtual bool init(int awidth, int aheight)
     {
-        fFrame = { 0,0,awidth,aheight };
-
-        fBytesPerRow = winme::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
+        size_t bytesPerRow = winme::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
+        void* data = nullptr;
 
         fBMInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
         fBMInfo.bmiHeader.biWidth = awidth;
         fBMInfo.bmiHeader.biHeight = -(LONG)aheight;	// top-down DIB Section
         fBMInfo.bmiHeader.biPlanes = 1;
         fBMInfo.bmiHeader.biBitCount = bitsPerPixel;
-        fBMInfo.bmiHeader.biSizeImage = fBytesPerRow * aheight;
+        fBMInfo.bmiHeader.biSizeImage = bytesPerRow * aheight;
         fBMInfo.bmiHeader.biClrImportant = 0;
         fBMInfo.bmiHeader.biClrUsed = 0;
         fBMInfo.bmiHeader.biCompression = BI_RGB;
@@ -82,8 +81,9 @@ public:
         // We'll create a DIBSection so we have an actual backing
         // storage for the context to draw into
         // BUGBUG - check for nullptr and fail if found
-        fDIBHandle = ::CreateDIBSection(nullptr, &fBMInfo, DIB_RGB_COLORS, &fData, nullptr, 0);
+        fDIBHandle = ::CreateDIBSection(nullptr, &fBMInfo, DIB_RGB_COLORS, &data, nullptr, 0);
 
+        initArray(data, awidth, aheight, bytesPerRow);
 
         // Create a GDI Device Context
         fBitmapDC = ::CreateCompatibleDC(nullptr);
@@ -108,9 +108,7 @@ public:
 
     INLINE BITMAPINFO getBitmapInfo() { return fBMInfo; }
     INLINE HDC getDC() { return fBitmapDC; }
-    INLINE PixelRGBA* getData() { return (PixelRGBA*)fData; }
-    INLINE PixelRGBA* getPixelPointer(const int x, const int y) {return &((PixelRGBA*)fData)[(y * width()) + x]; }
-    INLINE size_t bytesPerRow() const { return fBytesPerRow; }
+
 
     // Retrieve a single pixel
     // This one does no bounds checking, so the behavior is undefined
@@ -141,11 +139,11 @@ public:
 
     // set consecutive pixels in a row 
     // Assume the range has already been clipped
-    INLINE void setPixels(const int x, const int y, const int w, const PixelRGBA src)
+    INLINE void copyPixels(const int x, const int y, const int w, const PixelRGBA &src)
     {
         // do line clipping
         // copy actual pixel data
-        uint32_t* pixelPtr = (uint32_t*)getPixelPointer(x, y);
+        uint32_t* pixelPtr = (uint32_t*)pixelPointer(x, y);
         __stosd((unsigned long*)pixelPtr, src.value, w);
     }
 
@@ -157,13 +155,5 @@ public:
         size_t nPixels = width() * height();
         __stosd((unsigned long*)fData, c.value, nPixels);
     }
-
-    /*
-    INLINE void setAllPixels(const uint32_t value)
-    {
-        size_t nPixels = width() * height();
-        __stosd((unsigned long*)fData, value, nPixels);
-    }
-    */
 
  };

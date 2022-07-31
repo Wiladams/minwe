@@ -22,7 +22,7 @@ class YCrCbSeparator
 	{
 		// run through the y pixelmap, grabbing items from the src
 		// separate along the way
-		const auto srcBounds = Y.getBounds();
+		const auto srcBounds = Y.frame();
 
 		for (int row = srcBounds.y; row < srcBounds.y + srcBounds.height - 1; row++)
 		{

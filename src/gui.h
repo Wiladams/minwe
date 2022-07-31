@@ -12,7 +12,8 @@
 // the functions that you use, include gui.h in your application.
 //
 #include "apphost.h"
-#include "draw2d.h"
+#include "sampledraw2d.h"
+#include "recorder.h"
 
 #pragma comment (lib, "Synchronization.lib")
 
@@ -45,6 +46,12 @@ extern "C" {
 	APP_EXPORT void mouseHWheel(const MouseEvent& e);
 
 	APP_EXPORT void setFrameRate(const int);
+
+	APP_EXPORT void recordingStart();
+	APP_EXPORT void recordingStop();
+	APP_EXPORT void recordingPause();
+	APP_EXPORT void recordingToggle();
+
 #ifdef __cplusplus
 }
 #endif

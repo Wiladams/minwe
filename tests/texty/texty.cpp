@@ -139,6 +139,7 @@ void textColor(const PixelRGBA &pix)
 }
 
 struct FontMonger {
+    // Callback used for Windows font enumeration function
     static int CALLBACK fontEnumProc(CONST LOGFONTA* font, CONST TEXTMETRICA* textMetric, DWORD fontType, LPARAM lParam)
     {
         std::list<std::string>* fontList = (std::list<std::string>*)lParam;
@@ -147,19 +148,24 @@ struct FontMonger {
         return 1;
     }
 
-    static void listFontFamilies()
+    // Collect the names of the font families
+    static void collectFontFamilies(std::list<std::string> &fontList)
     {
         LOGFONTA font;
         font.lfCharSet = DEFAULT_CHARSET;
         font.lfFaceName[0] = 0;
         font.lfPitchAndFamily = 0;
 
-        std::list<std::string> fontList;
-
         int res = EnumFontFamiliesExA(gAppSurface->getDC(), &font, fontEnumProc, (LPARAM)&fontList, 0);
-        //printf("EnumFontFamiliesExA: %d\n", res);
 
         fontList.unique();
+    }
+
+    // Print out the names of the font families
+    static void listFontFamilies()
+    {
+        std::list<std::string> fontList;
+        collectFontFamilies(fontList);
 
         printf("===== UNIQUE NAMES =====\n");
         std::list<std::string>::iterator it;
@@ -180,7 +186,10 @@ void onFrame()
     textColor(c);
     //textFont("Arial", fontSize);
     //textFont("Yu Gothic UI", fontSize);
-    textFont("Vivaldi", fontSize);
+    //textFont("Vivaldi", fontSize);
+    //textFont("Stencil", fontSize);
+    textFont("Ravie", fontSize);
+
     text("The Quick brown fox jumps over the lazy dogs back.", 10, 100);
 
     if (fontSize >= 128)
@@ -198,4 +207,19 @@ void setup()
 	setCanvasSize(1920, 480);
 
     FontMonger::listFontFamilies();
+}
+
+void keyReleased(const KeyboardEvent& e) {
+    switch (e.keyCode)
+    {
+    case VK_ESCAPE:
+        halt();
+        break;
+
+    case 'R':
+    {
+        recordingToggle();
+    }
+    break;
+    }
 }

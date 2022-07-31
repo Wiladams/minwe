@@ -1,6 +1,6 @@
 #pragma once
 
-//Record a PixelMap
+//Record a PixelArray
 //
 // Then, to generate video
 //
@@ -8,14 +8,14 @@
 //
 
 #include "imagecodec.h"
-#include "pixelmap.h"
+#include "pixeltypes.h"
 
 #include <string>
 
 class Recorder
 {
     PPMBinary fCodec;
-    PixelMap * fSurface;
+    PixelArray * fSurface;
 
     std::string fBasename;
 
@@ -23,35 +23,56 @@ class Recorder
     int fCurrentFrame;
     int fMaxFrames;
 
-    Recorder() = delete;    // Don't want default constructor
-
 public:
-    Recorder(PixelMap* surf, const char* basename = "frame", int maxFrames = 0)
+    Recorder() = default;
+
+    Recorder(PixelArray* surf, const char* basename = "frame", int maxFrames = 0)
         : fSurface(surf)
         , fBasename(basename)
         , fIsRecording(false)
         , fMaxFrames(maxFrames)
         , fCurrentFrame(0)
     {
+        init(surf, basename, maxFrames);
     }
 
+    void init(PixelArray* surf, const char* basename = "frame", int maxFrames = 0)
+    {
+        fSurface = surf;
+        fBasename = basename;
+        fMaxFrames = maxFrames;
+        fCurrentFrame = 0;
+        fIsRecording = false;
+    }
 
-    void saveFrame()
+    bool saveFrame()
     {
         if (!fIsRecording)
-            return;
+            return false;
 
         if (fMaxFrames > 0) {
             if (fCurrentFrame >= fMaxFrames) {
-                return;   // reached maximum frames, maybe stop timer
+                return false;   // reached maximum frames, don't record
             }
         }
 
+        // Create filename based on frame number
         char frameName[256];
         sprintf_s(frameName, 255, "%s%06d.ppm", fBasename.c_str(), fCurrentFrame);
-        fCodec.write(frameName, *fSurface);
+
+        FILE *fp;
+        auto err = fopen_s(&fp, frameName, "wb");
+
+        if (!fp)
+            return false;
+
+        fCodec.write(fp, *fSurface);
+
+        fclose(fp);
 
         fCurrentFrame = fCurrentFrame + 1;
+
+        return true;
     }
 
     void toggleRecording()
@@ -61,6 +82,7 @@ public:
         else
             record();
     }
+
     bool record()
     {
         if (fIsRecording)

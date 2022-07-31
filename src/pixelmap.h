@@ -110,40 +110,29 @@ public:
     lines.  This leaves space for implementations to optimize
     these functions in ways that are specific to them.
 */
-class PixelMap : public ISample2D<PixelRGBA, PixelCoord>
+class PixelMap : public PixelArray, public ISample2D<PixelRGBA, PixelCoord>
 {
 protected:
-    PixelRect fFrame;
 
 public:
-    PixelMap() :fFrame(0,0,0,0){}
+    PixelMap() = default;
 
-    // virtual destructor so base classes setup properly
-    PixelMap(int x, int y, int w, int h)
-        :fFrame(x,y,w,h) {}
 
+    //PixelMap(int x, int y, int w, int h)
+    //{
+        //init(w, h);
+    //}
+
+    // virtual destructor so sub-classes setup properly
     virtual ~PixelMap() = default;
 
     // Things a sub-class MUST implement
     virtual bool init(int w, int h) = 0;
-    virtual PixelRGBA* getPixelPointer(const int x, const int y) = 0;
-    virtual size_t bytesPerRow() const = 0;
+
     virtual void copyPixel(const int x, const int y, const PixelRGBA &c) = 0;
     virtual void blendPixel(const int x, const int y, const PixelRGBA &c) = 0;
     virtual void setAllPixels(const PixelRGBA &c) = 0;
     virtual PixelRGBA getPixel(const int x, const int y) const = 0;
-
-    // regular things
-    INLINE constexpr int x() const noexcept { return fFrame.x; }
-    INLINE constexpr int y() const noexcept { return fFrame.y; }
-    INLINE constexpr int width() const noexcept { return fFrame.width; }
-    INLINE constexpr int height() const noexcept { return fFrame.height; }
-    
-    // Calculate whether a point is whithin our bounds
-    INLINE bool contains(double x, double y) const { return fFrame.containsPoint((int)x, (int)y); }
-
-    const PixelRect& getBounds() const { return fFrame; }
-    INLINE const PixelRect& frame() const { return fFrame; }
 
     //
     // set(), and get() are the general purpose ways to get and set
@@ -185,7 +174,6 @@ public:
         int py = int((v * ((double)height() - 1)) + 0.5);
 
         return getPixel(px, py);
-        //return get(px, py);
     }
 };
 

@@ -8,10 +8,12 @@
 #include <cassert>
 #include <array>
 #include <cstdint>
+#include <vector>
+#include <algorithm>
 
 
 using Coord = vec<2, double>;
-using PixelCoord = vec<2, int>;
+using PixelCoord = vec<2, ptrdiff_t>;
 using TextureCoord = vec<2, double>;
 
 
@@ -65,33 +67,11 @@ struct PixelRGBA
 };
 
 
-/*
-struct PixelCoord {
-    int fx;
-    int fy;
 
-    INLINE PixelCoord() noexcept = default;
-    INLINE constexpr PixelCoord(const PixelCoord& other) noexcept = default;
-    INLINE PixelCoord(int x, int y) noexcept :fx(x), fy(y) {}
-
-    INLINE constexpr int x() const noexcept { return fx; }
-    INLINE constexpr int y() const noexcept { return fy; }
-
-    INLINE PixelCoord& operator=(const PixelCoord& other) noexcept = default;
-};
-*/
 struct PixelSize {
     int w;
     int h;
 };
-
-
-/*
-struct TextureCoord {
-    double s;
-    double t;
-};
-*/
 
 struct PixelSpan 
 {
@@ -112,17 +92,27 @@ public:
     INLINE constexpr int w() noexcept { return fw; }
 };
 
+
+
 struct PixelRect {
     int x;
     int y;
-    int width;
-    int height;
+    size_t width;
+    size_t height;
 
     PixelRect() : x(0), y(0), width(0), height(0) {}
     PixelRect(const int x, const int y, const int w, const int h)
         :x(x), y(y), width(w), height(h) {}
 
+    INLINE void init(int _x, int _y, size_t w, size_t h)
+    {
+        x = x;
+        y = y;
+        width = w;
+        height = h;
+    }
 
+    
     INLINE constexpr bool isEmpty() const {return ((width <= 0) || (height <= 0));}
 
     INLINE constexpr void moveTo(int newX, int newY) {this->x = newX;this->y = newY;}
@@ -193,6 +183,98 @@ public:
 
     // type conversion
     operator PixelRect () const { return { (int)maths::Round(x()),(int)maths::Round(y()),(int)maths::Round(w()), (int)maths::Round(h()) }; }
+};
+
+struct PixelPolygon
+{
+    ptrdiff_t fTop = 65535;
+    ptrdiff_t fBottom = 0;
+    bool fIsClosed = true;
+    std::vector<PixelCoord > fVertices;
+    std::vector<ptrdiff_t> intersections;
+
+    PixelPolygon(bool closed = false)
+        :fTop(65535)
+        , fBottom(0)
+        , fIsClosed(closed)
+    {
+        clear();
+    }
+
+    bool isClosed() { return fIsClosed; }
+    bool isEmpty() { return fVertices.size() == 0; }
+
+    void setClose(bool toClose) { fIsClosed = toClose; }
+
+    // clear out existing commands and vertices
+    void clear()
+    {
+        fVertices.clear();
+        fTop = 65535;
+        fBottom = 0;
+    }
+
+    PixelRect getBounds()
+    {
+        ptrdiff_t minx = 65535;
+        ptrdiff_t maxx = -65535;
+        ptrdiff_t miny = 65535;
+        ptrdiff_t maxy = -65535;
+
+        for (auto& pt : fVertices)
+        {
+            minx = std::min(pt.x(), minx);
+            maxx = std::max(pt.x(), maxx);
+            miny = std::min(pt.y(), miny);
+            maxy = std::max(pt.y(), maxy);
+        }
+
+        return PixelRect(minx, miny, maxx - minx, maxy - miny);
+    }
+
+    void addPoint(const PixelCoord& pt)
+    {
+        fVertices.push_back(pt);
+    }
+
+    void addPoints(const PixelCoord pts[], size_t n)
+    {
+        for (size_t i = 0; i < n; i++)
+            fVertices.push_back(pts[i]);
+
+        findTopmost();
+        findIntersections();
+    }
+
+    void findTopmost()
+    {
+        fTop = 65535;
+        fBottom = 0;
+
+        for (size_t i = 0; i < fVertices.size(); ++i)
+        {
+            fTop = fTop < fVertices[i].y() ? fTop : fVertices[i].y();
+            fBottom = fBottom > fVertices[i].y() ? fBottom : fVertices[i].y();
+        }
+        fTop = std::max<ptrdiff_t>(0, fTop);
+        fBottom = std::min<ptrdiff_t>(fBottom, 65535);
+    }
+
+    void findIntersections()
+    {
+        for (ptrdiff_t y = fTop; y < fBottom; ++y)
+        {
+            std::vector<ptrdiff_t> intersections;
+            for (size_t i = 0; i < fVertices.size(); ++i)
+            {
+                const PixelCoord& p0 = (i ? fVertices[i - 1] : fVertices.back()), p1 = fVertices[i];
+                if ((y >= p0.y() && y < p1.y()) || (y >= p1.y() && y < p0.y()))
+                    intersections.push_back(p0.x() + (y - p0.y()) * (p1.x() - p0.x()) / (p1.y() - p0.y()));
+            }
+            assert(intersections.size() % 2 == 0);
+            std::sort(intersections.begin(), intersections.end());
+        }
+    }
 };
 
 // Represents a rectangular area of a sampler
@@ -289,6 +371,61 @@ struct TexelRect
         return  TexelRect(left, top, right, bottom);
     }
 
+};
+
+
+struct PixelArray
+{
+    uint8_t* fData;
+
+    PixelRect fFrame;
+    size_t fStride;
+
+
+    PixelArray() 
+        : fData(nullptr)
+        , fFrame()
+        , fStride(0)
+    { 
+        initArray(nullptr, 0, 0, 0); 
+    }
+    PixelArray(void* d, const size_t w, const size_t h, const size_t s)
+        : fData(nullptr)
+        , fFrame()
+        , fStride(0)
+    {
+        initArray(d, w, h, s);
+    }
+
+    void initArray(void* d, const size_t w, const size_t h, const size_t s)
+    {
+        fData = (uint8_t*)d;
+        fFrame.init(0, 0, w, h);
+        fStride = s;
+    }
+
+    INLINE constexpr int x() const noexcept { return fFrame.x; }
+    INLINE constexpr int y() const noexcept { return fFrame.y; }
+    INLINE constexpr int width() const noexcept { return fFrame.width; }
+    INLINE constexpr int height() const noexcept { return fFrame.height; }
+    INLINE const PixelRect& frame() const noexcept { return fFrame; }
+
+    INLINE constexpr size_t stride() const noexcept { return fStride; }
+
+    INLINE PixelRGBA* data() { return (PixelRGBA*)fData; }
+
+    INLINE PixelRGBA* rowPointer(const size_t y)
+    {
+        return (PixelRGBA*)(&fData[y * fStride]);
+    }
+
+    INLINE PixelRGBA* pixelPointer(const size_t x, const size_t y)
+    {
+        return (PixelRGBA*)(&fData[(y * fStride) + (x * sizeof(PixelRGBA))]);
+    }
+
+    // Calculate whether a point is whithin our bounds
+    INLINE bool contains(double x, double y) const { return fFrame.containsPoint((int)x, (int)y); }
 };
 
 // The ISample interface is meant to support a generic interface
