@@ -5,7 +5,6 @@
 using namespace maths;
 
 constexpr size_t MAXPOINTS = 200000;
-PixelArray gpa;
 
 
 void drawRandomPoints()
@@ -32,7 +31,6 @@ void onLoop()
 void onLoad()
 {
 	setCanvasSize(800, 600);
-	gpa.initArray(canvasPixels, canvasWidth, canvasHeight, canvasBytesPerRow);
 
 	gAppWindow->moveTo(0, 0);
 	layered();

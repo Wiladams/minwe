@@ -1,6 +1,3 @@
-#pragma once
-
-
 //==============================================================================================
 // Originally written in 2016 by Peter Shirley <ptrshrl@gmail.com>
 //
@@ -12,38 +9,31 @@
 // along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 //==============================================================================================
 
-#include "vec3.h"
+#include "rtweekend.h"
+
+#include <iostream>
+#include <iomanip>
+#include <math.h>
+#include <stdlib.h>
 
 
-class ray 
-{
-public:
-    point3 orig;
-    vec3 dir;
-    double tm = 0.0;
+double f(const vec3& d) {
+    auto cosine_squared = d.z()*d.z();
+    return cosine_squared;
+}
 
-  public:
-    ray() 
-        :orig()
-        , dir()
-        , tm(0.0)
-    {}
-    
-    ray(const point3& origin, const vec3& direction) : orig(origin), dir(direction), tm(0)
-    {}
+double pdf(const vec3& d) {
+    return 1 / (4*pi);
+}
 
-    ray(const point3& origin, const vec3& direction, double time)
-      : orig(origin), dir(direction), tm(time)
-    {}
-
-    point3 origin() const  { return orig; }
-    vec3 direction() const { return dir; }
-    double time() const    { return tm; }
-
-    point3 at(double t) const {
-        return orig + t*dir;
+int main() {
+    int N = 1000000;
+    auto sum = 0.0;
+    for (int i = 0; i < N; i++) {
+        vec3 d = random_unit_vector();
+        auto f_d = f(d);
+        sum += f_d / pdf(d);
     }
-
-
-};
-
+    std::cout << std::fixed << std::setprecision(12);
+    std::cout << "I = " << sum / N << '\n';
+}

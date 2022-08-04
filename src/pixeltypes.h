@@ -387,17 +387,17 @@ struct PixelArray
         , fFrame()
         , fStride(0)
     { 
-        initArray(nullptr, 0, 0, 0); 
+        attach(nullptr, 0, 0, 0);
     }
     PixelArray(void* d, const size_t w, const size_t h, const size_t s)
         : fData(nullptr)
         , fFrame()
         , fStride(0)
     {
-        initArray(d, w, h, s);
+        attach(d, w, h, s);
     }
 
-    void initArray(void* d, const size_t w, const size_t h, const size_t s)
+    void attach(void* d, const size_t w, const size_t h, const size_t s)
     {
         fData = (uint8_t*)d;
         fFrame.init(0, 0, w, h);

@@ -7,12 +7,6 @@ inline PixelRGBA randomColor(uint32_t alpha=255)
 	return { (uint32_t)maths::random(255), (uint32_t)maths::random(255), (uint32_t)maths::random(255), alpha };
 }
 
-
-void background(const PixelRGBA &c)
-{
-	gAppSurface->setAllPixels(c);
-}
-
 void drawRandomEllipses(PixelRect bounds)
 {
 	for (int i = 0; i < 1000; i++)
@@ -28,7 +22,7 @@ void drawRandomEllipses(PixelRect bounds)
 
 void onLoop()
 {
-	background(PixelRGBA(0x00));
+	gAppSurface->setAllPixels(PixelRGBA(0x00));
 	drawRandomEllipses(PixelRect{ 0,0,canvasWidth,canvasHeight });
 	refreshScreen();
 }

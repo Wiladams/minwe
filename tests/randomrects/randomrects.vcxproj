@@ -147,7 +147,9 @@
     <ClCompile Include="randomrects.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\apphost.h" />
     <ClInclude Include="..\..\src\coloring.h" />
+    <ClInclude Include="..\..\src\pixeltypes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

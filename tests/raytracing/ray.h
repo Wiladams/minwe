@@ -1,6 +1,5 @@
-#pragma once
-
-
+#ifndef RAY_H
+#define RAY_H
 //==============================================================================================
 // Originally written in 2016 by Peter Shirley <ptrshrl@gmail.com>
 //
@@ -15,20 +14,9 @@
 #include "vec3.h"
 
 
-class ray 
-{
-public:
-    point3 orig;
-    vec3 dir;
-    double tm = 0.0;
-
+class ray {
   public:
-    ray() 
-        :orig()
-        , dir()
-        , tm(0.0)
-    {}
-    
+    ray() {}
     ray(const point3& origin, const vec3& direction) : orig(origin), dir(direction), tm(0)
     {}
 
@@ -44,6 +32,10 @@ public:
         return orig + t*dir;
     }
 
-
+  public:
+    point3 orig;
+    vec3 dir;
+    double tm;
 };
 
+#endif

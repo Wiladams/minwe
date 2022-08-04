@@ -70,6 +70,10 @@ void keyReleased(const KeyboardEvent& e) {
 		if (iterations < 2)
 			iterations = 2;
 		break;
+	
+	case 'R':
+		recordingToggle();
+		break;
 	}
 }
 

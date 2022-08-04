@@ -1,6 +1,3 @@
-#pragma once
-
-
 //==============================================================================================
 // Originally written in 2016 by Peter Shirley <ptrshrl@gmail.com>
 //
@@ -12,38 +9,20 @@
 // along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 //==============================================================================================
 
-#include "vec3.h"
+#include "rtweekend.h"
+
+#include <iostream>
+#include <math.h>
 
 
-class ray 
-{
-public:
-    point3 orig;
-    vec3 dir;
-    double tm = 0.0;
+int main() {
+    for (int i = 0; i < 2000; i++) {
+        auto r1 = random_double();
+        auto r2 = random_double();
+        auto x = cos(2*pi*r1)*2*sqrt(r2*(1-r2));
+        auto y = sin(2*pi*r1)*2*sqrt(r2*(1-r2));
+        auto z = 1 - 2*r2;
 
-  public:
-    ray() 
-        :orig()
-        , dir()
-        , tm(0.0)
-    {}
-    
-    ray(const point3& origin, const vec3& direction) : orig(origin), dir(direction), tm(0)
-    {}
-
-    ray(const point3& origin, const vec3& direction, double time)
-      : orig(origin), dir(direction), tm(time)
-    {}
-
-    point3 origin() const  { return orig; }
-    vec3 direction() const { return dir; }
-    double time() const    { return tm; }
-
-    point3 at(double t) const {
-        return orig + t*dir;
+        std::cout << x << " " << y << " " << z << '\n';
     }
-
-
-};
-
+}

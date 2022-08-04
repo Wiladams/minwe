@@ -4,20 +4,11 @@
 
 using namespace maths;
 
-#define cyan 0xff00ffff
-PixelArray gpa;
-
 
 void drawLines()
 {
 	// fill background with background color
-	//PixelRGBA bkgpixel(0xffdccccc);
-	PixelRGBA bkgpixel(0x0);
-	gAppSurface->setAllPixels(bkgpixel);
-
-	//int r = random_int(255);
-	//int g = random_int(255);
-	//int b = random_int(255);
+	gAppSurface->setAllPixels(PixelRGBA(0x0));
 
 	int strokeWeight = 1;
 
@@ -32,7 +23,7 @@ void drawLines()
 		int g = random_int(255);
 		int b = random_int(255);
 
-		draw::copyLine(gpa, x1, y1, x2, y2, PixelRGBA(r, g, b, 255), strokeWeight);
+		draw::line_copy(*gAppSurface, x1, y1, x2, y2, PixelRGBA(r, g, b, 255), strokeWeight);
 	}
 }
 
@@ -49,9 +40,7 @@ void onLoop()
 // Here we setup the size of the drawing canvas
 void onLoad()
 {
-	//setCanvasSize(displayWidth, displayHeight);
 	setCanvasSize(displayWidth/2, displayHeight);
-	gpa.initArray(canvasPixels, canvasWidth, canvasHeight, canvasBytesPerRow);
 
 	setWindowPosition(0, 0);
 	layered();

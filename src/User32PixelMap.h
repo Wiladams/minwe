@@ -83,7 +83,7 @@ public:
         // BUGBUG - check for nullptr and fail if found
         fDIBHandle = ::CreateDIBSection(nullptr, &fBMInfo, DIB_RGB_COLORS, &data, nullptr, 0);
 
-        initArray(data, awidth, aheight, bytesPerRow);
+        attach(data, awidth, aheight, bytesPerRow);
 
         // Create a GDI Device Context
         fBitmapDC = ::CreateCompatibleDC(nullptr);

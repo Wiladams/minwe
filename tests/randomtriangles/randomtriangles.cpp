@@ -1,27 +1,10 @@
 #include "apphost.h"
 #include "draw2d.h"
-
-//double randomRange(const float low, const float high)
-//{
-//	double frac = (double)rand() / RAND_MAX;
-//	double ret = low + frac * (high - low);
-
-//	return ret;
-//}
-
-//double random(const float rndMax)
-//{
-//	return randomRange(0, rndMax);
-//}
+#include "draw.h"
 
 PixelRGBA randomColor()
 {
 	return { (uint32_t)random_int(255),(uint32_t)random_int(255), (uint32_t)random_int(255), (uint32_t)random_int(255) };
-}
-
-void background(PixelRGBA c)
-{
-	gAppSurface->setAllPixels(c);
 }
 
 
@@ -42,7 +25,8 @@ void drawRandomTriangles(PixelRect bounds)
 
 void onLoop()
 {
-	background(PixelRGBA(0xffcccccc));
+	gAppSurface->setAllPixels(PixelRGBA(0xffcccccc));
+
 	drawRandomTriangles({0,0,canvasWidth,canvasHeight});
 	refreshScreen();
 }

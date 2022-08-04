@@ -8,13 +8,17 @@
 struct draw
 {
 
+#define PIXELBLEND(bg, fg) PixelRGBA(				\
+	lerp255(bg.r(), fg.r(), fg.a()), \
+	lerp255(bg.g(), fg.g(), fg.a()), \
+	lerp255(bg.b(), fg.b(), fg.a()), fg.a())
 
-    static INLINE void copyPixel(PixelArray& pa, const size_t x, const size_t y, const PixelRGBA& c)
+    static INLINE void pixel_copy(PixelArray& pa, const size_t x, const size_t y, const PixelRGBA& c)
     {
         ((PixelRGBA*)((uint8_t*)pa.data() + (y * pa.stride()) + (x * 4)))[0] = c;
     }
 
-    static INLINE void copyVLine(PixelArray& pa, const size_t x, const size_t y, const size_t len, const PixelRGBA& c)
+    static INLINE void vline_copy(PixelArray& pa, const size_t x, const size_t y, const size_t len, const PixelRGBA& c)
     {
         size_t rowStride = pa.stride();
         uint8_t* dataPtr = (uint8_t*)pa.pixelPointer(x, y);
@@ -26,7 +30,14 @@ struct draw
         }
     }
 
-    static INLINE void copySpan(PixelArray& pa, const size_t x, const size_t y, const size_t len, const PixelRGBA& c)
+    static INLINE void span_blend(PixelArray& pa, const size_t x, const size_t y, const size_t len, const PixelRGBA& src)
+    {
+        PixelRGBA* pixelPtr = (PixelRGBA*)pa.pixelPointer(x, y);
+        for (int offset = 0; offset < len; offset++)
+            pixelPtr[offset] = PIXELBLEND(pixelPtr[offset], src);
+    }
+
+    static INLINE void span_copy(PixelArray& pa, const size_t x, const size_t y, const size_t len, const PixelRGBA& c)
     {
         unsigned long* dataPtr = (unsigned long*)pa.pixelPointer(x, y);
         __stosd(dataPtr, c.value, len);
@@ -37,7 +48,7 @@ struct draw
     // Stroke a line using Bresenham line drawing.
     // clips line to frame of pixelmap
     //
-    static INLINE void copyLine(PixelArray& pmap, ptrdiff_t x1, ptrdiff_t y1, ptrdiff_t x2, ptrdiff_t y2, const PixelRGBA& color, size_t width = 1)
+    static INLINE void line_copy(PixelArray& pmap, ptrdiff_t x1, ptrdiff_t y1, ptrdiff_t x2, ptrdiff_t y2, const PixelRGBA& color, size_t width = 1)
     {
         const ptrdiff_t w = pmap.width() - 1;
         const ptrdiff_t h = pmap.height() - 1;
@@ -141,12 +152,12 @@ struct draw
                     if (inverse)
                     {
                         if (y < w)
-                            draw::copyPixel(pmap, y, x, color);
+                            draw::pixel_copy(pmap, y, x, color);
                     }
                     else
                     {
                         if (y < h)
-                            draw::copyPixel(pmap, x, y,color);
+                            draw::pixel_copy(pmap, x, y,color);
                     }
                 }
 
@@ -161,7 +172,30 @@ struct draw
         }
     }
 
-    static INLINE void copyRectangle(PixelArray& pa, const int x, const int y, const int w, const int h, const PixelRGBA& c)
+    static INLINE void rectangle_copy(PixelArray& pa, const int x, const int y, const int w, const int h, const PixelRGBA& c)
+    {
+        // We calculate clip area up front
+        // so we don't have to do clipLine for every single line
+        PixelRect dstRect = pa.frame().intersection({ x,y,w,h });
+
+        // If the rectangle is outside the frame of the pixel map
+        // there's nothing to be drawn
+        if (dstRect.isEmpty())
+            return;
+
+        // Get pointer to data, and do fills,
+        // and just jump row to row
+        size_t rowStride = pa.stride();
+        uint8_t* dataPtr = (uint8_t*)pa.pixelPointer(dstRect.x, dstRect.y);
+
+        for (size_t counter = 0; counter < dstRect.height; counter++)
+        {
+            __stosd((unsigned long*)dataPtr, c.value, dstRect.width);
+            dataPtr += rowStride;
+        }
+    }
+
+    static INLINE void rectangle_blend(PixelArray& pa, const int x, const int y, const int w, const int h, const PixelRGBA& c)
     {
         // We calculate clip area up front
         // so we don't have to do clipLine for every single line
@@ -186,10 +220,10 @@ struct draw
 
     static INLINE void copyAll(PixelArray& pa, const PixelRGBA& c)
     {
-        draw::copyRectangle(pa, 0, 0, pa.width(), pa.height(), c);
+        draw::rectangle_copy(pa, 0, 0, pa.width(), pa.height(), c);
     }
 
-    static INLINE void copyPolygon(PixelArray& pb, const PixelPolygon& poly, const PixelRGBA& c)
+    static INLINE void polygon_copy(PixelArray& pb, const PixelPolygon& poly, const PixelRGBA& c)
     {
         for (ptrdiff_t y = poly.fTop; y < poly.fBottom; ++y)
         {
@@ -207,7 +241,7 @@ struct draw
                 ptrdiff_t left = std::max<ptrdiff_t>(0, intersections[i + 0]);
                 ptrdiff_t right = std::min<ptrdiff_t>(pb.width(), intersections[i + 1]);
 
-                draw::copySpan(pb, left, y, right - left, c);
+                draw::span_copy(pb, left, y, right - left, c);
             }
         }
 
@@ -217,7 +251,7 @@ struct draw
     // no scaling, no alpha blending
     // it will deal with clipping so we don't
     // crash when going off the edges
-    INLINE void blit(PixelArray& pb, const int x, const int y, PixelArray& src)
+    INLINE void blit_copy(PixelArray& pb, const int x, const int y, PixelArray& src)
     {
         PixelRect bounds(0, 0, pb.width(), pb.height());
         PixelRect dstFrame(x, y, src.width(), src.height());

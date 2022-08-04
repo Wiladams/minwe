@@ -1,6 +1,5 @@
 
-//#include "gui.h"
-//#include "draw2d.h"
+
 #include "apphost.h"
 #include "draw.h"
 #include "maths.hpp"
@@ -8,7 +7,6 @@
 using namespace maths;
 
 bool outlineOnly = false;
-PixelArray gpa;
 
 
 INLINE PixelRGBA randomColor(uint32_t alpha=255)
@@ -49,13 +47,14 @@ void onLoop()
 		if (outlineOnly)
 		{
 			stroke = c;
-			draw::copyRectangle(*gAppSurface, x1, y1, lwidth, lheight, c);
+			draw::rectangle_copy(*gAppSurface, x1, y1, lwidth, lheight, c);
 
 		}
 		else
 		{
 			fill = c;
-			draw::copyRectangle(*gAppSurface, x1, y1, lwidth, lheight, c);
+			//draw::rectangle_copy(*gAppSurface, x1, y1, lwidth, lheight, c);
+			draw::rectangle_blend(*gAppSurface, x1, y1, lwidth, lheight, c);
 		}
 	}
 
@@ -66,9 +65,8 @@ void onLoop()
 void onLoad()
 {
 	setCanvasSize(800, 800);
-	gpa.initArray(canvasPixels, canvasWidth, canvasHeight, canvasBytesPerRow);
 
-	windowOpacity(0.33);
+	//windowOpacity(0.33);
 
 	//gAppWindow->moveTo(0, 0);
 	//layered();

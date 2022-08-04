@@ -4,9 +4,10 @@
 #include "screensnapshot.h"
 #include "perlintexture.h"
 
-std::shared_ptr<ScreenSnapshot> screenSamp = nullptr;
-std::shared_ptr< NoiseSampler> perlinSamp = nullptr;
 
+ScreenSnapshot screenSamp;
+
+/*
 double ts = 4;
 
 void keyPressed(const KeyboardEvent& e)
@@ -23,17 +24,17 @@ void keyPressed(const KeyboardEvent& e)
 		break;
 	}
 }
+*/
 
 void onFrame()
 {
-
 	// draw a triangle using a screen snapshot as a texture
-	screenSamp->next();
+	screenSamp.next();
 	sampleTriangle(*gAppSurface, 
 		350, 200,
 		700, 450,
 		10, 450,
-		*screenSamp,
+		screenSamp,
 		{0,0,canvasWidth, canvasHeight});
 
 	// Trapezoid
@@ -41,12 +42,8 @@ void onFrame()
 	int nverts = 4;
 	sampleConvexPolygon(*gAppSurface, 
 		verts, nverts, 0, 
-		*screenSamp, 
+		screenSamp, 
 		{ 0,0,canvasWidth, canvasHeight });
-
-	// Rectangle
-	//NoiseSampler noiseSamp(ts);
-	//sampleRectangle(*gAppSurface, { 600,720,600,400 }, noiseSamp);
 
 }
 
@@ -55,10 +52,10 @@ void setup()
 	setCanvasSize(1920, 1080);
 	setFrameRate(15);
 
-	screenSamp = std::make_shared<ScreenSnapshot>(0, 150, 800, displayHeight / 2);
-	perlinSamp = std::make_shared<NoiseSampler>(4);
+	screenSamp.init(0, 150, 800, displayHeight / 2);
 
-	sampleRectangle(*gAppSurface, gAppSurface->frame(), *perlinSamp);
+	NoiseSampler perlinSamp(4);// = std::make_shared<NoiseSampler>(4);
+	sampleRectangle(*gAppSurface, gAppSurface->frame(), perlinSamp);
 
 	// some 1D sampled horizontal lines
 	RainbowSampler s(1.0);
