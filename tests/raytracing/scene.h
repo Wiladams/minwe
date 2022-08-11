@@ -9,6 +9,7 @@
 // along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 //==============================================================================================
 
+#include "apphost.h"
 #include "rtweekend.h"
 
 #include "camera.h"
@@ -16,41 +17,68 @@
 
 
 class scene {
-  public:
-    void render() {
-        const int image_height = static_cast<int>(image_width / aspect_ratio);
-
-        cam.initialize(aspect_ratio);
-
-        std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-
-        for (int j = image_height-1; j >= 0; --j) {
-            std::clog << "\rScanlines remaining: " << j << ' ' << std::flush;
-            for (int i = 0; i < image_width; ++i) {
-                color pixel_color(0,0,0);
-                for (int s = 0; s < samples_per_pixel; ++s) {
-                    auto u = (i + random_double()) / (image_width-1);
-                    auto v = (j + random_double()) / (image_height-1);
-                    ray r = cam.get_ray(u, v);
-                    pixel_color += ray_color(r, max_depth);
-                }
-                write_color(std::cout, pixel_color, samples_per_pixel);
-            }
-        }
-
-        std::clog << "\nDone.\n";
-    }
-
-  public:
+public:
     hittable_list world;
     hittable_list lights;
     camera        cam;
 
-    double aspect_ratio      = 1.0;
-    int    image_width       = 100;
+    double aspect_ratio = 1.0;
+    int    image_width = 100;
+    int    image_height = 100;
     int    samples_per_pixel = 10;
-    int    max_depth         = 20;
-    color  background        = color(0,0,0);
+    int    max_depth = 20;
+    color  background = color(0, 0, 0);
+
+    int fCurrentRow = 0;
+
+  public:
+      void init(int iwidth, double aspect, int spp, int maxd, const color& bkgd)
+      {
+          image_width = iwidth;
+          aspect_ratio = aspect;
+          image_height = static_cast<int>(image_width / aspect_ratio);
+          samples_per_pixel = spp;
+          max_depth = maxd;
+          background = bkgd;
+      }
+
+      bool renderContinue()
+      {
+          if (fCurrentRow >= image_height)
+              return false;
+
+
+          int j = image_height - 1 - fCurrentRow;
+
+          color out_color;
+
+          for (int i = 0; i < image_width; ++i) {
+              color pixel_color(0, 0, 0);
+              for (int s = 0; s < samples_per_pixel; ++s) {
+                  auto u = (i + random_double()) / (image_width - 1);
+                  auto v = (j + random_double()) / (image_height - 1);
+                  ray r = cam.get_ray(u, v);
+                  pixel_color += ray_color(r, max_depth);
+              }
+
+              fit_color(out_color, pixel_color, samples_per_pixel);
+              //write_color(std::cout, pixel_color, samples_per_pixel);
+              gAppSurface->copyPixel(i, fCurrentRow, PixelRGBA(out_color[0], out_color[1], out_color[2]));
+          }
+
+          fCurrentRow = fCurrentRow + 1;
+
+          return true;
+      }
+
+      void renderBegin()
+      {
+        cam.initialize(aspect_ratio);
+
+        std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+    }
+
+
 
   private:
     color ray_color(const ray& r, int depth) {

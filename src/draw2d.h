@@ -25,7 +25,7 @@
 
 #include <memory>
 
-using namespace maths;
+//using namespace maths;
 
 // Set a single pixel
 INLINE void point(PixelMap& pmap, const int x, const int y, const PixelRGBA src)
@@ -561,13 +561,13 @@ INLINE void fillEllipse(PixelMap& pmap, int centerx, int centery, int xRadius, i
         auto u = (double)i / steps;
         auto angle = u * (2 * maths::Pi);
 
-        int x = (int)Floor((awidth / 2.0) * cos(angle));
-        int y = (int)Floor((aheight / 2.0) * sin(angle));
+        int x = (int)maths::Floor((awidth / 2.0) * cos(angle));
+        int y = (int)maths::Floor((aheight / 2.0) * sin(angle));
         verts[i] = PixelCoord({ x + centerx, y + centery });
     }
     
     int vmin = findTopmostVertex(verts, nverts);
-    setConvexPolygon(pmap, verts, nverts, vmin, c, { 0,0,canvasWidth,canvasHeight });
+    setConvexPolygon(pmap, verts, nverts, vmin, c, { 0,0,pmap.width(),pmap.height() });
 }
 
 // filling a circle with a fixed color
@@ -610,8 +610,8 @@ INLINE PixelCoord bezier_point(double u,
     double x3, double y3,
     double x4, double y4)
 {
-    int x = (int)Round(bezier_cubic(u, x1, x2, x3, x4));
-    int y = (int)Round(bezier_cubic(u, y1, y2, y3, y4));
+    int x = (int)maths::Round(bezier_cubic(u, x1, x2, x3, x4));
+    int y = (int)maths::Round(bezier_cubic(u, y1, y2, y3, y4));
 
     return PixelCoord({ x,y });
 

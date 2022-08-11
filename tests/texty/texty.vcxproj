@@ -149,8 +149,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\apphost.h" />
+    <ClInclude Include="..\..\src\gui.h" />
     <ClInclude Include="..\..\src\pixelmap.h" />
     <ClInclude Include="..\..\src\User32PixelMap.h" />
+    <ClInclude Include="fontmonger.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

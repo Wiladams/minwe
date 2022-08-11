@@ -153,6 +153,7 @@
     <ClInclude Include="..\..\src\pixeltypes.h" />
     <ClInclude Include="..\..\src\sampledraw2d.h" />
     <ClInclude Include="..\..\src\sampler.h" />
+    <ClInclude Include="..\..\src\screensnapshot.h" />
     <ClInclude Include="perlin.h" />
     <ClInclude Include="perlintexture.h" />
   </ItemGroup>

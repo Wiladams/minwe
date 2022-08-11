@@ -14,11 +14,12 @@ User32PixelMap img2;
 std::shared_ptr<ImageSampler> isamp1 = nullptr;
 std::shared_ptr<ImageSampler> isamp2 = nullptr;
 std::shared_ptr<ScreenSnapshot> screenSamp = nullptr;
+//ScreenSnapshot screenSamp;
 
 auto transSampler = std::make_shared< SolidColorSampler>(0x0);
-auto s1 = std::make_shared< SolidColorSampler>(0xff555555);
-auto s2 = std::make_shared< SolidColorSampler>(0xffdddddd);
-auto red1 = std::make_shared< SolidColorSampler>(0xffff0000);
+//auto s1 = std::make_shared< SolidColorSampler>(0xff555555);
+//auto s2 = std::make_shared< SolidColorSampler>(0xffdddddd);
+//auto red1 = std::make_shared< SolidColorSampler>(0xffff0000);
 std::shared_ptr<CheckerSampler> chksamp = nullptr;
 
 void onFrame()
@@ -36,7 +37,9 @@ void setup()
     // Load a Targa image 
     targa::initFromFile(img, "..\\debug\\shuttle.tga");
 	//isamp1 = std::make_shared<ImageSampler>(img);
-    screenSamp = std::make_shared<ScreenSnapshot>(320,400,640,480);
+    //screenSamp = std::make_shared<ScreenSnapshot>(320,400,640,480);
+    screenSamp = std::make_shared<ScreenSnapshot>(0,0,800,600);
+
 
     //targa::initFromFile(img2, "..\\debug\\money-256.tga");
 	//isamp2 = std::make_shared<ImageSampler>(img2);

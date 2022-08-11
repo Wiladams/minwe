@@ -4,41 +4,15 @@
 #include "screensnapshot.h"
 #include "perlintexture.h"
 
-
 ScreenSnapshot screenSamp;
-
-/*
-double ts = 4;
-
-void keyPressed(const KeyboardEvent& e)
-{
-	switch (e.keyCode) {
-	case VK_UP:
-		ts += 1;
-		ts = maths::Clamp(ts, 0, canvasWidth);
-
-		break;
-	case VK_DOWN:
-		ts -= 1;
-		ts = maths::Clamp(ts, 0, canvasWidth);
-		break;
-	}
-}
-*/
 
 void onFrame()
 {
-	// draw a triangle using a screen snapshot as a texture
+	// Take current snapshot of screen
 	screenSamp.next();
-	sampleTriangle(*gAppSurface, 
-		350, 200,
-		700, 450,
-		10, 450,
-		screenSamp,
-		{0,0,canvasWidth, canvasHeight});
 
 	// Trapezoid
-	PixelCoord verts[] = { PixelCoord({800,10}),PixelCoord({1200,10}),PixelCoord({1900,700}),PixelCoord({710,700}) };
+	PixelCoord verts[] = { PixelCoord({600,100}),PixelCoord({1000,100}),PixelCoord({1700,800}),PixelCoord({510,800}) };
 	int nverts = 4;
 	sampleConvexPolygon(*gAppSurface, 
 		verts, nverts, 0, 
@@ -52,15 +26,36 @@ void setup()
 	setCanvasSize(1920, 1080);
 	setFrameRate(15);
 
-	screenSamp.init(0, 150, 800, displayHeight / 2);
-
-	NoiseSampler perlinSamp(4);// = std::make_shared<NoiseSampler>(4);
+	// Draw noisy background only once
+	NoiseSampler perlinSamp(4);
 	sampleRectangle(*gAppSurface, gAppSurface->frame(), perlinSamp);
 
-	// some 1D sampled horizontal lines
-	RainbowSampler s(1.0);
-	for (int counter = 1; counter <= 300; counter++) {
-		sampleSpan(*gAppSurface, 10, 40+counter, 300+counter, s);
-	}
-
+	// Setup the screen sampler
+	// Capture left half of screen
+	screenSamp.init(0, 0, displayWidth / 2, displayHeight);
 }
+
+void keyReleased(const KeyboardEvent& e) {
+	switch (e.keyCode)
+	{
+	case VK_ESCAPE:
+		halt();
+		break;
+
+	case 'R':
+	{
+		recordingToggle();
+	}
+	break;
+	}
+}
+
+/*
+// draw a triangle using a screen snapshot as a texture
+sampleTriangle(*gAppSurface,
+	350, 200,
+	700, 450,
+	10, 450,
+	screenSamp,
+	{0,0,canvasWidth, canvasHeight});
+	*/

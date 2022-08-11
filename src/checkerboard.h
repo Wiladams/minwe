@@ -97,6 +97,14 @@ public:
         : fPattern(freq),
         t1(s1), t2(s2)
     {}
+    
+    /*
+    CheckerSampler(double freq, ISample2D<PixelRGBA, PixelCoord> &s1,ISample2D<PixelRGBA, PixelCoord> &s2)
+        : fPattern(freq)
+        ,t1(s1) 
+        ,t2(s2)
+    {}
+    */
 
     void setFrequency(double freq) 
     {

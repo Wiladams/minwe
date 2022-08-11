@@ -15,7 +15,7 @@
 class Recorder
 {
     PPMBinary fCodec;
-    PixelArray * fSurface;
+    PixelArray * fCanvas;
 
     std::string fBasename;
 
@@ -27,7 +27,7 @@ public:
     Recorder() = default;
 
     Recorder(PixelArray* surf, const char* basename = "frame", int maxFrames = 0)
-        : fSurface(surf)
+        : fCanvas(surf)
         , fBasename(basename)
         , fIsRecording(false)
         , fMaxFrames(maxFrames)
@@ -38,11 +38,10 @@ public:
 
     void init(PixelArray* surf, const char* basename = "frame", int maxFrames = 0)
     {
-        fSurface = surf;
+        fCanvas = surf;
         fBasename = basename;
         fMaxFrames = maxFrames;
         fCurrentFrame = 0;
-        fIsRecording = false;
     }
 
     bool saveFrame()
@@ -66,7 +65,7 @@ public:
         if (!fp)
             return false;
 
-        fCodec.write(fp, *fSurface);
+        fCodec.write(fp, *fCanvas);
 
         fclose(fp);
 
@@ -85,9 +84,6 @@ public:
 
     bool record()
     {
-        if (fIsRecording)
-            return false;
-
         fIsRecording = true;
 
         return true;

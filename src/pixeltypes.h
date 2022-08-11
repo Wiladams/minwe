@@ -47,6 +47,7 @@ struct PixelRGBA
     INLINE constexpr bool operator==(const PixelRGBA& other) const noexcept { return equals(other); }
     
     INLINE operator ColorRGBA() { return ColorRGBA((float)r()/255.0f,g()/255.0f,b()/255.0f,a()/255.0f); }
+    INLINE constexpr uint32_t toCOLORREF() const { return (r() | (g() << 8) | (b() << 16)); }
 
     INLINE constexpr bool equals(const PixelRGBA& other) const noexcept { return value == other.value; }
 
@@ -62,7 +63,7 @@ struct PixelRGBA
 
     INLINE constexpr bool isOpaque() const noexcept { return value >= 0xff000000u; }
     INLINE constexpr bool isTransparent() const noexcept { return value <= 0x00ffffff; }
-
+    INLINE constexpr bool isBlend() const noexcept { return value >= 0x01000000u && value < 0xfeffffffu; }
 
 };
 

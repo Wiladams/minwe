@@ -7,7 +7,7 @@
 using namespace maths;
 
 bool outlineOnly = false;
-
+double opacity = 1.0;
 
 INLINE PixelRGBA randomColor(uint32_t alpha=255)
 {
@@ -18,13 +18,21 @@ INLINE PixelRGBA randomColor(uint32_t alpha=255)
 	return { r,g,b,alpha };
 }
 
-void keyReleased(const KeyboardEvent& e)
+void handleKeyboardEvent(const KeyboardEventTopic& p, const KeyboardEvent& e)
 {
 	if (e.keyCode == VK_ESCAPE)
 		halt();
 
 	if (e.keyCode == VK_SPACE)
 		outlineOnly = !outlineOnly;
+
+	if (e.keyCode == VK_UP)
+		opacity = maths::Clamp(opacity + 0.05, 0.0, 1.0);
+
+	if (e.keyCode == VK_DOWN)
+		opacity = maths::Clamp(opacity - 0.05, 0.0, 1.0);
+
+	windowOpacity(opacity);
 }
 
 void onLoop()
@@ -58,15 +66,17 @@ void onLoop()
 		}
 	}
 
+
 	refreshScreen();
 }
 
 
+
 void onLoad()
 {
-	setCanvasSize(800, 800);
+	subscribe(handleKeyboardEvent);
 
-	//windowOpacity(0.33);
+	setCanvasSize(800, 800);
 
 	//gAppWindow->moveTo(0, 0);
 	//layered();

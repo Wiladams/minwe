@@ -27,7 +27,7 @@ void setup()
     setFrameRate(15);
 
     // setup the snapshot
-    screenSamp.init(0, 0, displayWidth / 2, displayHeight / 2);
+    screenSamp.init(0, 0, displayWidth, displayHeight);
 }
 
 void keyReleased(const KeyboardEvent& e) {

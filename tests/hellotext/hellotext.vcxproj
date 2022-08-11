@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{d2b589eb-03a0-4ed4-a537-2c50458dd32d}</ProjectGuid>
-    <RootNamespace>raytracing</RootNamespace>
+    <ProjectGuid>{04623766-4f92-439a-9ee1-0c7327378a96}</ProjectGuid>
+    <RootNamespace>hellotext</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -86,7 +86,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\..\src</AdditionalIncludeDirectories>
     </ClCompile>
@@ -101,7 +101,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\..\src</AdditionalIncludeDirectories>
     </ClCompile>
@@ -116,7 +116,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\..\src</AdditionalIncludeDirectories>
     </ClCompile>
@@ -131,7 +131,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\..\src</AdditionalIncludeDirectories>
     </ClCompile>
@@ -145,37 +145,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\appmain.cpp" />
     <ClCompile Include="..\..\src\gui.cpp" />
-    <ClCompile Include="main.cc" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\src\apphost.h" />
-    <ClInclude Include="..\..\src\gui.h" />
-    <ClInclude Include="aabb.h" />
-    <ClInclude Include="bvh.h" />
-    <ClInclude Include="camera.h" />
-    <ClInclude Include="color.h" />
-    <ClInclude Include="constant_medium.h" />
-    <ClInclude Include="hittable.h" />
-    <ClInclude Include="hittable_list.h" />
-    <ClInclude Include="interval.h" />
-    <ClInclude Include="material.h" />
-    <ClInclude Include="moving_sphere.h" />
-    <ClInclude Include="onb.h" />
-    <ClInclude Include="pdf.h" />
-    <ClInclude Include="perlin.h" />
-    <ClInclude Include="quad.h" />
-    <ClInclude Include="ray.h" />
-    <ClInclude Include="rtweekend.h" />
-    <ClInclude Include="rtw_stb_image.h" />
-    <ClInclude Include="scene.h" />
-    <ClInclude Include="scene_cornell_box.h" />
-    <ClInclude Include="scene_cornell_smoke.h" />
-    <ClInclude Include="scene_earth.h" />
-    <ClInclude Include="scene_final.h" />
-    <ClInclude Include="scene_simple_light.h" />
-    <ClInclude Include="sphere.h" />
-    <ClInclude Include="texture.h" />
-    <ClInclude Include="vec3.h" />
+    <ClCompile Include="hellotext.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
