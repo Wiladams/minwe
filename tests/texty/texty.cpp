@@ -31,7 +31,7 @@ void setup()
 	setCanvasSize(1024, 240);
     setFrameRate(20);
 
-    textColor(PixelRGBA(0xff000000));
+
 }
 
 void keyReleased(const KeyboardEvent& e) {

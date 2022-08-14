@@ -25,8 +25,6 @@
 
 #include <memory>
 
-//using namespace maths;
-
 // Set a single pixel
 INLINE void point(PixelMap& pmap, const int x, const int y, const PixelRGBA src)
 {

@@ -2,88 +2,7 @@
 
 #include "stopwatch.h"
 #include "recorder.h"
-
-struct PixelFont
-{
-
-public:
-    HFONT   fFont;
-    LOGFONTA lFont;
-
-    PixelFont()
-        :fFont(NULL)
-        , lFont{}
-    {
-        fFont = NULL;
-    }
-
-    PixelFont(const char* name, int height)
-    {
-        init(name, height);
-
-        //Logical units are device dependent pixels, so this will create a handle to a logical font that is height pixels tall.
-        //The width, when set to 0, will cause the font mapper to choose the closest matching value.
-        //The font face name will be 'name'.
-        lFont = {
-            height,                 // cHeight
-            0,                      // cWidth
-            0,                      // cEscapement
-            0,                      // cOrientation
-            FW_DONTCARE,            // cWeight
-            FALSE,                  // bItalic
-            FALSE,                  // bUnderline
-            FALSE,                  // bStrikeOut
-            DEFAULT_CHARSET,        // iCharset
-            OUT_OUTLINE_PRECIS,     // iOutPrecision
-            CLIP_DEFAULT_PRECIS,    // iClipPrecision
-            CLEARTYPE_QUALITY,      // iQuality
-            VARIABLE_PITCH          // iPitchAndFamily
-        };
-        // faceName
-        strncpy_s(lFont.lfFaceName, LF_FACESIZE, name, strlen(name));
-
-        fFont = ::CreateFontIndirectA(&lFont);
-    }
-
-    ~PixelFont()
-    {
-        //reset();
-    }
-
-    INLINE void init(const char* name, int height)
-    {
-        // first clearout whatever is there already
-        reset();
-
-        //Logical units are device dependent pixels, so this will create a handle to a logical font that is height pixels tall.
-//The width, when set to 0, will cause the font mapper to choose the closest matching value.
-//The font face name will be 'name'.
-        lFont = {
-            height,                 // cHeight
-            0,                      // cWidth
-            0,                      // cEscapement
-            0,                      // cOrientation
-            FW_DONTCARE,            // cWeight
-            FALSE,                  // bItalic
-            FALSE,                  // bUnderline
-            FALSE,                  // bStrikeOut
-            DEFAULT_CHARSET,        // iCharset
-            OUT_OUTLINE_PRECIS,     // iOutPrecision
-            CLIP_DEFAULT_PRECIS,    // iClipPrecision
-            CLEARTYPE_QUALITY,      // iQuality
-            VARIABLE_PITCH          // iPitchAndFamily
-        };
-
-        strncpy_s(lFont.lfFaceName, LF_FACESIZE, name, strlen(name));
-
-        fFont = ::CreateFontIndirectA(&lFont);
-    }
-
-    INLINE void reset()
-    {
-        ::DeleteObject(fFont);
-    }
-};
+//#include "textlayout.h"
 
 
 static bool gIsFullscreen = false;
@@ -134,36 +53,6 @@ void recordingStart() { gRecorder.record(); }
 void recordingStop() { gRecorder.stop(); }
 void recordingPause() { gRecorder.pause(); }
 void recordingToggle() { gRecorder.toggleRecording(); }
-
-PixelFont gCurrentFont;     // object for currently selected font
-
-
-
-void textFont(const char* fName, int size)
-{
-    gCurrentFont.init(fName, size);
-    ::SelectObject(gAppSurface->getDC(), gCurrentFont.fFont);
-}
-
-void text(const char* txt, double x, double y)
-{
-    ::TextOutA(gAppSurface->getDC(), x, y, txt, strlen(txt));
-}
-
-// setting colors
-// COLORREF - 0x00bbggrr
-//
-// PixelRGBA - 0xaarrggbb
-//
-// When you need a COLORREF to be compatible with 
-// some Windows GDI routines
-//#define toCOLORREF(c) (c.r() | (c.g() << 8) | (c.b() << 16))
-
-void textColor(const PixelRGBA& pix)
-{
-    auto c = pix.toCOLORREF();
-    ::SetTextColor(gAppSurface->getDC(), c);
-}
 
 
 void handleKeyboardEvent(const KeyboardEventTopic& p, const KeyboardEvent& e)
@@ -364,7 +253,7 @@ void onLoad()
     background(PixelRGBA(0xffffffff));
 
     // setup font
-    textFont("Segoe UI", 18);
+    //tLayout.textFont("Segoe UI", 18);
 
     // Call a setup routine if the user specified one
     if (gSetupHandler != nullptr) {

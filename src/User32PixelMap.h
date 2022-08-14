@@ -44,7 +44,6 @@ public:
     }
 
     User32PixelMap(const long awidth, const long aheight)
-//        : PixelMap(0,0,awidth,aheight)
     {
         fDataSize = 0;
 
@@ -53,11 +52,6 @@ public:
 
     virtual ~User32PixelMap()
     {
-        // BUGBUG
-        // unload the dib section
-        //::SelectObject(fBitmapDC, fOriginDIBHandle);
-
-
         // and destroy it
         ::DeleteObject(fDIBHandle);
     }
@@ -94,8 +88,9 @@ public:
 
         // Do some setup to the DC to make it suitable
         // for drawing with GDI if we choose to do that
-        ::SetBkMode(fBitmapDC, TRANSPARENT);
         ::SetGraphicsMode(fBitmapDC, GM_ADVANCED);
+        ::SetBkMode(fBitmapDC, TRANSPARENT);
+        //::SetBkColor(fBitmapDC, 0x0);
 
         return true;
     }

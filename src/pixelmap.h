@@ -118,11 +118,6 @@ public:
     PixelMap() = default;
 
 
-    //PixelMap(int x, int y, int w, int h)
-    //{
-        //init(w, h);
-    //}
-
     // virtual destructor so sub-classes setup properly
     virtual ~PixelMap() = default;
 

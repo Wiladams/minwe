@@ -35,11 +35,6 @@ extern "C" {
 	APP_EXPORT void recordingPause();
 	APP_EXPORT void recordingToggle();
 
-	// Text rendering
-	//void textAlign(ALIGNMENT horizontal, ALIGNMENT vertical) noexcept;
-	void textFont(const char* fName, int size);
-	void text(const char* txt, double x, double y);
-	void textColor(const PixelRGBA& pix);
 
 
 	// Application can implement these
@@ -103,7 +98,6 @@ extern "C" {
 	APP_EXPORT extern int mouseDelta;		// last known delta of mouse wheel
 	APP_EXPORT extern int pmouseX;
 	APP_EXPORT extern int pmouseY;
-
 
 #ifdef __cplusplus
 }
