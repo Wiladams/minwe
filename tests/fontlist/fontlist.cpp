@@ -1,7 +1,11 @@
 #include "gui.h"
+#include "textlayout.h"
 #include "fontmonger.h"
 
+#include <list>
+
 std::list<std::string> fontList;
+TextLayout tLayout;
 
 void drawFonts()
 {
@@ -20,8 +24,8 @@ void drawFonts()
 		int x = col * colWidth;
 		int y = row * rowHeight;
 
-		textFont(it->c_str(), 18);
-		text(it->c_str(), x, y);
+		tLayout.textFont(it->c_str(), 18);
+		tLayout.text(it->c_str(), x, y);
 
 		col++;
 		if (col >= maxCols)
@@ -38,6 +42,7 @@ void setup()
 	setCanvasSize(1280, 1024);
 
 	FontMonger::collectFontFamilies(fontList);
+	tLayout.init(gAppSurface);
 
 	//FontMonger::listFontFamilies();
 

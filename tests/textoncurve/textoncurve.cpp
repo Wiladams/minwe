@@ -41,7 +41,8 @@ void textOnBezier(const char* txt, GeoBezier<ptrdiff_t>& bez)
 
 		// Now get the next value of 'u' so we 
 		// can evaluate where the next character will go
-		u = bez.findUForX(pt.x() + charSize.x());
+		xoffset += charSize.x();
+		u = bez.findUForX(xoffset);
 
 		offset++;
 	}
@@ -100,9 +101,10 @@ void onFrame()
 	int y1 = maths::Map(currentIteration, 1, iterations, 0, canvasHeight);
 	//GeoQuadraticBezier<ptrdiff_t> bez(margin, canvasHeight / 2, canvasWidth / 2, y1, canvasWidth - margin, canvasHeight / 2);
 	GeoCubicBezier<ptrdiff_t> bez(margin, canvasHeight / 2, canvasWidth * 0.25, y1, canvasWidth - (canvasWidth * 0.25), canvasHeight -y1, canvasWidth - margin, canvasHeight / 2.0);
-	
+	bez.calcSpeeds();
+
 	if (showCurve)
-		strokeCurve(*gAppSurface, bez, 50, PixelRGBA(0xffff0000));
+		strokeCurve(*gAppSurface, bez, 60, PixelRGBA(0xffff0000));
 
 	// fit text to curve offsets
 	//tLayout.textColor(PixelRGBA(0xff00ff00));
@@ -126,7 +128,7 @@ void setup()
 	setFrameRate(FRAMERATE);
 
 	tLayout.init(gAppSurface);
-	tLayout.textFont("Consolas", 24);
+	tLayout.textFont("Jokerman", 24);
 	tLayout.textAlign(ALIGNMENT::CENTER, ALIGNMENT::CENTER);
 }
 

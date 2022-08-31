@@ -105,6 +105,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "textoncurve", "textoncurve\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "textalign", "textalign\textalign.vcxproj", "{15B88CC4-23A0-4E2E-87D6-00785670340B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "textd2d", "textd2d\textd2d.vcxproj", "{6AC637D9-525A-4EA4-AC30-D557FF408937}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -521,6 +523,14 @@ Global
 		{15B88CC4-23A0-4E2E-87D6-00785670340B}.Release|x64.Build.0 = Release|x64
 		{15B88CC4-23A0-4E2E-87D6-00785670340B}.Release|x86.ActiveCfg = Release|Win32
 		{15B88CC4-23A0-4E2E-87D6-00785670340B}.Release|x86.Build.0 = Release|Win32
+		{6AC637D9-525A-4EA4-AC30-D557FF408937}.Debug|x64.ActiveCfg = Debug|x64
+		{6AC637D9-525A-4EA4-AC30-D557FF408937}.Debug|x64.Build.0 = Debug|x64
+		{6AC637D9-525A-4EA4-AC30-D557FF408937}.Debug|x86.ActiveCfg = Debug|Win32
+		{6AC637D9-525A-4EA4-AC30-D557FF408937}.Debug|x86.Build.0 = Debug|Win32
+		{6AC637D9-525A-4EA4-AC30-D557FF408937}.Release|x64.ActiveCfg = Release|x64
+		{6AC637D9-525A-4EA4-AC30-D557FF408937}.Release|x64.Build.0 = Release|x64
+		{6AC637D9-525A-4EA4-AC30-D557FF408937}.Release|x86.ActiveCfg = Release|Win32
+		{6AC637D9-525A-4EA4-AC30-D557FF408937}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

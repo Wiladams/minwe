@@ -2,6 +2,10 @@
 
 #include "apphost.h"
 
+// Reference
+// https://docs.microsoft.com/en-us/windows/win32/directwrite/introducing-directwrite
+// https://docs.microsoft.com/en-us/windows/win32/directwrite/getting-started-with-directwrite
+// 
 // Text rendering
 // 	// Text Alignment
 enum class ALIGNMENT : unsigned
